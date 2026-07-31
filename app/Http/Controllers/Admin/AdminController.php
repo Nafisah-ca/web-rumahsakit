@@ -1,0 +1,497 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\Pasien;
+use App\Models\JanjiTemu;
+use App\Models\Dokter;
+use App\Models\JadwalDokter;
+use App\Models\Spesialisasi;
+use App\Models\Layanan;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+
+class AdminController extends Controller
+{
+    // ─────────────────────────── DASHBOARD ───────────────────────────
+
+    public function dashboard()
+    {
+        $stats = [
+            'total_pasien'       => Pasien::count(),
+            'total_dokter'       => Dokter::where('status', 'aktif')->count(),
+            'booking_hari_ini'   => JanjiTemu::whereDate('tanggal_booking', today())->count(),
+            'booking_menunggu'   => JanjiTemu::where('status', 'pending')->count(),
+            'total_spesialisasi' => Spesialisasi::count(),
+            'booking_bulan_ini'  => JanjiTemu::whereMonth('tanggal_booking', now()->month)
+                                             ->whereYear('tanggal_booking', now()->year)->count(),
+        ];
+
+        // Grafik booking 7 hari terakhir
+        $chartData   = [];
+        $chartLabels = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date          = Carbon::today()->subDays($i);
+            $chartLabels[] = $date->format('d M');
+            $chartData[]   = JanjiTemu::whereDate('tanggal_booking', $date)->count();
+        }
+
+        // Booking terbaru
+        $recentBookings = JanjiTemu::with(['pasien.user', 'jadwalDokter.dokter'])
+            ->orderByDesc('created_tm')
+            ->limit(10)
+            ->get();
+
+        // Dokter aktif
+        $doktersAktif = Dokter::with('spesialisasi')
+            ->where('status', 'aktif')
+            ->orderBy('nama_dokter')
+            ->limit(6)
+            ->get();
+
+        // Status distribusi
+        $statusCounts = JanjiTemu::selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
+
+        return view('admin.dashboard', compact(
+            'stats', 'chartData', 'chartLabels', 'recentBookings', 'statusCounts', 'doktersAktif'
+        ));
+    }
+
+    // ─────────────────────────── USERS ───────────────────────────────
+
+    public function users(Request $request)
+    {
+        $query = User::query();
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('nama', 'like', "%{$request->search}%")
+                  ->orWhere('email', 'like', "%{$request->search}%")
+                  ->orWhere('username', 'like', "%{$request->search}%");
+            });
+        }
+        if ($request->role) {
+            $query->where('role', $request->role);
+        }
+        if ($request->status !== null && $request->status !== '') {
+            $query->where('status', $request->status);
+        }
+        $users = $query->orderByDesc('created_tm')->paginate(15)->withQueryString();
+        return view('admin.users.index', compact('users'));
+    }
+
+    public function createUser()
+    {
+        return view('admin.users.create');
+    }
+
+    public function storeUser(Request $request)
+    {
+        $request->validate([
+            'nama'     => 'required|string|max:255',
+            'username' => 'required|string|max:50|unique:users,username',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|min:6|confirmed',
+            'role'     => 'required|in:admin,cms,pasien',
+            'no_hp'    => 'nullable|string|max:20',
+        ]);
+
+        $user = User::create([
+            'nama'       => $request->nama,
+            'username'   => $request->username,
+            'email'      => $request->email,
+            'password'   => Hash::make($request->password),
+            'role'       => $request->role,
+            'no_hp'      => $request->no_hp,
+            'status'     => $request->status ?? 'aktif',
+            'created_by' => Auth::id(),
+        ]);
+
+        // Buat pasien otomatis jika role pasien
+        if ($request->role === 'pasien') {
+            $noRm = 'RM' . now()->format('Y') . str_pad(Pasien::count() + 1, 5, '0', STR_PAD_LEFT);
+            Pasien::create([
+                'user_id'        => $user->id,
+                'no_rekam_medis' => $noRm,
+                'nik'            => $request->nik ?? '0000000000000000',
+                'jenis_kelamin'  => $request->jenis_kelamin ?? 'L',
+                'tempat_lahir'   => $request->tempat_lahir ?? '-',
+                'tanggal_lahir'  => $request->tanggal_lahir ?? now()->subYears(20)->toDateString(),
+                'alamat'         => $request->alamat ?? '-',
+                'created_by'     => Auth::id(),
+            ]);
+        }
+
+        return redirect()->route('admin.users')->with('success', 'User berhasil ditambahkan.');
+    }
+
+    public function editUser(User $user)
+    {
+        return view('admin.users.edit', compact('user'));
+    }
+
+    public function updateUser(Request $request, User $user)
+    {
+        $request->validate([
+            'nama'     => 'required|string|max:255',
+            'username' => 'required|string|max:50|unique:users,username,' . $user->id,
+            'email'    => 'required|email|unique:users,email,' . $user->id,
+            'role'     => 'required|in:admin,cms,pasien',
+            'password' => 'nullable|min:6|confirmed',
+            'no_hp'    => 'nullable|string|max:20',
+        ]);
+
+        $data = [
+            'nama'       => $request->nama,
+            'username'   => $request->username,
+            'email'      => $request->email,
+            'role'       => $request->role,
+            'no_hp'      => $request->no_hp,
+            'status'     => $request->status ?? 'aktif',
+            'updated_by' => Auth::id(),
+        ];
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+        $user->update($data);
+        return redirect()->route('admin.users')->with('success', 'User berhasil diperbarui.');
+    }
+
+    public function destroyUser(User $user)
+    {
+        if ($user->id === Auth::id()) {
+            return back()->with('error', 'Tidak dapat menghapus akun sendiri.');
+        }
+        $user->update(['deleted_by' => Auth::id()]);
+        $user->delete();
+        return back()->with('success', 'User berhasil dihapus.');
+    }
+
+    // ─────────────────────────── PASIEN ──────────────────────────────
+
+    public function pasien(Request $request)
+    {
+        $query = Pasien::with('user');
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('no_rekam_medis', 'like', "%{$request->search}%")
+                  ->orWhere('nik', 'like', "%{$request->search}%")
+                  ->orWhereHas('user', fn($u) => $u->where('nama', 'like', "%{$request->search}%")
+                                                    ->orWhere('no_hp', 'like', "%{$request->search}%"));
+            });
+        }
+        $pasiens = $query->orderByDesc('created_tm')->paginate(15)->withQueryString();
+        return view('admin.pasien.index', compact('pasiens'));
+    }
+
+    public function createPasien()
+    {
+        $users     = User::where('role', 'pasien')->whereDoesntHave('pasien')->get();
+        $penjamins = \App\Models\Penjamin::where('status','aktif')->with('tipePenjamin')->get();
+        return view('admin.pasien.create', compact('users', 'penjamins'));
+    }
+
+    public function storePasien(Request $request)
+    {
+        $request->validate([
+            'user_id'       => 'required|exists:users,id',
+            'nik'           => 'required|string|size:16|unique:pasien,nik',
+            'jenis_kelamin' => 'required|in:L,P',
+            'tempat_lahir'  => 'required|string|max:100',
+            'tanggal_lahir' => 'required|date',
+            'alamat'        => 'required|string',
+        ]);
+
+        $noRm = 'RM' . now()->format('Y') . str_pad(Pasien::count() + 1, 5, '0', STR_PAD_LEFT);
+        Pasien::create(array_merge(
+            $request->only(['user_id','nik','jenis_kelamin','tempat_lahir','tanggal_lahir',
+                           'alamat','golongan_darah','agama','pekerjaan','penjamin_id','nomor_penjamin']),
+            ['no_rekam_medis' => $noRm, 'created_by' => Auth::id()]
+        ));
+        return redirect()->route('admin.pasien')->with('success', 'Data pasien berhasil disimpan.');
+    }
+
+    public function editPasien(Pasien $pasien)
+    {
+        $penjamins = \App\Models\Penjamin::where('status','aktif')->with('tipePenjamin')->get();
+        return view('admin.pasien.edit', compact('pasien', 'penjamins'));
+    }
+
+    public function updatePasien(Request $request, Pasien $pasien)
+    {
+        $request->validate([
+            'nik'           => 'required|string|size:16|unique:pasien,nik,' . $pasien->id,
+            'jenis_kelamin' => 'required|in:L,P',
+            'tempat_lahir'  => 'required|string|max:100',
+            'tanggal_lahir' => 'required|date',
+            'alamat'        => 'required|string',
+        ]);
+
+        $pasien->update(array_merge(
+            $request->only(['nik','jenis_kelamin','tempat_lahir','tanggal_lahir',
+                           'alamat','golongan_darah','agama','pekerjaan','penjamin_id','nomor_penjamin']),
+            ['updated_by' => Auth::id()]
+        ));
+        return redirect()->route('admin.pasien')->with('success', 'Data pasien berhasil diperbarui.');
+    }
+
+    public function showPasien(Pasien $pasien)
+    {
+        $pasien->load(['user', 'janjiTemus.jadwalDokter.dokter', 'penjamin.tipePenjamin']);
+        return view('admin.pasien.show', compact('pasien'));
+    }
+
+    public function destroyPasien(Pasien $pasien)
+    {
+        $pasien->update(['deleted_by' => Auth::id()]);
+        $pasien->delete();
+        return back()->with('success', 'Data pasien berhasil dihapus.');
+    }
+
+    // ─────────────────────────── JANJI TEMU ──────────────────────────
+
+    public function janjiTemu(Request $request)
+    {
+        $query = JanjiTemu::with(['pasien.user', 'jadwalDokter.dokter.spesialisasi']);
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->whereHas('pasien.user', fn($u) => $u->where('nama', 'like', "%{$request->search}%"))
+                  ->orWhere('id', 'like', "%{$request->search}%");
+            });
+        }
+        if ($request->status)    $query->where('status', $request->status);
+        if ($request->dokter_id) $query->whereHas('jadwalDokter', fn($j) => $j->where('dokter_id', $request->dokter_id));
+        if ($request->tanggal)   $query->whereDate('tanggal_booking', $request->tanggal);
+
+        $bookings = $query->orderByDesc('tanggal_booking')->paginate(15)->withQueryString();
+        $dokters  = Dokter::where('status', 'aktif')->orderBy('nama_dokter')->get();
+        return view('admin.booking.index', compact('bookings', 'dokters'));
+    }
+
+    public function showBooking(JanjiTemu $janjiTemu)
+    {
+        $janjiTemu->load(['pasien.user', 'jadwalDokter.dokter.spesialisasi']);
+        return view('admin.booking.show', compact('janjiTemu'));
+    }
+
+    public function updateStatusBooking(Request $request, JanjiTemu $janjiTemu)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,approved,completed,cancelled',
+        ]);
+        $janjiTemu->update([
+            'status'     => $request->status,
+            'updated_by' => Auth::id(),
+        ]);
+        return back()->with('success', 'Status booking berhasil diperbarui.');
+    }
+
+    public function destroyBooking(JanjiTemu $janjiTemu)
+    {
+        $janjiTemu->update(['deleted_by' => Auth::id()]);
+        $janjiTemu->delete();
+        return back()->with('success', 'Data booking berhasil dihapus.');
+    }
+
+    // ─────────────────────────── DOKTER ──────────────────────────────
+
+    public function dokter(Request $request)
+    {
+        $query = Dokter::with('spesialisasi');
+        if ($request->search) {
+            $query->where('nama_dokter', 'like', "%{$request->search}%");
+        }
+        if ($request->spesialis_id) {
+            $query->where('spesialis_id', $request->spesialis_id);
+        }
+        $dokters       = $query->orderBy('nama_dokter')->paginate(15)->withQueryString();
+        $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
+        return view('admin.dokter.index', compact('dokters', 'spesialisasis'));
+    }
+
+    public function createDokter()
+    {
+        $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
+        return view('admin.dokter.create', compact('spesialisasis'));
+    }
+
+    public function storeDokter(Request $request)
+    {
+        $request->validate([
+            'nama_dokter'  => 'required|string|max:100',
+            'spesialis_id' => 'required|exists:spesialis,id',
+            'sip'          => 'required|string|max:100|unique:dokter,sip',
+            'email'        => 'required|email|unique:dokter,email',
+            'no_hp'        => 'required|string|max:20',
+            'foto'         => 'nullable|image|max:2048',
+            'status'       => 'nullable|in:aktif,nonaktif',
+        ]);
+
+        $data = $request->except(['_token', 'foto']);
+        $data['status']     = $request->status ?? 'aktif';
+        $data['created_by'] = Auth::id();
+
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('dokter', 'public');
+        }
+        Dokter::create($data);
+        return redirect()->route('admin.dokter')->with('success', 'Dokter berhasil ditambahkan.');
+    }
+
+    public function editDokter(Dokter $dokter)
+    {
+        $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
+        return view('admin.dokter.edit', compact('dokter', 'spesialisasis'));
+    }
+
+    public function updateDokter(Request $request, Dokter $dokter)
+    {
+        $request->validate([
+            'nama_dokter'  => 'required|string|max:100',
+            'spesialis_id' => 'required|exists:spesialis,id',
+            'sip'          => 'required|string|max:100|unique:dokter,sip,' . $dokter->id,
+            'email'        => 'required|email|unique:dokter,email,' . $dokter->id,
+            'no_hp'        => 'required|string|max:20',
+            'foto'         => 'nullable|image|max:2048',
+            'status'       => 'nullable|in:aktif,nonaktif',
+        ]);
+
+        $data = $request->except(['_token', '_method', 'foto']);
+        $data['updated_by'] = Auth::id();
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('dokter', 'public');
+        }
+        $dokter->update($data);
+        return redirect()->route('admin.dokter')->with('success', 'Data dokter berhasil diperbarui.');
+    }
+
+    public function destroyDokter(Dokter $dokter)
+    {
+        $dokter->update(['deleted_by' => Auth::id()]);
+        $dokter->delete();
+        return back()->with('success', 'Dokter berhasil dihapus.');
+    }
+
+    // ─────────────────────────── JADWAL DOKTER ───────────────────────
+
+    public function jadwalDokter(Request $request)
+    {
+        $query = JadwalDokter::with(['dokter', 'spesialisasi']);
+        if ($request->dokter_id) $query->where('dokter_id', $request->dokter_id);
+        $jadwals = $query->orderBy('hari')->paginate(20)->withQueryString();
+        $dokters = Dokter::where('status', 'aktif')->orderBy('nama_dokter')->get();
+        return view('admin.jadwal.index', compact('jadwals', 'dokters'));
+    }
+
+    public function createJadwal()
+    {
+        $dokters       = Dokter::where('status', 'aktif')->orderBy('nama_dokter')->get();
+        $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
+        $hariOptions   = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        return view('admin.jadwal.create', compact('dokters', 'spesialisasis', 'hariOptions'));
+    }
+
+    public function storeJadwal(Request $request)
+    {
+        $request->validate([
+            'dokter_id'       => 'required|exists:dokter,id',
+            'spesialis_id'    => 'required|exists:spesialis,id',
+            'tanggal_praktek' => 'required|date',
+            'hari'            => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
+            'jam_mulai'       => 'required',
+            'jam_selesai'     => 'required',
+            'kuota'           => 'required|integer|min:1',
+            'status'          => 'nullable|in:aktif,nonaktif',
+        ]);
+
+        JadwalDokter::create(array_merge(
+            $request->except('_token'),
+            [
+                'status'     => $request->status ?? 'aktif',
+                'created_by' => Auth::id(),
+            ]
+        ));
+
+        return redirect()->route('admin.jadwal')->with('success', 'Jadwal berhasil ditambahkan.');
+    }
+
+    public function editJadwal(JadwalDokter $jadwalDokter)
+    {
+        $dokters       = Dokter::where('status', 'aktif')->orderBy('nama_dokter')->get();
+        $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
+        $hariOptions   = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        return view('admin.jadwal.edit', compact('jadwalDokter', 'dokters', 'spesialisasis', 'hariOptions'));
+    }
+
+    public function updateJadwal(Request $request, JadwalDokter $jadwalDokter)
+    {
+        $request->validate([
+            'dokter_id'       => 'required|exists:dokter,id',
+            'spesialis_id'    => 'required|exists:spesialis,id',
+            'tanggal_praktek' => 'required|date',
+            'hari'            => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
+            'jam_mulai'       => 'required',
+            'jam_selesai'     => 'required',
+            'kuota'           => 'required|integer|min:1',
+            'status'          => 'nullable|in:aktif,nonaktif',
+        ]);
+
+        $jadwalDokter->update(array_merge(
+            $request->except(['_token', '_method']),
+            ['updated_by' => Auth::id()]
+        ));
+
+        return redirect()->route('admin.jadwal')->with('success', 'Jadwal berhasil diperbarui.');
+    }
+
+    public function destroyJadwal(JadwalDokter $jadwalDokter)
+    {
+        $jadwalDokter->update(['deleted_by' => Auth::id()]);
+        $jadwalDokter->delete();
+        return back()->with('success', 'Jadwal berhasil dihapus.');
+    }
+
+    // ─────────────────────────── LAPORAN ─────────────────────────────
+
+    public function laporan(Request $request)
+    {
+        $bulan = $request->get('bulan', now()->month);
+        $tahun = $request->get('tahun', now()->year);
+
+        $bookingPerStatus = JanjiTemu::selectRaw('status, count(*) as total')
+            ->whereMonth('tanggal_booking', $bulan)
+            ->whereYear('tanggal_booking', $tahun)
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $bookingPerDokter = JanjiTemu::with('jadwalDokter.dokter')
+            ->selectRaw('jadwal_dokter_id, count(*) as total')
+            ->whereMonth('tanggal_booking', $bulan)
+            ->whereYear('tanggal_booking', $tahun)
+            ->groupBy('jadwal_dokter_id')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        // Daily chart for selected month
+        $daysInMonth = Carbon::create($tahun, $bulan)->daysInMonth;
+        $dailyData   = [];
+        $dailyLabels = [];
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $dailyLabels[] = $d;
+            $dailyData[]   = JanjiTemu::whereDate('tanggal_booking', Carbon::create($tahun, $bulan, $d))->count();
+        }
+
+        return view('admin.laporan', compact(
+            'bookingPerStatus', 'bookingPerDokter',
+            'dailyData', 'dailyLabels', 'bulan', 'tahun'
+        ));
+    }
+}

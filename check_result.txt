@@ -1,0 +1,16 @@
+
+=== TEST ROUTES RENDERING (via PHP) ===
+  ✅ GET / → HTTP 200
+  ✅ GET /dokter → HTTP 200
+  ✅ GET /artikel → HTTP 200
+  ✅ GET /promo → HTTP 200
+  ✅ GET /event → HTTP 200
+  ⚠️ GET /layanan → HTTP 404
+  ✅ GET /kontak → HTTP 200
+  ✅ GET /tentang-kami → HTTP 200
+
+=== TEST AUTH ROUTES (simulasi login admin) ===
+  ✅ GET /admin/dashboard → HTTP 200
+  ⚠️ GET /cms/dashboard → HTTP 500
+
+Done.

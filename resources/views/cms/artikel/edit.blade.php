@@ -1,0 +1,63 @@
+@extends('layouts.cms')
+@php $pageTitle = 'Edit Artikel'; $breadcrumb = 'CMS / Artikel / Edit'; @endphp
+@section('content')
+<form method="POST" action="{{ route('cms.artikel.update',$artikel) }}" enctype="multipart/form-data">
+@csrf @method('PUT')
+@if($errors->any())
+<div class="form-error" style="margin-bottom:16px"><ul>@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
+@endif
+<div style="display:grid;grid-template-columns:1fr 300px;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:20px">
+        <div class="card card-body">
+            <div class="form-group">
+                <label class="form-label">Judul Artikel <span style="color:#ef4444">*</span></label>
+                <input type="text" name="judul" value="{{ old('judul',$artikel->judul) }}" class="form-input" required maxlength="200" style="font-size:16px;font-weight:600">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Isi / Konten Artikel <span style="color:#ef4444">*</span></label>
+                <textarea name="isi" rows="20" class="form-input" required>{{ old('isi',$artikel->isi) }}</textarea>
+            </div>
+        </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card card-body">
+            <p style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:16px">Pengaturan</p>
+            <div class="form-group">
+                <label class="form-label">Status <span style="color:#ef4444">*</span></label>
+                <select name="status" class="form-input" required>
+                    <option value="draft"   {{ old('status',$artikel->status)=='draft'?'selected':'' }}>Draft</option>
+                    <option value="publish" {{ old('status',$artikel->status)=='publish'?'selected':'' }}>Publish</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Kategori <span style="color:#ef4444">*</span></label>
+                <select name="kategori_artikel_id" class="form-input" required>
+                    <option value="">— Pilih Kategori —</option>
+                    @foreach($kategoris as $k)
+                    <option value="{{ $k->id }}" {{ old('kategori_artikel_id',$artikel->kategori_artikel_id)==$k->id?'selected':'' }}>{{ $k->nama_kategori }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Gambar Utama Baru</label>
+                @if($artikel->gambar)
+                <div style="margin-bottom:8px"><img src="{{ Storage::url($artikel->gambar) }}" style="width:100%;max-height:100px;object-fit:cover;border-radius:8px"></div>
+                @endif
+                <input type="file" name="gambar" accept="image/*" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Thumbnail Baru</label>
+                @if($artikel->thumbnail)
+                <div style="margin-bottom:8px"><img src="{{ Storage::url($artikel->thumbnail) }}" style="width:100%;max-height:60px;object-fit:cover;border-radius:6px"></div>
+                @endif
+                <input type="file" name="thumbnail" accept="image/*" class="form-input">
+            </div>
+        </div>
+        <div style="display:flex;gap:8px">
+            <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center"><i class="fas fa-save"></i> Simpan</button>
+            <a href="{{ route('cms.artikel') }}" class="btn btn-secondary">Batal</a>
+        </div>
+    </div>
+</div>
+</form>
+@endsection
