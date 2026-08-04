@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="{{ $metaDesc ?? 'RS Sari Sehat Group - Melayani dengan Kasih Sayang. Rumah Sakit terpercaya di Tangerang dan Banten.' }}">
-<title>{{ $title ?? 'RS Sari Sehat' }} | Melayani dengan Kasih Sayang</title>
+<meta name="description" content="{{ $metaDesc ?? ($setting_global->motto ?? 'RS Sari Sehat - Melayani dengan Kasih Sayang') }}">
+<title>{{ $title ?? $setting_global->nama_rumahsakit ?? 'RS Sari Sehat' }} | {{ $setting_global->motto ?? 'Melayani dengan Kasih Sayang' }}</title>
+@if($setting_global->favicon ?? null)
+<link rel="icon" type="image/x-icon" href="{{ Storage::url($setting_global->favicon) }}">
+@endif
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -144,12 +147,16 @@
         <div class="flex items-center justify-between h-16">
             {{-- LOGO --}}
             <a href="{{ route('home') }}" class="flex items-center gap-3 flex-shrink-0 group min-w-0">
-                <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform flex-shrink-0">
-                    <i class="fas fa-hospital-alt text-green-600 text-lg"></i>
+                <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform flex-shrink-0 overflow-hidden">
+                    @if($setting_global->logo ?? null)
+                        <img src="{{ Storage::url($setting_global->logo) }}" alt="{{ $setting_global->nama_rumahsakit ?? 'Logo RS' }}" class="w-full h-full object-contain p-0.5">
+                    @else
+                        <i class="fas fa-hospital-alt text-green-600 text-lg"></i>
+                    @endif
                 </div>
                 <div class="min-w-0">
-                    <div class="text-white font-extrabold text-lg leading-tight tracking-tight">RS Sari Sehat</div>
-                    <div class="text-green-100 text-[10px] font-semibold tracking-widest uppercase">Melayani dengan Kasih Sayang</div>
+                    <div class="text-white font-extrabold text-lg leading-tight tracking-tight">{{ $setting_global->nama_rumahsakit ?? 'RS Sari Sehat' }}</div>
+                    <div class="text-green-100 text-[10px] font-semibold tracking-widest uppercase">{{ $setting_global->motto ?? 'Melayani dengan Kasih Sayang' }}</div>
                 </div>
             </a>
 
@@ -236,12 +243,16 @@
     <div id="mobile-drawer">
         <div class="bg-green-600 p-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center">
-                    <i class="fas fa-hospital-alt text-green-600"></i>
+                <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center overflow-hidden">
+                    @if($setting_global->logo ?? null)
+                        <img src="{{ Storage::url($setting_global->logo) }}" alt="{{ $setting_global->nama_rumahsakit ?? 'Logo RS' }}" class="w-full h-full object-contain p-0.5">
+                    @else
+                        <i class="fas fa-hospital-alt text-green-600"></i>
+                    @endif
                 </div>
                 <div>
-                    <div class="text-white font-bold text-sm">RS Sari Sehat</div>
-                    <div class="text-green-100 text-[10px]">Melayani dengan Kasih Sayang</div>
+                    <div class="text-white font-bold text-sm">{{ $setting_global->nama_rumahsakit ?? 'RS Sari Sehat' }}</div>
+                    <div class="text-green-100 text-[10px]">{{ $setting_global->motto ?? 'Melayani dengan Kasih Sayang' }}</div>
                 </div>
             </div>
             <button id="close-drawer" class="text-white p-1"><i class="fas fa-times text-lg"></i></button>
@@ -340,26 +351,38 @@
             {{-- Brand --}}
             <div class="lg:col-span-1">
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="w-11 h-11 rounded-xl bg-green-600 flex items-center justify-center">
-                        <i class="fas fa-hospital-alt text-white text-lg"></i>
+                    <div class="w-11 h-11 rounded-xl bg-green-600 flex items-center justify-center overflow-hidden">
+                        @if($setting_global->logo ?? null)
+                            <img src="{{ Storage::url($setting_global->logo) }}" alt="{{ $setting_global->nama_rumahsakit ?? 'Logo RS' }}" class="w-full h-full object-contain p-0.5">
+                        @else
+                            <i class="fas fa-hospital-alt text-white text-lg"></i>
+                        @endif
                     </div>
                     <div>
-                        <div class="font-extrabold text-base text-white">RS Sari Sehat</div>
-                        <div class="text-green-400 text-[10px] font-semibold uppercase tracking-wider">Melayani dengan Kasih Sayang</div>
+                        <div class="font-extrabold text-base text-white">{{ $setting_global->nama_rumahsakit ?? 'RS Sari Sehat' }}</div>
+                        <div class="text-green-400 text-[10px] font-semibold uppercase tracking-wider">{{ $setting_global->motto ?? 'Melayani dengan Kasih Sayang' }}</div>
                     </div>
                 </div>
+                @if($setting_global->footer ?? null)
+                <p class="text-gray-400 text-sm leading-relaxed mb-5">{{ $setting_global->footer }}</p>
+                @else
                 <p class="text-gray-400 text-sm leading-relaxed mb-5">
-                    Group Rumah Sakit di Tangerang dan Banten yang mengutamakan pelayanan kesehatan berkualitas dengan penuh kasih sayang.
+                    Rumah sakit yang mengutamakan pelayanan kesehatan berkualitas dengan penuh kasih sayang.
                 </p>
+                @endif
                 <div class="space-y-2 text-sm">
+                    @if($setting_global->telepon ?? null)
                     <div class="flex items-center gap-3">
                         <i class="fas fa-phone text-green-500 w-4"></i>
-                        <a href="tel:02150943838" class="text-gray-300 hover:text-white transition-colors">(021) 5094-3838</a>
+                        <a href="tel:{{ preg_replace('/[^0-9]/', '', $setting_global->telepon) }}" class="text-gray-300 hover:text-white transition-colors">{{ $setting_global->telepon }}</a>
                     </div>
+                    @endif
+                    @if($setting_global->email ?? null)
                     <div class="flex items-center gap-3">
                         <i class="fas fa-envelope text-green-500 w-4"></i>
-                        <a href="mailto:info@sarisehat.id" class="text-gray-300 hover:text-white transition-colors">info@sarisehat.id</a>
+                        <a href="mailto:{{ $setting_global->email }}" class="text-gray-300 hover:text-white transition-colors">{{ $setting_global->email }}</a>
                     </div>
+                    @endif
                 </div>
             </div>
 
@@ -395,22 +418,30 @@
             <div>
                 <h4 class="text-white font-bold text-sm mb-4 uppercase tracking-wider">Kontak</h4>
                 <ul class="space-y-2.5">
+                    @if($setting_global->alamat ?? null)
                     <li class="text-gray-400 text-sm flex items-start gap-2">
-                        <i class="fas fa-map-marker-alt text-green-500 text-xs w-3 mt-1"></i>
-                        <span>Jl. MH Thamrin No. 3,<br>Karawaci, Tangerang</span>
+                        <i class="fas fa-map-marker-alt text-green-500 text-xs w-3 mt-1 flex-shrink-0"></i>
+                        <span>{{ $setting_global->alamat }}</span>
                     </li>
+                    @endif
+                    @if($setting_global->telepon ?? null)
                     <li class="text-gray-400 text-sm flex items-center gap-2">
                         <i class="fas fa-phone text-green-500 text-xs w-3"></i>
-                        <a href="tel:02155794100" class="hover:text-green-400 transition-colors">(021) 5579-4100</a>
+                        <a href="tel:{{ preg_replace('/[^0-9]/', '', $setting_global->telepon) }}" class="hover:text-green-400 transition-colors">{{ $setting_global->telepon }}</a>
                     </li>
+                    @endif
+                    @if($setting_global->email ?? null)
                     <li class="text-gray-400 text-sm flex items-center gap-2">
-                        <i class="fas fa-ambulance text-green-500 text-xs w-3"></i>
-                        <span>IGD 24 Jam: (021) 5579-4911</span>
+                        <i class="fas fa-envelope text-green-500 text-xs w-3"></i>
+                        <a href="mailto:{{ $setting_global->email }}" class="hover:text-green-400 transition-colors">{{ $setting_global->email }}</a>
                     </li>
+                    @endif
+                    @if($setting_global->jam_operasional ?? null)
                     <li class="text-gray-400 text-sm flex items-center gap-2">
-                        <i class="fab fa-whatsapp text-green-500 text-xs w-3"></i>
-                        <a href="https://wa.me/6281234567890" target="_blank" rel="noopener" class="hover:text-green-400 transition-colors">0812-3456-7890</a>
+                        <i class="fas fa-clock text-green-500 text-xs w-3"></i>
+                        <span>{{ $setting_global->jam_operasional }}</span>
                     </li>
+                    @endif
                 </ul>
             </div>
         </div>
@@ -432,7 +463,7 @@
     <div class="border-t border-white/10">
         <div class="max-w-screen-xl mx-auto px-4 py-4">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-gray-500">
-                <span>&copy; {{ date('Y') }} RS Sari Sehat. All rights reserved.</span>
+                <span>&copy; {{ date('Y') }} {{ $setting_global->copyright ?? ($setting_global->nama_rumahsakit ?? 'RS Sari Sehat') . '. All rights reserved.' }}</span>
                 <div class="flex gap-4">
                     <a href="#" class="hover:text-green-400 transition-colors">Kebijakan Privasi</a>
                     <a href="#" class="hover:text-green-400 transition-colors">Syarat Ketentuan</a>

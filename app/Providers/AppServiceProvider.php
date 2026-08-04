@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\WebsiteSetting;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,5 +23,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Database baru tidak punya kolom remember_token
         // Sudah dihandle di Model User dengan $rememberTokenName = false
+
+        // Share setting global ke semua view
+        View::share('setting_global', WebsiteSetting::getSetting());
     }
 }

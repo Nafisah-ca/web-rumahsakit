@@ -445,7 +445,12 @@ class CmsController extends Controller
         ]);
 
         $setting = WebsiteSetting::first() ?? new WebsiteSetting();
-        $data    = $request->except(['_token', '_method', 'logo', 'favicon']);
+        $data    = $request->only([
+            'nama_rumahsakit', 'tentang_kami', 'visi', 'misi', 'sejarah',
+            'motto', 'sambutan_direktur', 'alamat', 'telepon', 'email',
+            'google_maps', 'facebook', 'instagram', 'youtube',
+            'jam_operasional', 'footer', 'copyright',
+        ]);
         $data['updated_by'] = Auth::id();
         if (!$setting->exists) $data['created_by'] = Auth::id();
 

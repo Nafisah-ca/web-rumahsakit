@@ -88,6 +88,41 @@
     </div>
 </section>
 
+{{-- Sambutan Direktur --}}
+@if($setting->sambutan_direktur ?? null)
+<section class="py-16 bg-gray-50">
+    <div class="max-w-screen-xl mx-auto px-4">
+        <div class="text-center mb-10 fade-up">
+            <span class="section-label">Dari Pimpinan Kami</span>
+            <h2 class="section-title">Sambutan <span>Direktur</span></h2>
+        </div>
+        <div class="max-w-4xl mx-auto fade-up">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3">
+                    {{-- Foto / Ikon Direktur --}}
+                    <div class="flex flex-col items-center justify-center p-8 md:p-10 bg-gradient-to-br from-green-600 to-green-700 text-center">
+                        <div class="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 border-2 border-white/30">
+                            <i class="fas fa-user-tie text-white text-3xl"></i>
+                        </div>
+                        <p class="text-white font-extrabold text-base leading-tight">Direktur</p>
+                        <p class="text-green-200 text-xs mt-1 uppercase tracking-wider font-semibold">{{ $setting->nama_rumahsakit ?? 'Rumah Sakit' }}</p>
+                    </div>
+                    {{-- Isi Sambutan --}}
+                    <div class="md:col-span-2 p-8 md:p-10 flex items-center">
+                        <div>
+                            <i class="fas fa-quote-left text-green-200 text-3xl mb-4 block"></i>
+                            <div class="text-gray-600 leading-relaxed text-sm">
+                                {!! nl2br(e($setting->sambutan_direktur)) !!}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@endif
+
 {{-- Visi Misi --}}
 <section class="py-14 bg-gray-50">
     <div class="max-w-screen-xl mx-auto px-4">
@@ -161,6 +196,30 @@
         </div>
     </div>
 </section>
+
+{{-- Sejarah --}}
+@if($setting->sejarah ?? null)
+<section class="py-16 bg-white">
+    <div class="max-w-screen-xl mx-auto px-4">
+        <div class="text-center mb-10 fade-up">
+            <span class="section-label">Perjalanan Kami</span>
+            <h2 class="section-title">Sejarah <span>Rumah Sakit</span></h2>
+        </div>
+        <div class="max-w-4xl mx-auto fade-up">
+            <div class="relative pl-8 border-l-4 border-green-500">
+                <div class="absolute -left-3 top-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                    <i class="fas fa-landmark text-white text-xs"></i>
+                </div>
+                <div class="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm">
+                    <div class="prose prose-sm max-w-none text-gray-600 leading-relaxed">
+                        {!! nl2br(e($setting->sejarah)) !!}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@endif
 
 {{-- Penghargaan --}}
 <section class="py-14 bg-white">
