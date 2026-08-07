@@ -116,10 +116,9 @@ class AdminController extends Controller
 
         // Buat pasien otomatis jika role pasien
         if ($request->role === 'pasien') {
-            $noRm = 'RM' . now()->format('Y') . str_pad(Pasien::count() + 1, 5, '0', STR_PAD_LEFT);
             Pasien::create([
                 'user_id'        => $user->id,
-                'no_rekam_medis' => $noRm,
+                'no_rekam_medis' => Pasien::generateNoRekamMedis(),
                 'nik'            => $request->nik ?? '0000000000000000',
                 'jenis_kelamin'  => $request->jenis_kelamin ?? 'L',
                 'tempat_lahir'   => $request->tempat_lahir ?? '-',
@@ -178,7 +177,11 @@ class AdminController extends Controller
 
     public function pasien(Request $request)
     {
-        $query = Pasien::with('user');
+        $tab   = $request->get('tab', 'aktif'); // 'aktif' | 'nonaktif'
+        $query = $tab === 'nonaktif'
+            ? Pasien::onlyTrashed()->with('user')
+            : Pasien::with('user');
+
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('no_rekam_medis', 'like', "%{$request->search}%")
@@ -187,8 +190,10 @@ class AdminController extends Controller
                                                     ->orWhere('no_hp', 'like', "%{$request->search}%"));
             });
         }
-        $pasiens = $query->orderByDesc('created_tm')->paginate(15)->withQueryString();
-        return view('admin.pasien.index', compact('pasiens'));
+
+        $pasiens        = $query->orderByDesc('created_tm')->paginate(15)->withQueryString();
+        $totalNonaktif  = Pasien::onlyTrashed()->count();
+        return view('admin.pasien.index', compact('pasiens', 'tab', 'totalNonaktif'));
     }
 
     public function createPasien()
@@ -209,11 +214,10 @@ class AdminController extends Controller
             'alamat'        => 'required|string',
         ]);
 
-        $noRm = 'RM' . now()->format('Y') . str_pad(Pasien::count() + 1, 5, '0', STR_PAD_LEFT);
         Pasien::create(array_merge(
             $request->only(['user_id','nik','jenis_kelamin','tempat_lahir','tanggal_lahir',
                            'alamat','golongan_darah','agama','pekerjaan','penjamin_id','nomor_penjamin']),
-            ['no_rekam_medis' => $noRm, 'created_by' => Auth::id()]
+            ['no_rekam_medis' => Pasien::generateNoRekamMedis(), 'created_by' => Auth::id()]
         ));
         return redirect()->route('admin.pasien')->with('success', 'Data pasien berhasil disimpan.');
     }
@@ -252,7 +256,23 @@ class AdminController extends Controller
     {
         $pasien->update(['deleted_by' => Auth::id()]);
         $pasien->delete();
-        return back()->with('success', 'Data pasien berhasil dihapus.');
+        // Nonaktifkan akun user terkait
+        if ($pasien->user) {
+            $pasien->user->update(['status' => 'nonaktif']);
+        }
+        return back()->with('success', 'Data pasien berhasil dinonaktifkan.');
+    }
+
+    public function restorePasien(int $id)
+    {
+        $pasien = Pasien::withTrashed()->findOrFail($id);
+        $pasien->restore();
+        $pasien->update(['deleted_by' => null, 'updated_by' => Auth::id()]);
+        // Aktifkan kembali akun user terkait
+        if ($pasien->user) {
+            $pasien->user->update(['status' => 'aktif']);
+        }
+        return back()->with('success', 'Data pasien berhasil dipulihkan.');
     }
 
     // ─────────────────────────── JANJI TEMU ──────────────────────────

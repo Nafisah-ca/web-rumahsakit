@@ -80,6 +80,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/pasien/{pasien}/edit',     [AdminController::class, 'editPasien'])->name('pasien.edit');
     Route::put('/pasien/{pasien}',          [AdminController::class, 'updatePasien'])->name('pasien.update');
     Route::delete('/pasien/{pasien}',       [AdminController::class, 'destroyPasien'])->name('pasien.destroy');
+    Route::patch('/pasien/{pasien}/restore',[AdminController::class, 'restorePasien'])->name('pasien.restore');
 
     // Booking / Janji Temu
     Route::get('/booking',                   [AdminController::class, 'janjiTemu'])->name('booking');

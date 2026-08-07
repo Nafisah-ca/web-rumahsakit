@@ -105,11 +105,9 @@ class AuthController extends Controller
             'status'    => 'aktif',
         ]);
 
-        $noRm = 'RM' . now()->format('Y') . str_pad(Pasien::count() + 1, 5, '0', STR_PAD_LEFT);
-
         Pasien::create([
             'user_id'        => $user->id,
-            'no_rekam_medis' => $noRm,
+            'no_rekam_medis' => Pasien::generateNoRekamMedis(),
             'nik'            => $request->nik,
             'jenis_kelamin'  => $request->jenis_kelamin,
             'tempat_lahir'   => $request->tempat_lahir,
@@ -184,10 +182,9 @@ class AuthController extends Controller
         if ($pasien) {
             $pasien->update(array_merge($pasienData, ['updated_by' => $user->id]));
         } else {
-            $noRm = 'RM' . now()->format('Y') . str_pad(Pasien::count() + 1, 5, '0', STR_PAD_LEFT);
             Pasien::create(array_merge($pasienData, [
                 'user_id'        => $user->id,
-                'no_rekam_medis' => $noRm,
+                'no_rekam_medis' => Pasien::generateNoRekamMedis(),
                 'created_by'     => $user->id,
             ]));
         }

@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Pasien extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'pasien';
 
     const CREATED_AT = 'created_tm';
@@ -80,5 +83,24 @@ class Pasien extends Model
     public function getNamaLengkapAttribute(): string
     {
         return $this->user?->nama ?? '-';
+    }
+
+    // ─── Helper Methods ───────────────────────────────
+
+    /**
+     * Generate nomor rekam medis unik berikutnya.
+     * Menggunakan withTrashed() agar nomor pasien nonaktif tidak pernah dipakai ulang.
+     * Format: 8 digit angka, tanpa prefix.
+     */
+    public static function generateNoRekamMedis(): string
+    {
+        $last = static::withTrashed()
+            ->orderByDesc('id')
+            ->value('no_rekam_medis');
+
+        // Ambil bagian angka dari akhir string (handle format lama 'RMYYYYnnnnn' maupun format baru '00000001')
+        $lastNumber = (int) preg_replace('/\D/', '', $last ?? '0');
+
+        return str_pad($lastNumber + 1, 8, '0', STR_PAD_LEFT);
     }
 }

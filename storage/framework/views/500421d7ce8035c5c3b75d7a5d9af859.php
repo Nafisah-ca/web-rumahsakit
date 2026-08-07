@@ -147,10 +147,15 @@
                 
                 <div class="p-8 md:p-12">
                     <span class="section-label text-green-300">Sekilas Tentang</span>
-                    <h2 class="text-white font-extrabold text-2xl md:text-3xl leading-tight mb-4">
+                    <h2 class="text-white font-extrabold text-2xl md:text-3xl leading-tight mb-2">
                         <?php echo e($setting->nama_rumahsakit ?? 'RS Sari Sehat'); ?>
 
                     </h2>
+                    <?php if($setting->motto ?? null): ?>
+                    <p class="text-green-200 text-sm font-semibold italic mb-4" style="font-family: Georgia, serif; letter-spacing: 0.02em;">
+                        &ldquo;<?php echo e($setting->motto); ?>&rdquo;
+                    </p>
+                    <?php endif; ?>
                     <p class="text-green-100 leading-relaxed text-sm mb-6">
                         <?php if($setting->tentang_kami ?? null): ?>
                             <?php echo e($setting->tentang_kami); ?>
