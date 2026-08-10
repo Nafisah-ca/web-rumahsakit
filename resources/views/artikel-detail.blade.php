@@ -4,7 +4,7 @@
 <div class="py-16" style="background:linear-gradient(135deg,#1e3a5f,#0284c7)">
     <div class="max-w-screen-xl mx-auto px-4">
         <nav class="flex items-center gap-2 text-sm text-blue-200 mb-4">
-            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
+            <a href="{{ route('home') }}" class="hover:text-white">Beranduy</a>
             <i class="fas fa-chevron-right text-xs"></i>
             <a href="{{ route('artikel') }}" class="hover:text-white">Artikel</a>
             <i class="fas fa-chevron-right text-xs"></i>
