@@ -65,6 +65,72 @@ class AdminController extends Controller
         ));
     }
 
+    // ─────────────────────────── PROFILE & SETTING ───────────────────
+
+    public function profile()
+    {
+        $user = Auth::user();
+        return view('admin.setting.profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'nama'  => 'required|string|max:150',
+            'email' => 'required|email|max:150|unique:users,email,' . $user->id,
+            'no_hp' => 'nullable|string|max:20',
+        ], [
+            'nama.required'  => 'Nama wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email'    => 'Format email tidak valid.',
+            'email.unique'   => 'Email sudah digunakan oleh akun lain.',
+        ]);
+
+        $user->update([
+            'nama'       => $request->nama,
+            'email'      => $request->email,
+            'no_hp'      => $request->no_hp,
+            'updated_by' => $user->id,
+        ]);
+
+        return back()->with('success', 'Profile berhasil diperbarui.');
+    }
+
+    public function settingPassword()
+    {
+        return view('admin.setting.password');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'password_lama'              => 'required',
+            'password_baru'              => 'required|min:8|confirmed',
+            'password_baru_confirmation' => 'required',
+        ], [
+            'password_lama.required'              => 'Password lama wajib diisi.',
+            'password_baru.required'              => 'Password baru wajib diisi.',
+            'password_baru.min'                   => 'Password baru minimal 8 karakter.',
+            'password_baru.confirmed'             => 'Konfirmasi password baru tidak cocok.',
+            'password_baru_confirmation.required' => 'Konfirmasi password wajib diisi.',
+        ]);
+
+        if (!Hash::check($request->password_lama, $user->password)) {
+            return back()->withErrors(['password_lama' => 'Password lama yang Anda masukkan salah.'])->withInput();
+        }
+
+        $user->update([
+            'password'   => Hash::make($request->password_baru),
+            'updated_by' => $user->id,
+        ]);
+
+        return back()->with('success', 'Password berhasil diperbarui. Silakan login ulang jika diperlukan.');
+    }
+
     // ─────────────────────────── USERS ───────────────────────────────
 
     public function users(Request $request)
@@ -177,10 +243,18 @@ class AdminController extends Controller
 
     public function pasien(Request $request)
     {
-        $tab   = $request->get('tab', 'aktif'); // 'aktif' | 'nonaktif'
-        $query = $tab === 'nonaktif'
-            ? Pasien::onlyTrashed()->with('user')
-            : Pasien::with('user');
+        $status = $request->get('status', ''); // '' | 'aktif' | 'nonaktif'
+
+        // withTrashed() agar bisa query semua data termasuk yang soft-deleted
+        $query = Pasien::withTrashed()->with('user');
+
+        // Filter status via dropdown
+        if ($status === 'aktif') {
+            $query->whereNull('deleted_tm');
+        } elseif ($status === 'nonaktif') {
+            $query->whereNotNull('deleted_tm');
+        }
+        // Jika '' (Semua Status) — tidak ada filter tambahan
 
         if ($request->search) {
             $query->where(function ($q) use ($request) {
@@ -191,9 +265,8 @@ class AdminController extends Controller
             });
         }
 
-        $pasiens        = $query->orderByDesc('created_tm')->paginate(15)->withQueryString();
-        $totalNonaktif  = Pasien::onlyTrashed()->count();
-        return view('admin.pasien.index', compact('pasiens', 'tab', 'totalNonaktif'));
+        $pasiens = $query->orderByDesc('created_tm')->paginate(15)->withQueryString();
+        return view('admin.pasien.index', compact('pasiens', 'status'));
     }
 
     public function createPasien()

@@ -64,6 +64,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
+    // Profile & Setting akun admin
+    Route::get('/profile',                   [AdminController::class, 'profile'])->name('profile');
+    Route::put('/profile',                   [AdminController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/setting/password',          [AdminController::class, 'settingPassword'])->name('setting.password');
+    Route::put('/setting/password',          [AdminController::class, 'updatePassword'])->name('setting.password.update');
+
     // Users
     Route::get('/users',                    [AdminController::class, 'users'])->name('users');
     Route::get('/users/create',             [AdminController::class, 'createUser'])->name('users.create');

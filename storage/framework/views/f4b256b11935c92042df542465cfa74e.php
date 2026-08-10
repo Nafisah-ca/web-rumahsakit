@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; }
@@ -152,6 +153,25 @@ nav[role="navigation"] a:hover { background: #f1f5f9; border-color: #cbd5e1; }
 .empty-state p  { font-size: 14px; font-weight: 500; }
 .img-thumb      { border-radius: 8px; object-fit: cover; }
 
+/* ===== PROFILE DROPDOWN ===== */
+.profile-dropdown        { position: relative; }
+.profile-trigger         { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; cursor: pointer; border: 1px solid #e2e8f0; background: #fff; transition: background .15s, border-color .15s; user-select: none; }
+.profile-trigger:hover   { background: #f8fafc; border-color: #cbd5e1; }
+.profile-trigger-chevron { color: #94a3b8; font-size: 11px; transition: transform .2s; }
+.profile-trigger-chevron.open { transform: rotate(180deg); }
+.profile-menu            { position: absolute; right: 0; top: calc(100% + 8px); width: 230px; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,.1); z-index: 999; overflow: hidden; }
+.profile-menu-header     { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; }
+.profile-menu-header p   { font-size: 13px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-menu-header span{ font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin-top: 2px; }
+.profile-menu-item       { display: flex; align-items: center; gap: 10px; padding: 11px 16px; font-size: 13px; font-weight: 500; color: #334155; text-decoration: none; transition: background .12s; border: none; background: none; width: 100%; cursor: pointer; font-family: inherit; }
+.profile-menu-item:hover { background: #f8fafc; color: #0f172a; }
+.profile-menu-item i     { width: 16px; text-align: center; font-size: 13px; color: #64748b; }
+.profile-menu-item:hover i { color: #16a34a; }
+.profile-menu-divider    { border: none; border-top: 1px solid #f1f5f9; margin: 4px 0; }
+.profile-menu-item.danger      { color: #dc2626; }
+.profile-menu-item.danger i    { color: #dc2626; }
+.profile-menu-item.danger:hover{ background: #fef2f2; color: #b91c1c; }
+
 @media (max-width: 1024px) {
     .stats-grid { grid-template-columns: repeat(3, 1fr); }
     .form-row   { grid-template-columns: 1fr; }
@@ -229,10 +249,9 @@ nav[role="navigation"] a:hover { background: #f1f5f9; border-color: #cbd5e1; }
                 <p><?php echo e(Auth::user()->nama); ?></p>
                 <span>Administrator</span>
             </div>
-            <form method="POST" action="<?php echo e(route('logout')); ?>">
-                <?php echo csrf_field(); ?>
-                <button class="sidebar-logout" title="Keluar"><i class="fas fa-right-from-bracket"></i></button>
-            </form>
+            <a href="<?php echo e(route('admin.profile')); ?>" class="sidebar-logout" title="Profile" style="color:#64748b">
+                <i class="fas fa-user-pen"></i>
+            </a>
         </div>
     </aside>
 
@@ -245,8 +264,6 @@ nav[role="navigation"] a:hover { background: #f1f5f9; border-color: #cbd5e1; }
             </div>
             <div class="topbar-right">
                 <?php
-                    // DB baru tidak punya tabel notifikasi
-                    // Ganti dengan jumlah booking pending hari ini sebagai indikator
                     $notifCount = \App\Models\JanjiTemu::where('status', 'pending')
                         ->whereDate('tanggal_booking', today())
                         ->count();
@@ -255,9 +272,37 @@ nav[role="navigation"] a:hover { background: #f1f5f9; border-color: #cbd5e1; }
                     <i class="fas fa-bell"></i>
                     <?php if($notifCount > 0): ?><span class="notif-dot"><?php echo e($notifCount); ?></span><?php endif; ?>
                 </button>
-                <div class="topbar-user">
-                    <div class="topbar-avatar"><i class="fas fa-user"></i></div>
-                    <span class="topbar-name"><?php echo e(Str::words(Auth::user()->nama, 2, '')); ?></span>
+
+                
+                <div class="profile-dropdown" x-data="{ open: false }" @click.outside="open = false">
+                    <div class="profile-trigger" @click="open = !open">
+                        <div class="topbar-avatar"><i class="fas fa-user"></i></div>
+                        <span class="topbar-name"><?php echo e(Str::words(Auth::user()->nama, 2, '')); ?></span>
+                        <i class="fas fa-chevron-down profile-trigger-chevron" :class="{ open: open }"></i>
+                    </div>
+                    <div class="profile-menu" x-show="open" x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                         style="display:none">
+                        <div class="profile-menu-header">
+                            <p><?php echo e(Auth::user()->nama); ?></p>
+                            <span><?php echo e(Auth::user()->email); ?></span>
+                        </div>
+                        <a href="<?php echo e(route('admin.profile')); ?>" class="profile-menu-item">
+                            <i class="fas fa-user-pen"></i> Profile Saya
+                        </a>
+                        <a href="<?php echo e(route('admin.setting.password')); ?>" class="profile-menu-item">
+                            <i class="fas fa-lock"></i> Ganti Password
+                        </a>
+                        <hr class="profile-menu-divider">
+                        <form method="POST" action="<?php echo e(route('logout')); ?>">
+                            <?php echo csrf_field(); ?>
+                            <button type="submit" class="profile-menu-item danger">
+                                <i class="fas fa-right-from-bracket"></i> Keluar
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </header>
