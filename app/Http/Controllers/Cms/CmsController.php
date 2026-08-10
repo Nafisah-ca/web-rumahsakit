@@ -69,7 +69,6 @@ class CmsController extends Controller
             'isi'                 => 'required|string',
             'status'              => 'required|in:draft,publish',
             'gambar'              => 'nullable|image|max:3072',
-            'thumbnail'           => 'nullable|image|max:2048',
         ]);
 
         $data = $request->except(['_token', 'gambar', 'thumbnail']);
@@ -78,9 +77,6 @@ class CmsController extends Controller
 
         if ($request->hasFile('gambar')) {
             $data['gambar'] = $request->file('gambar')->store('artikel', 'public');
-        }
-        if ($request->hasFile('thumbnail')) {
-            $data['thumbnail'] = $request->file('thumbnail')->store('artikel/thumb', 'public');
         }
 
         Artikel::create($data);
@@ -101,7 +97,6 @@ class CmsController extends Controller
             'isi'                 => 'required|string',
             'status'              => 'required|in:draft,publish',
             'gambar'              => 'nullable|image|max:3072',
-            'thumbnail'           => 'nullable|image|max:2048',
         ]);
 
         $data = $request->except(['_token', '_method', 'gambar', 'thumbnail']);
@@ -111,10 +106,6 @@ class CmsController extends Controller
             if ($artikel->gambar) Storage::disk('public')->delete($artikel->gambar);
             $data['gambar'] = $request->file('gambar')->store('artikel', 'public');
         }
-        if ($request->hasFile('thumbnail')) {
-            if ($artikel->thumbnail) Storage::disk('public')->delete($artikel->thumbnail);
-            $data['thumbnail'] = $request->file('thumbnail')->store('artikel/thumb', 'public');
-        }
 
         $artikel->update($data);
         return redirect()->route('cms.artikel')->with('success', 'Artikel berhasil diperbarui.');
@@ -123,7 +114,6 @@ class CmsController extends Controller
     public function destroyArtikel(Artikel $artikel)
     {
         if ($artikel->gambar) Storage::disk('public')->delete($artikel->gambar);
-        if ($artikel->thumbnail) Storage::disk('public')->delete($artikel->thumbnail);
         $artikel->update(['deleted_by' => Auth::id()]);
         $artikel->delete();
         return back()->with('success', 'Artikel berhasil dihapus.');
@@ -152,7 +142,7 @@ class CmsController extends Controller
             'gambar'          => 'nullable|image|max:3072',
         ]);
 
-        $data = $request->except(['_token', 'gambar']);
+        $data = $request->except(['_token', 'gambar', 'thumbnail']);
         $data['created_by'] = Auth::id();
 
         if ($request->hasFile('gambar')) {
@@ -176,7 +166,7 @@ class CmsController extends Controller
             'gambar'          => 'nullable|image|max:3072',
         ]);
 
-        $data = $request->except(['_token', '_method', 'gambar']);
+        $data = $request->except(['_token', '_method', 'gambar', 'thumbnail']);
         $data['updated_by'] = Auth::id();
 
         if ($request->hasFile('gambar')) {
@@ -220,7 +210,7 @@ class CmsController extends Controller
             'gambar'        => 'nullable|image|max:3072',
         ]);
 
-        $data = $request->except(['_token', 'gambar']);
+        $data = $request->except(['_token', 'gambar', 'thumbnail']);
         $data['created_by'] = Auth::id();
 
         if ($request->hasFile('gambar')) {
@@ -245,7 +235,7 @@ class CmsController extends Controller
             'gambar'        => 'nullable|image|max:3072',
         ]);
 
-        $data = $request->except(['_token', '_method', 'gambar']);
+        $data = $request->except(['_token', '_method', 'gambar', 'thumbnail']);
         $data['updated_by'] = Auth::id();
 
         if ($request->hasFile('gambar')) {
@@ -525,7 +515,6 @@ class CmsController extends Controller
             'isi'       => 'required|string',
             'status'    => 'required|in:draft,publish',
             'gambar'    => 'nullable|image|max:3072',
-            'thumbnail' => 'nullable|image|max:2048',
         ]);
 
         $data = $request->except(['_token', 'gambar', 'thumbnail']);
@@ -534,9 +523,6 @@ class CmsController extends Controller
 
         if ($request->hasFile('gambar')) {
             $data['gambar'] = $request->file('gambar')->store('informasi', 'public');
-        }
-        if ($request->hasFile('thumbnail')) {
-            $data['thumbnail'] = $request->file('thumbnail')->store('informasi/thumb', 'public');
         }
 
         Informasi::create($data);
@@ -555,7 +541,6 @@ class CmsController extends Controller
             'isi'       => 'required|string',
             'status'    => 'required|in:draft,publish',
             'gambar'    => 'nullable|image|max:3072',
-            'thumbnail' => 'nullable|image|max:2048',
         ]);
 
         $data = $request->except(['_token', '_method', 'gambar', 'thumbnail']);
@@ -565,10 +550,6 @@ class CmsController extends Controller
             if ($informasi->gambar) Storage::disk('public')->delete($informasi->gambar);
             $data['gambar'] = $request->file('gambar')->store('informasi', 'public');
         }
-        if ($request->hasFile('thumbnail')) {
-            if ($informasi->thumbnail) Storage::disk('public')->delete($informasi->thumbnail);
-            $data['thumbnail'] = $request->file('thumbnail')->store('informasi/thumb', 'public');
-        }
 
         $informasi->update($data);
         return redirect()->route('cms.informasi')->with('success', 'Informasi berhasil diperbarui.');
@@ -577,7 +558,6 @@ class CmsController extends Controller
     public function destroyInformasi(Informasi $informasi)
     {
         if ($informasi->gambar) Storage::disk('public')->delete($informasi->gambar);
-        if ($informasi->thumbnail) Storage::disk('public')->delete($informasi->thumbnail);
         $informasi->update(['deleted_by' => Auth::id()]);
         $informasi->delete();
         return back()->with('success', 'Informasi berhasil dihapus.');

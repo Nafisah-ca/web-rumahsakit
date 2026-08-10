@@ -13,14 +13,10 @@
                     <label class="form-label">Judul Event <span style="color:#ef4444">*</span></label>
                     <input type="text" name="judul" value="{{ old('judul') }}" class="form-input" required maxlength="200">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="grid-column:1/-1">
                     <label class="form-label">Gambar Utama <span style="font-size:11px;color:#94a3b8">(max 3MB)</span></label>
                     <input type="file" name="gambar" class="form-input" accept="image/*" id="gambar-input">
                     <div id="gambar-preview" style="margin-top:8px;display:none"><img id="gambar-img" style="max-height:120px;border-radius:8px"></div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Thumbnail <span style="font-size:11px;color:#94a3b8">(opsional, max 2MB)</span></label>
-                    <input type="file" name="thumbnail" class="form-input" accept="image/*">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Tanggal Event <span style="color:#ef4444">*</span></label>
@@ -56,7 +52,7 @@
 @endsection
 @push('scripts')
 <script>
-document.getElementById('gambar-input').addEventListener('change', function() {
+document.getElementById('gambar-input')?.addEventListener('change', function() {
     const f = this.files[0]; if (!f) return;
     document.getElementById('gambar-img').src = URL.createObjectURL(f);
     document.getElementById('gambar-preview').style.display = 'block';

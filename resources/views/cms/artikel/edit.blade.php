@@ -39,18 +39,19 @@
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Gambar Utama Baru</label>
+                <label class="form-label">Gambar Utama Baru <span style="font-size:11px;color:#94a3b8">(kosongkan jika tidak diubah)</span></label>
                 @if($artikel->gambar)
                 <div style="margin-bottom:8px"><img src="{{ Storage::url($artikel->gambar) }}" style="width:100%;max-height:100px;object-fit:cover;border-radius:8px"></div>
                 @endif
                 <input type="file" name="gambar" accept="image/*" class="form-input">
             </div>
-            <div class="form-group">
-                <label class="form-label">Thumbnail Baru</label>
-                @if($artikel->thumbnail)
-                <div style="margin-bottom:8px"><img src="{{ Storage::url($artikel->thumbnail) }}" style="width:100%;max-height:60px;object-fit:cover;border-radius:6px"></div>
+            <div style="padding:12px;background:#f8fafc;border-radius:10px;font-size:12px;color:#64748b">
+                <p><span style="color:#94a3b8">Dibuat:</span> {{ $artikel->created_tm?->format('d M Y H:i') ?? '-' }}</p>
+                @if($artikel->updated_by)
+                <p style="margin-top:4px"><span style="color:#94a3b8">Diperbarui oleh:</span>
+                    {{ \App\Models\User::find($artikel->updated_by)?->nama ?? 'ID '.$artikel->updated_by }}
+                </p>
                 @endif
-                <input type="file" name="thumbnail" accept="image/*" class="form-input">
             </div>
         </div>
         <div style="display:flex;gap:8px">

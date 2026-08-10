@@ -13,17 +13,10 @@
                     <label class="form-label">Judul <span style="color:#ef4444">*</span></label>
                     <input type="text" name="judul" value="{{ old('judul',$informasi->judul) }}" class="form-input" required maxlength="200">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Thumbnail Baru <span style="font-size:11px;color:#94a3b8">(kosongkan jika tidak diubah)</span></label>
-                    @if($informasi->thumbnail)
-                    <div style="margin-bottom:8px"><img src="{{ Storage::url($informasi->thumbnail) }}" style="height:60px;border-radius:6px"></div>
-                    @endif
-                    <input type="file" name="thumbnail" class="form-input" accept="image/*">
-                </div>
-                <div class="form-group">
+                <div class="form-group" style="grid-column:1/-1">
                     <label class="form-label">Gambar Utama Baru <span style="font-size:11px;color:#94a3b8">(kosongkan jika tidak diubah)</span></label>
                     @if($informasi->gambar)
-                    <div style="margin-bottom:8px"><img src="{{ Storage::url($informasi->gambar) }}" style="height:60px;border-radius:6px"></div>
+                    <div style="margin-bottom:8px"><img src="{{ Storage::url($informasi->gambar) }}" style="height:80px;border-radius:6px"></div>
                     @endif
                     <input type="file" name="gambar" class="form-input" accept="image/*">
                 </div>

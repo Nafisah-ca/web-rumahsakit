@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Layanan extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'layanan';
 
     const CREATED_AT = 'created_tm';
@@ -23,7 +26,9 @@ class Layanan extends Model
 
     // ─── Relasi ───────────────────────────────────────
 
-    // Note: Relasi ke janji_temu dihapus karena layanan_id tidak ada di tabel janji_temu baru
+    public function createdBy(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
+    public function updatedBy(): BelongsTo { return $this->belongsTo(User::class, 'updated_by'); }
+    public function deletedBy(): BelongsTo { return $this->belongsTo(User::class, 'deleted_by'); }
 
     // ─── Scopes ───────────────────────────────────────
 
@@ -33,13 +38,6 @@ class Layanan extends Model
     }
 
     // Backward compatibility
-    public function getIsAktifAttribute(): bool
-    {
-        return $this->status === 'aktif';
-    }
-
-    public function getNamaAttribute(): string
-    {
-        return $this->nama_layanan;
-    }
+    public function getIsAktifAttribute(): bool { return $this->status === 'aktif'; }
+    public function getNamaAttribute(): string   { return $this->nama_layanan; }
 }

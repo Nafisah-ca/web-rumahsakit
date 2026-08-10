@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Banner extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'banner';
 
     const CREATED_AT = 'created_tm';
@@ -19,6 +23,12 @@ class Banner extends Model
     ];
 
     protected $casts = [];
+
+    // ─── Relasi ───────────────────────────────────────
+
+    public function createdBy(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
+    public function updatedBy(): BelongsTo { return $this->belongsTo(User::class, 'updated_by'); }
+    public function deletedBy(): BelongsTo { return $this->belongsTo(User::class, 'deleted_by'); }
 
     // ─── Scopes ───────────────────────────────────────
 

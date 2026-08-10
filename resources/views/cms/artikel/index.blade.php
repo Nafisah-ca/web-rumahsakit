@@ -28,7 +28,7 @@
     <div class="table-wrap">
         <table>
             <thead>
-                <tr><th>Artikel</th><th>Kategori</th><th>Penulis</th><th>Status</th><th>Dibaca</th><th>Tanggal</th><th>Aksi</th></tr>
+                <tr><th>Artikel</th><th>Kategori</th><th>Penulis</th><th>Status</th><th>Tanggal</th><th>Diperbarui Oleh</th><th>Aksi</th></tr>
             </thead>
             <tbody>
                 @forelse($artikels as $art)
@@ -44,8 +44,8 @@
                     <td style="font-size:12px;color:#64748b">{{ $art->kategori?->nama_kategori??'-' }}</td>
                     <td style="font-size:12px;color:#64748b">{{ $art->penulis?->nama??'-' }}</td>
                     <td><span class="badge {{ $art->status==='publish'?'badge-green':'badge-amber' }}">{{ $art->status==='publish'?'Publish':'Draft' }}</span></td>
-                    <td style="color:#64748b;font-size:13px">-</td>
                     <td style="font-size:12px;color:#94a3b8">{{ $art->created_tm->format('d M Y') }}</td>
+                    <td style="font-size:12px;color:#64748b">{{ $art->updatedBy?->nama ?? '-' }}</td>
                     <td>
                         <div style="display:flex;gap:6px">
                             <a href="{{ route('cms.artikel.edit',$art) }}" class="btn btn-sm btn-secondary"><i class="fas fa-pen"></i> Edit</a>

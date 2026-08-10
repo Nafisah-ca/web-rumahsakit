@@ -108,28 +108,56 @@
                    class="text-gray-500 hover:text-green-500 transition-colors text-sm"><i class="fab fa-spotify"></i></a>
                 <div class="w-px h-4 bg-gray-200"></div>
                 @auth
-                <div class="flex items-center gap-3">
-                    @if(Auth::user()->isPasien())
-                    <a href="{{ route('portal.profil') }}" class="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-green-600 transition-colors">
-                        <div class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
+                {{-- USER DROPDOWN TOPBAR --}}
+                <div class="relative" id="user-dropdown-wrap">
+                    <button id="user-dropdown-btn"
+                        class="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-green-600 transition-colors focus:outline-none"
+                        aria-expanded="false" aria-haspopup="true">
+                        <div class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
                             <i class="fas fa-user text-white text-[10px]"></i>
                         </div>
-                        {{ Str::limit(Auth::user()->nama, 14) }}
-                    </a>
-                    @else
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-green-600 transition-colors">
-                        <div class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
-                            <i class="fas fa-user text-white text-[10px]"></i>
+                        <span>{{ Str::limit(Auth::user()->nama, 14) }}</span>
+                        <i class="fas fa-chevron-down text-[9px] opacity-70 transition-transform duration-200" id="user-chevron"></i>
+                    </button>
+
+                    {{-- DROPDOWN PANEL --}}
+                    <div id="user-dropdown-menu"
+                         class="hidden absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-[9999]"
+                         style="min-width:210px">
+                        {{-- User info --}}
+                        <div class="px-4 py-3 border-b border-gray-50">
+                            <p class="text-sm font-extrabold text-gray-900 truncate">{{ Auth::user()->nama }}</p>
+                            <p class="text-xs text-gray-400 truncate">{{ Auth::user()->email }}</p>
                         </div>
-                        {{ Str::limit(Auth::user()->nama, 14) }}
-                    </a>
-                    @endif
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
-                        @csrf
-                        <button type="submit" class="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors">
-                            <i class="fas fa-sign-out-alt text-xs"></i> Keluar
-                        </button>
-                    </form>
+                        @if(Auth::user()->isPasien())
+                        <a href="{{ route('portal.profil') }}?tab=profil"
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors">
+                            <i class="fas fa-user-edit text-green-500 w-4 text-center flex-shrink-0"></i> Profil Saya
+                        </a>
+                        <a href="{{ route('portal.profil') }}?tab=riwayat"
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors">
+                            <i class="fas fa-calendar-check text-green-500 w-4 text-center flex-shrink-0"></i> Riwayat Poliklinik
+                        </a>
+                        <a href="{{ route('portal.profil') }}?tab=penjamin"
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors">
+                            <i class="fas fa-shield-halved text-green-500 w-4 text-center flex-shrink-0"></i> Penjamin & Asuransi
+                        </a>
+                        @else
+                        <a href="{{ route('dashboard') }}"
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors">
+                            <i class="fas fa-gauge-high text-green-500 w-4 text-center flex-shrink-0"></i> Dashboard
+                        </a>
+                        @endif
+                        <div class="border-t border-gray-50 mt-1 pt-1">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors text-left">
+                                    <i class="fas fa-sign-out-alt w-4 text-center flex-shrink-0"></i> Keluar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
                 @else
                 <a href="{{ route('login') }}" class="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-green-600 transition-colors">
@@ -289,11 +317,18 @@
                     </div>
                 </div>
                 @if(Auth::user()->isPasien())
-                <a href="{{ route('portal.profil') }}" class="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
+                <a href="{{ route('portal.profil') }}?tab=profil" class="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
                     <i class="fas fa-user-edit text-green-500 w-4 text-center"></i> Profil Saya
                 </a>
-                <a href="{{ route('portal.booking.riwayat') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
-                    <i class="fas fa-calendar-check text-green-500 w-4 text-center"></i> Janji Temu Saya
+                <a href="{{ route('portal.profil') }}?tab=riwayat" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
+                    <i class="fas fa-calendar-check text-green-500 w-4 text-center"></i> Riwayat Poliklinik
+                </a>
+                <a href="{{ route('portal.profil') }}?tab=penjamin" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
+                    <i class="fas fa-shield-halved text-green-500 w-4 text-center"></i> Penjamin & Asuransi
+                </a>
+                @else
+                <a href="{{ route('dashboard') }}" class="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
+                    <i class="fas fa-gauge-high text-green-500 w-4 text-center"></i> Dashboard
                 </a>
                 @endif
                 <form method="POST" action="{{ route('logout') }}" class="mt-2">
@@ -635,6 +670,37 @@ document.addEventListener('DOMContentLoaded', function () {
         el.textContent = match ? `${hh}:${mm} ${match.name}` : `${hh}:${mm}`;
     }
     updateClock(); setInterval(updateClock, 60000);
+
+    // User dropdown (topbar)
+    const dropBtn  = document.getElementById('user-dropdown-btn');
+    const dropMenu = document.getElementById('user-dropdown-menu');
+    const chevron  = document.getElementById('user-chevron');
+    if (dropBtn && dropMenu) {
+        dropBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const isOpen = !dropMenu.classList.contains('hidden');
+            dropMenu.classList.toggle('hidden', isOpen);
+            dropBtn.setAttribute('aria-expanded', String(!isOpen));
+            chevron && chevron.classList.toggle('rotate-180', !isOpen);
+        });
+        document.addEventListener('click', function (e) {
+            if (!dropMenu.classList.contains('hidden')) {
+                if (!dropBtn.contains(e.target) && !dropMenu.contains(e.target)) {
+                    dropMenu.classList.add('hidden');
+                    dropBtn.setAttribute('aria-expanded', 'false');
+                    chevron && chevron.classList.remove('rotate-180');
+                }
+            }
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !dropMenu.classList.contains('hidden')) {
+                dropMenu.classList.add('hidden');
+                dropBtn.setAttribute('aria-expanded', 'false');
+                chevron && chevron.classList.remove('rotate-180');
+                dropBtn.focus();
+            }
+        });
+    }
 
 });
 </script>

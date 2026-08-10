@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Artikel extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'artikel';
 
     const CREATED_AT = 'created_tm';
@@ -15,7 +18,7 @@ class Artikel extends Model
     const DELETED_AT = 'deleted_tm';
 
     protected $fillable = [
-        'kategori_artikel_id', 'judul', 'slug', 'thumbnail', 'gambar', 'isi', 'status',
+        'kategori_artikel_id', 'judul', 'slug', 'gambar', 'isi', 'status',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
@@ -31,6 +34,16 @@ class Artikel extends Model
     public function penulis(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function deletedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 
     // ─── Scopes ───────────────────────────────────────

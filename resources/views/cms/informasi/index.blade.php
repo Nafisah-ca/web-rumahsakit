@@ -20,20 +20,14 @@
     </div>
     <div class="table-wrap">
         <table>
-            <thead><tr><th>Judul</th><th>Thumbnail</th><th>Status</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+            <thead><tr><th>Judul</th><th>Status</th><th>Tanggal</th><th>Dibuat Oleh</th><th>Aksi</th></tr></thead>
             <tbody>
                 @forelse($informasis as $info)
                 <tr>
                     <td style="font-weight:600;font-size:13px;max-width:280px">{{ $info->judul }}</td>
-                    <td>
-                        @if($info->thumbnail)
-                        <img src="{{ Storage::url($info->thumbnail) }}" style="width:60px;height:40px;object-fit:cover;border-radius:6px">
-                        @else
-                        <span style="color:#94a3b8;font-size:12px">—</span>
-                        @endif
-                    </td>
                     <td><span class="badge {{ $info->status==='publish'?'badge-green':'badge-amber' }}">{{ $info->status==='publish'?'Publish':'Draft' }}</span></td>
                     <td style="font-size:12px;color:#94a3b8">{{ $info->created_tm->format('d M Y') }}</td>
+                    <td style="font-size:12px;color:#64748b">{{ $info->createdBy?->nama ?? '-' }}</td>
                     <td>
                         <div style="display:flex;gap:6px">
                             <a href="{{ route('cms.informasi.edit',$info) }}" class="btn btn-sm btn-secondary"><i class="fas fa-pen"></i> Edit</a>

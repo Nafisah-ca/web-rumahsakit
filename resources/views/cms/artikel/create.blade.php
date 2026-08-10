@@ -47,11 +47,6 @@
                 <input type="file" name="gambar" accept="image/*" class="form-input" id="gambar-input">
                 <img id="gambar-preview" style="display:none;width:100%;max-height:120px;object-fit:cover;border-radius:8px;margin-top:8px">
             </div>
-            <div class="form-group">
-                <label class="form-label">Thumbnail <span style="font-size:11px;color:#94a3b8">(opsional, max 2MB)</span></label>
-                <input type="file" name="thumbnail" accept="image/*" class="form-input" id="thumb-input">
-                <img id="thumb-preview" style="display:none;width:100%;max-height:80px;object-fit:cover;border-radius:6px;margin-top:8px">
-            </div>
         </div>
         <div style="display:flex;gap:8px">
             <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center"><i class="fas fa-save"></i> Simpan</button>
@@ -63,14 +58,10 @@
 @endsection
 @push('scripts')
 <script>
-function previewImg(inputId, previewId) {
-    document.getElementById(inputId).addEventListener('change', function() {
-        const f = this.files[0]; if (!f) return;
-        const p = document.getElementById(previewId);
-        p.src = URL.createObjectURL(f); p.style.display = 'block';
-    });
-}
-previewImg('gambar-input','gambar-preview');
-previewImg('thumb-input','thumb-preview');
+document.getElementById('gambar-input')?.addEventListener('change', function() {
+    const f = this.files[0]; if (!f) return;
+    const p = document.getElementById('gambar-preview');
+    p.src = URL.createObjectURL(f); p.style.display = 'block';
+});
 </script>
 @endpush

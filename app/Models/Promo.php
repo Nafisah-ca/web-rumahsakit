@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
 class Promo extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'promo';
 
     const CREATED_AT = 'created_tm';
@@ -15,7 +19,7 @@ class Promo extends Model
     const DELETED_AT = 'deleted_tm';
 
     protected $fillable = [
-        'judul', 'thumbnail', 'gambar', 'deskripsi',
+        'judul', 'gambar', 'deskripsi',
         'tanggal_mulai', 'tanggal_selesai', 'status',
         'created_by', 'updated_by', 'deleted_by',
     ];
@@ -24,6 +28,12 @@ class Promo extends Model
         'tanggal_mulai'    => 'date',
         'tanggal_selesai'  => 'date',
     ];
+
+    // ─── Relasi ───────────────────────────────────────
+
+    public function createdBy(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
+    public function updatedBy(): BelongsTo { return $this->belongsTo(User::class, 'updated_by'); }
+    public function deletedBy(): BelongsTo { return $this->belongsTo(User::class, 'deleted_by'); }
 
     // ─── Scopes ───────────────────────────────────────
 

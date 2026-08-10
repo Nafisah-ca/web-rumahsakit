@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class GuestBook extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'guest_book';
 
     const CREATED_AT = 'created_tm';
@@ -18,7 +22,10 @@ class GuestBook extends Model
         'created_by', 'updated_by', 'deleted_by',
     ];
 
-    protected $casts = [];
+    // ─── Relasi ───────────────────────────────────────
+
+    public function updatedBy(): BelongsTo { return $this->belongsTo(User::class, 'updated_by'); }
+    public function deletedBy(): BelongsTo { return $this->belongsTo(User::class, 'deleted_by'); }
 
     // ─── Scopes ───────────────────────────────────────
 

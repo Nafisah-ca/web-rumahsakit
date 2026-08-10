@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class WebsiteSetting extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'website_setting';
 
     const CREATED_AT = 'created_tm';
@@ -16,23 +20,25 @@ class WebsiteSetting extends Model
         'nama_rumahsakit', 'logo', 'favicon', 'tentang_kami', 'visi', 'misi', 'sejarah',
         'motto', 'sambutan_direktur', 'alamat', 'telepon', 'email', 'google_maps',
         'facebook', 'instagram', 'youtube', 'jam_operasional', 'footer', 'copyright',
+        'whatsapp',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
-    protected $casts = [];
+    // ─── Relasi ───────────────────────────────────────
 
-    // ─── Helper Methods ───────────────────────────────
+    public function createdBy(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
+    public function updatedBy(): BelongsTo { return $this->belongsTo(User::class, 'updated_by'); }
+    public function deletedBy(): BelongsTo { return $this->belongsTo(User::class, 'deleted_by'); }
 
-    /**
-     * Get singleton instance (biasanya cuma ada 1 record)
-     */
-    public static function getSetting()
+    // ─── Helper ───────────────────────────────────────
+
+    public static function getSetting(): static
     {
         return static::first() ?? new static([
             'nama_rumahsakit' => 'RS Sari Sehat',
-            'alamat' => '-',
+            'alamat'  => '-',
             'telepon' => '-',
-            'email' => '-',
+            'email'   => '-',
         ]);
     }
 }
