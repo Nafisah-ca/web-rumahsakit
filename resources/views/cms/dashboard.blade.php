@@ -65,7 +65,6 @@
                 ['fas fa-tag',           'Tambah Promo',         'cms.promo.create',     '#d97706','#fef3c7'],
                 ['fas fa-calendar-plus', 'Tambah Event',         'cms.event.create',     '#7c3aed','#ede9fe'],
                 ['fas fa-panorama',      'Kelola Banner',        'cms.banner',           '#db2777','#fce7f3'],
-                ['fas fa-images',        'Upload Galeri',        'cms.galeri',           '#16a34a','#dcfce7'],
                 ['fas fa-sliders',       'Pengaturan Website',   'cms.website-setting',  '#475569','#f1f5f9'],
             ] as [$ico,$lbl,$rt,$clr,$bg])
             <a href="{{ route($rt) }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;text-decoration:none;transition:background .15s;margin-bottom:2px" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">

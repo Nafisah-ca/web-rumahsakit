@@ -56,6 +56,8 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: #f8fafc
 .topbar-avatar  { width: 34px; height: 34px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .topbar-avatar i { color: #fff; font-size: 13px; }
 .topbar-name    { font-size: 13px; font-weight: 600; color: #334155; }
+a.topbar-user   { cursor: pointer; border-radius: 10px; padding: 6px 10px; transition: background .15s; }
+a.topbar-user:hover { background: #f1f5f9; }
 
 /* ===== ALERTS ===== */
 .alert         { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 12px; font-size: 13px; font-weight: 500; margin: 16px 24px 0; }
@@ -181,13 +183,6 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
             <a href="{{ route('cms.artikel') }}" class="sidebar-link {{ request()->routeIs('cms.artikel*') ? 'active' : '' }}">
                 <i class="fas fa-newspaper icon"></i> Artikel
             </a>
-            <a href="{{ route('cms.kategori-galeri') }}" class="sidebar-link {{ request()->routeIs('cms.kategori-galeri*') ? 'active' : '' }}">
-                <i class="fas fa-folder-open icon"></i> Kategori Galeri
-            </a>
-            <a href="{{ route('cms.galeri') }}" class="sidebar-link {{ request()->routeIs('cms.galeri*') ? 'active' : '' }}">
-                <i class="fas fa-images icon"></i> Galeri Foto
-            </a>
-
             <div class="sidebar-group">Master Data</div>
             <a href="{{ route('cms.layanan') }}" class="sidebar-link {{ request()->routeIs('cms.layanan*') ? 'active' : '' }}">
                 <i class="fas fa-stethoscope icon"></i> Layanan
@@ -228,10 +223,10 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
                 @isset($breadcrumb)<p>{{ $breadcrumb }}</p>@endisset
             </div>
             <div class="topbar-right">
-                <div class="topbar-user">
+                <a href="{{ route('cms.dashboard') }}" class="topbar-user" style="text-decoration:none;">
                     <div class="topbar-avatar"><i class="fas fa-user"></i></div>
                     <span class="topbar-name">{{ Str::words(Auth::user()->nama, 2, '') }}</span>
-                </div>
+                </a>
             </div>
         </header>
 
