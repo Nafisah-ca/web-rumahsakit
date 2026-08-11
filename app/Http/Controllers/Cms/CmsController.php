@@ -9,8 +9,6 @@ use App\Models\Promo;
 use App\Models\Event;
 use App\Models\Banner;
 use App\Models\Layanan;
-use App\Models\Galeri;
-use App\Models\KategoriGaleri;
 use App\Models\Informasi;
 use App\Models\GuestBook;
 use App\Models\WebsiteSetting;
@@ -378,47 +376,7 @@ class CmsController extends Controller
         return back()->with('success', 'Layanan berhasil dihapus.');
     }
 
-    // ─────────────────────────── GALERI ──────────────────────────────
-
-    public function galeri(Request $request)
-    {
-        $galeris    = Galeri::with('kategori')
-            ->when($request->search, fn($q) => $q->where('judul', 'like', "%{$request->search}%"))
-            ->orderByDesc('created_tm')->paginate(20)->withQueryString();
-        $kategoris = KategoriGaleri::aktif()->orderBy('nama_kategori')->get();
-        return view('cms.galeri.index', compact('galeris', 'kategoris'));
-    }
-
-    public function storeGaleri(Request $request)
-    {
-        $request->validate([
-            'judul'             => 'required|string|max:150',
-            'kategori_galeri_id'=> 'required|exists:kategori_galeri,id',
-            'gambar'            => 'required|image|max:3072',
-            'status'            => 'nullable|in:aktif,nonaktif',
-        ]);
-
-        $path = $request->file('gambar')->store('galeri', 'public');
-
-        Galeri::create([
-            'kategori_galeri_id' => $request->kategori_galeri_id,
-            'judul'              => $request->judul,
-            'deskripsi'          => $request->deskripsi,
-            'gambar'             => $path,
-            'status'             => $request->status ?? 'aktif',
-            'created_by'         => Auth::id(),
-        ]);
-
-        return back()->with('success', 'Foto berhasil diupload.');
-    }
-
-    public function destroyGaleri(Galeri $galeri)
-    {
-        if ($galeri->gambar) Storage::disk('public')->delete($galeri->gambar);
-        $galeri->update(['deleted_by' => Auth::id()]);
-        $galeri->delete();
-        return back()->with('success', 'Foto berhasil dihapus.');
-    }
+    // ─────────────────────────── WEBSITE SETTING ────────────────────
 
     public function websiteSetting()
     {
@@ -561,37 +519,6 @@ class CmsController extends Controller
         $informasi->update(['deleted_by' => Auth::id()]);
         $informasi->delete();
         return back()->with('success', 'Informasi berhasil dihapus.');
-    }
-
-    // ─────────────────────────── KATEGORI GALERI ─────────────────────
-
-    public function kategoriGaleri(Request $request)
-    {
-        $kategoris = KategoriGaleri::withCount('galeris')
-            ->when($request->search, fn($q) => $q->where('nama_kategori', 'like', "%{$request->search}%"))
-            ->orderBy('nama_kategori')->paginate(20)->withQueryString();
-        return view('cms.kategori-galeri.index', compact('kategoris'));
-    }
-
-    public function storeKategoriGaleri(Request $request)
-    {
-        $request->validate([
-            'nama_kategori' => 'required|string|max:100|unique:kategori_galeri,nama_kategori',
-        ]);
-        KategoriGaleri::create([
-            'nama_kategori' => $request->nama_kategori,
-            'deskripsi'     => $request->deskripsi,
-            'status'        => 'aktif',
-            'created_by'    => Auth::id(),
-        ]);
-        return back()->with('success', 'Kategori galeri berhasil disimpan.');
-    }
-
-    public function destroyKategoriGaleri(KategoriGaleri $kategoriGaleri)
-    {
-        $kategoriGaleri->update(['deleted_by' => Auth::id()]);
-        $kategoriGaleri->delete();
-        return back()->with('success', 'Kategori galeri berhasil dihapus.');
     }
 
     // ─────────────────────────── GUEST BOOK ──────────────────────────

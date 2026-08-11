@@ -21,6 +21,10 @@
 @endif
 @stack('styles')
 <style>
+/* ===== TOPBAR Z-INDEX FIX ===== */
+.topbar { position: relative; z-index: 200; }
+#user-dropdown-wrap { position: relative; }
+
 /* ===== BOTTOM NAV MOBILE ===== */
 #bottom-nav {
     display: none;

@@ -187,20 +187,10 @@ Route::middleware(['auth', 'role:cms'])->prefix('cms')->name('cms.')->group(func
     Route::put('/layanan/{layanan}',        [CmsController::class, 'updateLayanan'])->name('layanan.update');
     Route::delete('/layanan/{layanan}',     [CmsController::class, 'destroyLayanan'])->name('layanan.destroy');
 
-    // Galeri
-    Route::get('/galeri',                       [CmsController::class, 'galeri'])->name('galeri');
-    Route::post('/galeri',                      [CmsController::class, 'storeGaleri'])->name('galeri.store');
-    Route::delete('/galeri/{galeri}',           [CmsController::class, 'destroyGaleri'])->name('galeri.destroy');
-
     // Kategori Artikel
     Route::get('/kategori-artikel',                       [CmsController::class, 'kategoriArtikel'])->name('kategori-artikel');
     Route::post('/kategori-artikel',                      [CmsController::class, 'storeKategoriArtikel'])->name('kategori-artikel.store');
     Route::delete('/kategori-artikel/{kategoriArtikel}',  [CmsController::class, 'destroyKategoriArtikel'])->name('kategori-artikel.destroy');
-
-    // Kategori Galeri
-    Route::get('/kategori-galeri',                        [CmsController::class, 'kategoriGaleri'])->name('kategori-galeri');
-    Route::post('/kategori-galeri',                       [CmsController::class, 'storeKategoriGaleri'])->name('kategori-galeri.store');
-    Route::delete('/kategori-galeri/{kategoriGaleri}',    [CmsController::class, 'destroyKategoriGaleri'])->name('kategori-galeri.destroy');
 
     // Informasi Terkini
     Route::get('/informasi',                    [CmsController::class, 'informasi'])->name('informasi');
