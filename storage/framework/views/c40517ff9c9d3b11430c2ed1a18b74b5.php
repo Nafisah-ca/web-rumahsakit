@@ -42,9 +42,7 @@
                     <td>
                         <div style="display:flex;align-items:center;gap:10px">
                             <div style="width:40px;height:40px;border-radius:10px;flex-shrink:0;overflow:hidden;background:#16a34a;display:flex;align-items:center;justify-content:center">
-                                <?php if($promo->thumbnail): ?>
-                                <img src="<?php echo e(Storage::url($promo->thumbnail)); ?>" style="width:100%;height:100%;object-fit:cover">
-                                <?php elseif($promo->gambar): ?>
+                                <?php if($promo->gambar): ?>
                                 <img src="<?php echo e(Storage::url($promo->gambar)); ?>" style="width:100%;height:100%;object-fit:cover">
                                 <?php else: ?>
                                 <i class="fas fa-tag text-white text-sm"></i>

@@ -108,30 +108,56 @@
                    class="text-gray-500 hover:text-green-500 transition-colors text-sm"><i class="fab fa-spotify"></i></a>
                 <div class="w-px h-4 bg-gray-200"></div>
                 <?php if(auth()->guard()->check()): ?>
-                <div class="flex items-center gap-3">
-                    <?php if(Auth::user()->isPasien()): ?>
-                    <a href="<?php echo e(route('portal.profil')); ?>" class="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-green-600 transition-colors">
-                        <div class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
+                
+                <div class="relative" id="user-dropdown-wrap">
+                    <button id="user-dropdown-btn"
+                        class="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-green-600 transition-colors focus:outline-none"
+                        aria-expanded="false" aria-haspopup="true">
+                        <div class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
                             <i class="fas fa-user text-white text-[10px]"></i>
                         </div>
-                        <?php echo e(Str::limit(Auth::user()->nama, 14)); ?>
+                        <span><?php echo e(Str::limit(Auth::user()->nama, 14)); ?></span>
+                        <i class="fas fa-chevron-down text-[9px] opacity-70 transition-transform duration-200" id="user-chevron"></i>
+                    </button>
 
-                    </a>
-                    <?php else: ?>
-                    <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-green-600 transition-colors">
-                        <div class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
-                            <i class="fas fa-user text-white text-[10px]"></i>
+                    
+                    <div id="user-dropdown-menu"
+                         class="hidden absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-[9999]"
+                         style="min-width:210px">
+                        
+                        <div class="px-4 py-3 border-b border-gray-50">
+                            <p class="text-sm font-extrabold text-gray-900 truncate"><?php echo e(Auth::user()->nama); ?></p>
+                            <p class="text-xs text-gray-400 truncate"><?php echo e(Auth::user()->email); ?></p>
                         </div>
-                        <?php echo e(Str::limit(Auth::user()->nama, 14)); ?>
-
-                    </a>
-                    <?php endif; ?>
-                    <form method="POST" action="<?php echo e(route('logout')); ?>" class="inline">
-                        <?php echo csrf_field(); ?>
-                        <button type="submit" class="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors">
-                            <i class="fas fa-sign-out-alt text-xs"></i> Keluar
-                        </button>
-                    </form>
+                        <?php if(Auth::user()->isPasien()): ?>
+                        <a href="<?php echo e(route('portal.profil')); ?>?tab=profil"
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors">
+                            <i class="fas fa-user-edit text-green-500 w-4 text-center flex-shrink-0"></i> Profil Saya
+                        </a>
+                        <a href="<?php echo e(route('portal.profil')); ?>?tab=riwayat"
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors">
+                            <i class="fas fa-calendar-check text-green-500 w-4 text-center flex-shrink-0"></i> Riwayat Poliklinik
+                        </a>
+                        <a href="<?php echo e(route('portal.profil')); ?>?tab=penjamin"
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors">
+                            <i class="fas fa-shield-halved text-green-500 w-4 text-center flex-shrink-0"></i> Penjamin & Asuransi
+                        </a>
+                        <?php else: ?>
+                        <a href="<?php echo e(route('dashboard')); ?>"
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors">
+                            <i class="fas fa-gauge-high text-green-500 w-4 text-center flex-shrink-0"></i> Dashboard
+                        </a>
+                        <?php endif; ?>
+                        <div class="border-t border-gray-50 mt-1 pt-1">
+                            <form method="POST" action="<?php echo e(route('logout')); ?>">
+                                <?php echo csrf_field(); ?>
+                                <button type="submit"
+                                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors text-left">
+                                    <i class="fas fa-sign-out-alt w-4 text-center flex-shrink-0"></i> Keluar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
                 <?php else: ?>
                 <a href="<?php echo e(route('login')); ?>" class="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-green-600 transition-colors">
@@ -295,11 +321,18 @@
                     </div>
                 </div>
                 <?php if(Auth::user()->isPasien()): ?>
-                <a href="<?php echo e(route('portal.profil')); ?>" class="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
+                <a href="<?php echo e(route('portal.profil')); ?>?tab=profil" class="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
                     <i class="fas fa-user-edit text-green-500 w-4 text-center"></i> Profil Saya
                 </a>
-                <a href="<?php echo e(route('portal.booking.riwayat')); ?>" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
-                    <i class="fas fa-calendar-check text-green-500 w-4 text-center"></i> Janji Temu Saya
+                <a href="<?php echo e(route('portal.profil')); ?>?tab=riwayat" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
+                    <i class="fas fa-calendar-check text-green-500 w-4 text-center"></i> Riwayat Poliklinik
+                </a>
+                <a href="<?php echo e(route('portal.profil')); ?>?tab=penjamin" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
+                    <i class="fas fa-shield-halved text-green-500 w-4 text-center"></i> Penjamin & Asuransi
+                </a>
+                <?php else: ?>
+                <a href="<?php echo e(route('dashboard')); ?>" class="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
+                    <i class="fas fa-gauge-high text-green-500 w-4 text-center"></i> Dashboard
                 </a>
                 <?php endif; ?>
                 <form method="POST" action="<?php echo e(route('logout')); ?>" class="mt-2">
@@ -643,6 +676,37 @@ document.addEventListener('DOMContentLoaded', function () {
         el.textContent = match ? `${hh}:${mm} ${match.name}` : `${hh}:${mm}`;
     }
     updateClock(); setInterval(updateClock, 60000);
+
+    // User dropdown (topbar)
+    const dropBtn  = document.getElementById('user-dropdown-btn');
+    const dropMenu = document.getElementById('user-dropdown-menu');
+    const chevron  = document.getElementById('user-chevron');
+    if (dropBtn && dropMenu) {
+        dropBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const isOpen = !dropMenu.classList.contains('hidden');
+            dropMenu.classList.toggle('hidden', isOpen);
+            dropBtn.setAttribute('aria-expanded', String(!isOpen));
+            chevron && chevron.classList.toggle('rotate-180', !isOpen);
+        });
+        document.addEventListener('click', function (e) {
+            if (!dropMenu.classList.contains('hidden')) {
+                if (!dropBtn.contains(e.target) && !dropMenu.contains(e.target)) {
+                    dropMenu.classList.add('hidden');
+                    dropBtn.setAttribute('aria-expanded', 'false');
+                    chevron && chevron.classList.remove('rotate-180');
+                }
+            }
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !dropMenu.classList.contains('hidden')) {
+                dropMenu.classList.add('hidden');
+                dropBtn.setAttribute('aria-expanded', 'false');
+                chevron && chevron.classList.remove('rotate-180');
+                dropBtn.focus();
+            }
+        });
+    }
 
 });
 </script>
