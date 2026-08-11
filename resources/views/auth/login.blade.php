@@ -10,7 +10,7 @@
                 </div>
                 <div class="text-left">
                     <div class="font-extrabold text-gray-900 text-lg">RS Sari Sehat</div>
-                    <div class="text-green-600 text-xs font-semibold">Melayani dengan Kasih Sayang</div>
+                    <div class="text-green-600 text-xs font-semibold">Melayani dengan Kasih Sayang sepenuh hati</div>
                 </div>
             </a>
             <h1 class="text-2xl font-extrabold text-gray-900">Masuk ke Portal Pasien</h1>
