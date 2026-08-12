@@ -38,8 +38,52 @@
                 @endif
 
                 <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-                    <div class="text-gray-700 leading-relaxed" style="line-height:1.9">
-                        {!! nl2br(e($artikel->isi)) !!}
+                    {{-- Render HTML dari TinyMCE --}}
+                    <div class="prose prose-slate max-w-none" style="line-height:1.9;font-size:15px">
+                        {!! $artikel->isi !!}
+                    </div>
+                </div>
+
+                {{-- ===== TOMBOL SHARE ===== --}}
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                    <p class="text-sm font-extrabold text-gray-700 mb-3"><i class="fas fa-share-nodes text-green-500 mr-2"></i>Bagikan Artikel</p>
+                    <div class="flex flex-wrap gap-2">
+                        {{-- WhatsApp --}}
+                        <a href="https://wa.me/?text={{ urlencode($artikel->judul . ' - ' . request()->url()) }}"
+                           target="_blank" rel="noopener"
+                           class="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all hover:-translate-y-0.5 hover:opacity-90"
+                           style="background:#25d366">
+                            <i class="fab fa-whatsapp text-sm"></i> WhatsApp
+                        </a>
+                        {{-- Facebook --}}
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->url()) }}"
+                           target="_blank" rel="noopener"
+                           class="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all hover:-translate-y-0.5 hover:opacity-90"
+                           style="background:#1877f2">
+                            <i class="fab fa-facebook-f text-sm"></i> Facebook
+                        </a>
+                        {{-- X / Twitter --}}
+                        <a href="https://twitter.com/intent/tweet?text={{ urlencode($artikel->judul) }}&url={{ urlencode(request()->url()) }}"
+                           target="_blank" rel="noopener"
+                           class="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all hover:-translate-y-0.5 hover:opacity-90"
+                           style="background:#000">
+                            <i class="fab fa-x-twitter text-sm"></i> X
+                        </a>
+                        {{-- Telegram --}}
+                        <a href="https://t.me/share/url?url={{ urlencode(request()->url()) }}&text={{ urlencode($artikel->judul) }}"
+                           target="_blank" rel="noopener"
+                           class="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all hover:-translate-y-0.5 hover:opacity-90"
+                           style="background:#229ed9">
+                            <i class="fab fa-telegram text-sm"></i> Telegram
+                        </a>
+                        {{-- Copy Link --}}
+                        <button id="btn-copy-link"
+                                onclick="copyArtikelLink()"
+                                class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:-translate-y-0.5"
+                                style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0">
+                            <i class="fas fa-link text-sm"></i>
+                            <span id="copy-label">Salin Link</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -83,3 +127,24 @@
     </div>
 </section>
 @endsection
+@push('scripts')
+<script>
+function copyArtikelLink() {
+    const url  = '{{ request()->url() }}';
+    const btn  = document.getElementById('btn-copy-link');
+    const lbl  = document.getElementById('copy-label');
+    navigator.clipboard.writeText(url).then(function () {
+        lbl.textContent = 'Tersalin!';
+        btn.style.background = '#dcfce7';
+        btn.style.color      = '#16a34a';
+        btn.style.borderColor= '#86efac';
+        setTimeout(function () {
+            lbl.textContent  = 'Salin Link';
+            btn.style.background = '#f1f5f9';
+            btn.style.color      = '#475569';
+            btn.style.borderColor= '#e2e8f0';
+        }, 2500);
+    });
+}
+</script>
+@endpush

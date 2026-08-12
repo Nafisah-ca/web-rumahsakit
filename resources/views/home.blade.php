@@ -305,9 +305,11 @@
                 <span class="section-label">Kesehatan Terkini</span>
                 <h2 class="section-title">Informasi <span>Terkini</span></h2>
             </div>
+            @if($totalInformasi > 6)
             <a href="{{ route('informasi') }}" class="btn-outline-green hidden md:inline-flex">
                 Lihat Semua <i class="fas fa-arrow-right"></i>
             </a>
+            @endif
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 fade-up">
             @forelse($informasis as $info)
@@ -345,7 +347,9 @@
             @endforelse
         </div>
         <div class="mt-6 md:hidden text-center fade-up">
+            @if($totalInformasi > 6)
             <a href="{{ route('informasi') }}" class="btn-outline-green">Lihat Semua <i class="fas fa-arrow-right"></i></a>
+            @endif
         </div>
     </div>
 </section>
