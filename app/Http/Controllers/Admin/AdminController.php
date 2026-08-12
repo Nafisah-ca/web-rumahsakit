@@ -13,6 +13,7 @@ use App\Models\Layanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -81,19 +82,29 @@ class AdminController extends Controller
             'nama'  => 'required|string|max:150',
             'email' => 'required|email|max:150|unique:users,email,' . $user->id,
             'no_hp' => 'nullable|string|max:20',
+            'foto'  => 'nullable|image|max:2048',
         ], [
             'nama.required'  => 'Nama wajib diisi.',
             'email.required' => 'Email wajib diisi.',
             'email.email'    => 'Format email tidak valid.',
             'email.unique'   => 'Email sudah digunakan oleh akun lain.',
+            'foto.image'     => 'File harus berupa gambar.',
+            'foto.max'       => 'Ukuran foto maksimal 2MB.',
         ]);
 
-        $user->update([
+        $data = [
             'nama'       => $request->nama,
             'email'      => $request->email,
             'no_hp'      => $request->no_hp,
             'updated_by' => $user->id,
-        ]);
+        ];
+
+        if ($request->hasFile('foto')) {
+            if ($user->foto) Storage::disk('public')->delete($user->foto);
+            $data['foto'] = $request->file('foto')->store('profile', 'public');
+        }
+
+        $user->update($data);
 
         return back()->with('success', 'Profile berhasil diperbarui.');
     }

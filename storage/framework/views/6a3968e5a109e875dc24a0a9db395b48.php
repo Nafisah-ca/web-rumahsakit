@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="csrf-token" content="{{ csrf_token() }}">
-<title>{{ $pageTitle ?? 'Admin' }} — RS Sari Sehat</title>
+<meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+<title><?php echo e($pageTitle ?? 'Admin'); ?> — RS Sari Sehat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -183,14 +183,14 @@ nav[role="navigation"] a:hover { background: #f1f5f9; border-color: #cbd5e1; }
     .sidebar.open { display: flex; position: fixed; z-index: 100; height: 100%; }
 }
 </style>
-@stack('styles')
+<?php echo $__env->yieldPushContent('styles'); ?>
 </head>
 <body>
 
 <div class="app-shell">
-    {{-- ===== SIDEBAR ===== --}}
+    
     <aside class="sidebar" id="sidebar">
-        <a href="{{ route('admin.dashboard') }}" class="sidebar-logo">
+        <a href="<?php echo e(route('admin.dashboard')); ?>" class="sidebar-logo">
             <div class="sidebar-logo-icon"><i class="fas fa-hospital-alt"></i></div>
             <div class="sidebar-logo-text">
                 <p>RS Sari Sehat</p>
@@ -200,81 +200,81 @@ nav[role="navigation"] a:hover { background: #f1f5f9; border-color: #cbd5e1; }
 
         <nav class="sidebar-nav">
             <div class="sidebar-group">Menu Utama</div>
-            <a href="{{ route('admin.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <a href="<?php echo e(route('admin.dashboard')); ?>" class="sidebar-link <?php echo e(request()->routeIs('admin.dashboard') ? 'active' : ''); ?>">
                 <i class="fas fa-gauge-high icon"></i> Dashboard
             </a>
 
             <div class="sidebar-group">Operasional</div>
-            <a href="{{ route('admin.booking') }}" class="sidebar-link {{ request()->routeIs('admin.booking*') ? 'active' : '' }}">
+            <a href="<?php echo e(route('admin.booking')); ?>" class="sidebar-link <?php echo e(request()->routeIs('admin.booking*') ? 'active' : ''); ?>">
                 <i class="fas fa-calendar-check icon"></i> Booking & Janji Temu
-                @php $pending = \App\Models\JanjiTemu::where('status','pending')->count() @endphp
-                @if($pending > 0)<span class="badge-count">{{ $pending }}</span>@endif
+                <?php $pending = \App\Models\JanjiTemu::where('status','pending')->count() ?>
+                <?php if($pending > 0): ?><span class="badge-count"><?php echo e($pending); ?></span><?php endif; ?>
             </a>
-            <a href="{{ route('admin.transaksi') }}" class="sidebar-link {{ request()->routeIs('admin.transaksi*') ? 'active' : '' }}">
+            <a href="<?php echo e(route('admin.transaksi')); ?>" class="sidebar-link <?php echo e(request()->routeIs('admin.transaksi*') ? 'active' : ''); ?>">
                 <i class="fas fa-receipt icon"></i> Transaksi
             </a>
-            <a href="{{ route('admin.pasien') }}" class="sidebar-link {{ request()->routeIs('admin.pasien*') ? 'active' : '' }}">
+            <a href="<?php echo e(route('admin.pasien')); ?>" class="sidebar-link <?php echo e(request()->routeIs('admin.pasien*') ? 'active' : ''); ?>">
                 <i class="fas fa-bed-pulse icon"></i> Data Pasien
             </a>
-            <a href="{{ route('admin.jadwal') }}" class="sidebar-link {{ request()->routeIs('admin.jadwal*') ? 'active' : '' }}">
+            <a href="<?php echo e(route('admin.jadwal')); ?>" class="sidebar-link <?php echo e(request()->routeIs('admin.jadwal*') ? 'active' : ''); ?>">
                 <i class="fas fa-clock icon"></i> Jadwal Dokter
             </a>
-            <a href="{{ route('admin.laporan') }}" class="sidebar-link {{ request()->routeIs('admin.laporan') ? 'active' : '' }}">
+            <a href="<?php echo e(route('admin.laporan')); ?>" class="sidebar-link <?php echo e(request()->routeIs('admin.laporan') ? 'active' : ''); ?>">
                 <i class="fas fa-chart-column icon"></i> Laporan
             </a>
 
             <div class="sidebar-group">Master Data</div>
-            <a href="{{ route('admin.dokter') }}" class="sidebar-link {{ request()->routeIs('admin.dokter*') ? 'active' : '' }}">
+            <a href="<?php echo e(route('admin.dokter')); ?>" class="sidebar-link <?php echo e(request()->routeIs('admin.dokter*') ? 'active' : ''); ?>">
                 <i class="fas fa-user-doctor icon"></i> Dokter
             </a>
-            <a href="{{ route('admin.spesialisasi') }}" class="sidebar-link {{ request()->routeIs('admin.spesialisasi*') ? 'active' : '' }}">
+            <a href="<?php echo e(route('admin.spesialisasi')); ?>" class="sidebar-link <?php echo e(request()->routeIs('admin.spesialisasi*') ? 'active' : ''); ?>">
                 <i class="fas fa-stethoscope icon"></i> Spesialisasi
             </a>
-            <a href="{{ route('admin.penjamin') }}" class="sidebar-link {{ request()->routeIs('admin.penjamin*') || request()->routeIs('admin.tipe-penjamin*') ? 'active' : '' }}">
+            <a href="<?php echo e(route('admin.penjamin')); ?>" class="sidebar-link <?php echo e(request()->routeIs('admin.penjamin*') || request()->routeIs('admin.tipe-penjamin*') ? 'active' : ''); ?>">
                 <i class="fas fa-shield-halved icon"></i> Penjamin
             </a>
-            <a href="{{ route('admin.users') }}" class="sidebar-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+            <a href="<?php echo e(route('admin.users')); ?>" class="sidebar-link <?php echo e(request()->routeIs('admin.users*') ? 'active' : ''); ?>">
                 <i class="fas fa-users icon"></i> Manajemen User
             </a>
 
             <div class="sidebar-group">Lainnya</div>
-            <a href="{{ route('home') }}" target="_blank" class="sidebar-link">
+            <a href="<?php echo e(route('home')); ?>" target="_blank" class="sidebar-link">
                 <i class="fas fa-arrow-up-right-from-square icon"></i> Lihat Website
             </a>
         </nav>
     </aside>
 
-    {{-- ===== MAIN ===== --}}
+    
     <div class="main-wrap">
         <header class="topbar">
             <div class="topbar-left">
-                <h1>{{ $pageTitle ?? 'Dashboard' }}</h1>
-                @isset($breadcrumb)<p>{{ $breadcrumb }}</p>@endisset
+                <h1><?php echo e($pageTitle ?? 'Dashboard'); ?></h1>
+                <?php if(isset($breadcrumb)): ?><p><?php echo e($breadcrumb); ?></p><?php endif; ?>
             </div>
             <div class="topbar-right">
-                @php
+                <?php
                     $notifCount = \App\Models\JanjiTemu::where('status', 'pending')
                         ->whereDate('tanggal_booking', today())
                         ->count();
-                @endphp
+                ?>
                 <button class="topbar-notif">
                     <i class="fas fa-bell"></i>
-                    @if($notifCount > 0)<span class="notif-dot">{{ $notifCount }}</span>@endif
+                    <?php if($notifCount > 0): ?><span class="notif-dot"><?php echo e($notifCount); ?></span><?php endif; ?>
                 </button>
 
-                {{-- Profile Dropdown --}}
+                
                 <div class="profile-dropdown" x-data="{ open: false }" @click.outside="open = false">
                     <div class="profile-trigger" @click="open = !open">
-                        @if(Auth::user()->foto)
-                            <img src="{{ Storage::url(Auth::user()->foto) }}"
+                        <?php if(Auth::user()->foto): ?>
+                            <img src="<?php echo e(Storage::url(Auth::user()->foto)); ?>"
                                  style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0"
-                                 alt="{{ Auth::user()->nama }}">
-                        @else
+                                 alt="<?php echo e(Auth::user()->nama); ?>">
+                        <?php else: ?>
                             <div class="topbar-avatar">
-                                <span style="color:#fff;font-size:13px;font-weight:700">{{ strtoupper(substr(Auth::user()->nama, 0, 1)) }}</span>
+                                <span style="color:#fff;font-size:13px;font-weight:700"><?php echo e(strtoupper(substr(Auth::user()->nama, 0, 1))); ?></span>
                             </div>
-                        @endif
-                        <span class="topbar-name">{{ Str::words(Auth::user()->nama, 2, '') }}</span>
+                        <?php endif; ?>
+                        <span class="topbar-name"><?php echo e(Str::words(Auth::user()->nama, 2, '')); ?></span>
                         <i class="fas fa-chevron-down profile-trigger-chevron" :class="{ open: open }"></i>
                     </div>
                     <div class="profile-menu" x-show="open" x-transition:enter="transition ease-out duration-150"
@@ -283,18 +283,18 @@ nav[role="navigation"] a:hover { background: #f1f5f9; border-color: #cbd5e1; }
                          x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
                          style="display:none">
                         <div class="profile-menu-header">
-                            <p>{{ Auth::user()->nama }}</p>
-                            <span>{{ Auth::user()->email }}</span>
+                            <p><?php echo e(Auth::user()->nama); ?></p>
+                            <span><?php echo e(Auth::user()->email); ?></span>
                         </div>
-                        <a href="{{ route('admin.profile') }}" class="profile-menu-item">
+                        <a href="<?php echo e(route('admin.profile')); ?>" class="profile-menu-item">
                             <i class="fas fa-user-pen"></i> Profile Saya
                         </a>
-                        <a href="{{ route('admin.setting.password') }}" class="profile-menu-item">
+                        <a href="<?php echo e(route('admin.setting.password')); ?>" class="profile-menu-item">
                             <i class="fas fa-lock"></i> Ganti Password
                         </a>
                         <hr class="profile-menu-divider">
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
+                        <form method="POST" action="<?php echo e(route('logout')); ?>">
+                            <?php echo csrf_field(); ?>
                             <button type="submit" class="profile-menu-item danger">
                                 <i class="fas fa-right-from-bracket"></i> Keluar
                             </button>
@@ -304,22 +304,22 @@ nav[role="navigation"] a:hover { background: #f1f5f9; border-color: #cbd5e1; }
             </div>
         </header>
 
-        @if(session('success'))
+        <?php if(session('success')): ?>
         <div class="alert alert-success" id="alert-success">
             <i class="fas fa-circle-check"></i>
-            <span>{{ session('success') }}</span>
+            <span><?php echo e(session('success')); ?></span>
             <button class="alert-close" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>
         </div>
-        @endif
-        @if(session('error'))
+        <?php endif; ?>
+        <?php if(session('error')): ?>
         <div class="alert alert-error">
             <i class="fas fa-circle-exclamation"></i>
-            <span>{{ session('error') }}</span>
+            <span><?php echo e(session('error')); ?></span>
         </div>
-        @endif
+        <?php endif; ?>
 
         <main class="main-content">
-            @yield('content')
+            <?php echo $__env->yieldContent('content'); ?>
         </main>
     </div>
 </div>
@@ -330,6 +330,7 @@ document.getElementById('toggle-sidebar')?.addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('open');
 });
 </script>
-@stack('scripts')
+<?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 </html>
+<?php /**PATH D:\laragon\www\web-rumahsakit\web-rumahsakit\resources\views/layouts/admin.blade.php ENDPATH**/ ?>

@@ -3,23 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="{{ $metaDesc ?? ($setting_global->motto ?? 'RS Sari Sehat - Melayani dengan Kasih Sayang') }}">
-<title>{{ $title ?? $setting_global->nama_rumahsakit ?? 'RS Sari Sehat' }} | {{ $setting_global->motto ?? 'Melayani dengan Kasih Sayang' }}</title>
-@if($setting_global->favicon ?? null)
-<link rel="icon" type="image/x-icon" href="{{ Storage::url($setting_global->favicon) }}">
-@endif
+<meta name="description" content="<?php echo e($metaDesc ?? ($setting_global->motto ?? 'RS Sari Sehat - Melayani dengan Kasih Sayang')); ?>">
+<title><?php echo e($title ?? $setting_global->nama_rumahsakit ?? 'RS Sari Sehat'); ?> | <?php echo e($setting_global->motto ?? 'Melayani dengan Kasih Sayang'); ?></title>
+<?php if($setting_global->favicon ?? null): ?>
+<link rel="icon" type="image/x-icon" href="<?php echo e(Storage::url($setting_global->favicon)); ?>">
+<?php endif; ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-@if(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-    @vite(['resources/css/app.css','resources/js/app.js'])
-@else
+<?php if(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot'))): ?>
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css','resources/js/app.js']); ?>
+<?php else: ?>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Plus Jakarta Sans','sans-serif']}}}}</script>
-    <link rel="stylesheet" href="{{ asset('css/fallback.css') }}">
-@endif
-@stack('styles')
+    <link rel="stylesheet" href="<?php echo e(asset('css/fallback.css')); ?>">
+<?php endif; ?>
+<?php echo $__env->yieldPushContent('styles'); ?>
 <style>
 /* ===== TOPBAR Z-INDEX FIX ===== */
 .topbar { position: relative; z-index: 200; }
@@ -86,15 +86,15 @@
 </head>
 <body class="font-sans antialiased bg-white text-gray-800">
 
-{{-- ===== TOPBAR ===== --}}
+
 <div class="topbar hidden md:block">
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="flex items-center justify-between h-10">
             <div class="flex items-center gap-5 text-xs text-gray-600">
-                <a href="{{ route('kontak') }}" class="flex items-center gap-1.5 hover:text-green-600 transition-colors font-semibold">
+                <a href="<?php echo e(route('kontak')); ?>" class="flex items-center gap-1.5 hover:text-green-600 transition-colors font-semibold">
                     <i class="fas fa-map-marker-alt text-green-600"></i> Lokasi
                 </a>
-                <a href="{{ route('live.antrian') }}" class="flex items-center gap-2 hover:text-green-600 transition-colors font-semibold">
+                <a href="<?php echo e(route('live.antrian')); ?>" class="flex items-center gap-2 hover:text-green-600 transition-colors font-semibold">
                     <span class="live-badge">Live</span> Live Antrian
                 </a>
                 <span class="flex items-center gap-1.5 text-gray-500" id="jam-sholat">
@@ -114,8 +114,8 @@
                 <a href="https://open.spotify.com" target="_blank" rel="noopener" aria-label="Spotify"
                    class="text-gray-500 hover:text-green-500 transition-colors text-sm"><i class="fab fa-spotify"></i></a>
                 <div class="w-px h-4 bg-gray-200"></div>
-                @auth
-                {{-- USER DROPDOWN TOPBAR --}}
+                <?php if(auth()->guard()->check()): ?>
+                
                 <div class="relative" id="user-dropdown-wrap">
                     <button id="user-dropdown-btn"
                         class="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-green-600 transition-colors focus:outline-none"
@@ -123,41 +123,41 @@
                         <div class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
                             <i class="fas fa-user text-white text-[10px]"></i>
                         </div>
-                        <span>{{ Str::limit(Auth::user()->nama, 14) }}</span>
+                        <span><?php echo e(Str::limit(Auth::user()->nama, 14)); ?></span>
                         <i class="fas fa-chevron-down text-[9px] opacity-70 transition-transform duration-200" id="user-chevron"></i>
                     </button>
 
-                    {{-- DROPDOWN PANEL --}}
+                    
                     <div id="user-dropdown-menu"
                          class="hidden absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-[9999]"
                          style="min-width:210px">
-                        {{-- User info --}}
+                        
                         <div class="px-4 py-3 border-b border-gray-50">
-                            <p class="text-sm font-extrabold text-gray-900 truncate">{{ Auth::user()->nama }}</p>
-                            <p class="text-xs text-gray-400 truncate">{{ Auth::user()->email }}</p>
+                            <p class="text-sm font-extrabold text-gray-900 truncate"><?php echo e(Auth::user()->nama); ?></p>
+                            <p class="text-xs text-gray-400 truncate"><?php echo e(Auth::user()->email); ?></p>
                         </div>
-                        @if(Auth::user()->isPasien())
-                        <a href="{{ route('portal.profil') }}?tab=profil"
+                        <?php if(Auth::user()->isPasien()): ?>
+                        <a href="<?php echo e(route('portal.profil')); ?>?tab=profil"
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors">
                             <i class="fas fa-user-edit text-green-500 w-4 text-center flex-shrink-0"></i> Profil Saya
                         </a>
-                        <a href="{{ route('portal.profil') }}?tab=riwayat"
+                        <a href="<?php echo e(route('portal.profil')); ?>?tab=riwayat"
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors">
                             <i class="fas fa-calendar-check text-green-500 w-4 text-center flex-shrink-0"></i> Riwayat Poliklinik
                         </a>
-                        <a href="{{ route('portal.profil') }}?tab=penjamin"
+                        <a href="<?php echo e(route('portal.profil')); ?>?tab=penjamin"
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors">
                             <i class="fas fa-shield-halved text-green-500 w-4 text-center flex-shrink-0"></i> Penjamin & Asuransi
                         </a>
-                        @else
-                        <a href="{{ route('dashboard') }}"
+                        <?php else: ?>
+                        <a href="<?php echo e(route('dashboard')); ?>"
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors">
                             <i class="fas fa-gauge-high text-green-500 w-4 text-center flex-shrink-0"></i> Dashboard
                         </a>
-                        @endif
+                        <?php endif; ?>
                         <div class="border-t border-gray-50 mt-1 pt-1">
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
+                            <form method="POST" action="<?php echo e(route('logout')); ?>">
+                                <?php echo csrf_field(); ?>
                                 <button type="submit"
                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors text-left">
                                     <i class="fas fa-sign-out-alt w-4 text-center flex-shrink-0"></i> Keluar
@@ -166,55 +166,56 @@
                         </div>
                     </div>
                 </div>
-                @else
-                <a href="{{ route('login') }}" class="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-green-600 transition-colors">
+                <?php else: ?>
+                <a href="<?php echo e(route('login')); ?>" class="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-green-600 transition-colors">
                     <i class="fas fa-user text-xs"></i> Masuk
                 </a>
-                @endauth
+                <?php endif; ?>
             </div>
         </div>
     </div>
 </div>
 
-{{-- ===== NAVBAR UTAMA ===== --}}
+
 <nav id="navbar-main" class="navbar-main">
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="flex items-center justify-between h-16">
-            {{-- LOGO --}}
-            <a href="{{ route('home') }}" class="flex items-center gap-3 flex-shrink-0 group min-w-0">
+            
+            <a href="<?php echo e(route('home')); ?>" class="flex items-center gap-3 flex-shrink-0 group min-w-0">
                 <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform flex-shrink-0 overflow-hidden">
-                    @if($setting_global->logo ?? null)
-                        <img src="{{ Storage::url($setting_global->logo) }}" alt="{{ $setting_global->nama_rumahsakit ?? 'Logo RS' }}" class="w-full h-full object-contain p-0.5">
-                    @else
+                    <?php if($setting_global->logo ?? null): ?>
+                        <img src="<?php echo e(Storage::url($setting_global->logo)); ?>" alt="<?php echo e($setting_global->nama_rumahsakit ?? 'Logo RS'); ?>" class="w-full h-full object-contain p-0.5">
+                    <?php else: ?>
                         <i class="fas fa-hospital-alt text-green-600 text-lg"></i>
-                    @endif
+                    <?php endif; ?>
                 </div>
                 <div class="min-w-0">
-                    <div class="text-white font-extrabold text-lg leading-tight tracking-tight">{{ $setting_global->nama_rumahsakit ?? 'RS Sari Sehat' }}</div>
-                    <div class="text-green-100 text-[10px] font-semibold tracking-widest uppercase">{{ $setting_global->motto ?? 'Melayani dengan Kasih Sayang' }}</div>
+                    <div class="text-white font-extrabold text-lg leading-tight tracking-tight"><?php echo e($setting_global->nama_rumahsakit ?? 'RS Sari Sehat'); ?></div>
+                    <div class="text-green-100 text-[10px] font-semibold tracking-widest uppercase"><?php echo e($setting_global->motto ?? 'Melayani dengan Kasih Sayang'); ?></div>
                 </div>
             </a>
 
-            {{-- DESKTOP NAV --}}
+            
             <div class="hidden lg:flex items-center gap-1">
-                <a href="{{ route('home') }}" class="nav-item {{ request()->routeIs('home') ? 'active' : '' }}">Beranda</a>
+                <a href="<?php echo e(route('home')); ?>" class="nav-item <?php echo e(request()->routeIs('home') ? 'active' : ''); ?>">Beranda</a>
 
                 <div class="nav-dropdown">
                     <button class="nav-item flex items-center gap-1">
                         Pelayanan <i class="fas fa-chevron-down text-[10px] opacity-80"></i>
                     </button>
                     <div class="nav-dropdown-menu">
-                        @foreach([
+                        <?php $__currentLoopData = [
                             ['fa-stethoscope','Pelayanan Utama','layanan'],
                             ['fa-star','Pelayanan Khusus','layanan'],
                             ['fa-heartbeat','Pusat Layanan Ibu & Anak','layanan'],
                             ['fa-spa','Pain Clinic & Wellness','layanan'],
                             ['fa-clipboard-check','Medical Check-Up','mcu'],
-                        ] as [$ico,$lbl,$rt])
-                        <a href="{{ route($rt) }}" class="nav-dropdown-item">
-                            <i class="fas {{ $ico }} text-green-500 w-4 text-center"></i> {{ $lbl }}
+                        ]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as [$ico,$lbl,$rt]): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <a href="<?php echo e(route($rt)); ?>" class="nav-dropdown-item">
+                            <i class="fas <?php echo e($ico); ?> text-green-500 w-4 text-center"></i> <?php echo e($lbl); ?>
+
                         </a>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
 
@@ -223,76 +224,77 @@
                         Dokter <i class="fas fa-chevron-down text-[10px] opacity-80"></i>
                     </button>
                     <div class="nav-dropdown-menu" style="min-width:220px">
-                        {{-- Daftar Poliklinik (dengan sub-menu spesialisasi) --}}
+                        
                         <div class="nav-dropdown-sub" style="position:relative">
-                            <a href="{{ route('dokter') }}" class="nav-dropdown-item flex items-center justify-between"
+                            <a href="<?php echo e(route('dokter')); ?>" class="nav-dropdown-item flex items-center justify-between"
                                id="sub-poliklinik-trigger"
                                onmouseenter="document.getElementById('sub-poliklinik-menu').style.display='block'"
                                onmouseleave="setTimeout(()=>{ if(!document.getElementById('sub-poliklinik-menu').matches(':hover')) document.getElementById('sub-poliklinik-menu').style.display='none' },120)">
                                 <span><i class="fas fa-calendar-check text-green-500 w-4 text-center"></i> Daftar Poliklinik</span>
                                 <i class="fas fa-chevron-right text-[9px] text-gray-400 ml-2"></i>
                             </a>
-                            {{-- Sub-menu spesialisasi --}}
+                            
                             <div id="sub-poliklinik-menu"
                                  style="display:none;position:absolute;left:100%;top:0;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.12);border:1px solid #e5e7eb;min-width:200px;z-index:9999;padding:6px 0"
                                  onmouseenter="this.style.display='block'"
                                  onmouseleave="this.style.display='none'">
-                                @isset($nav_spesialisasi)
-                                @foreach($nav_spesialisasi as $sp)
-                                <a href="{{ route('dokter.by-spesialis', $sp->id) }}"
+                                <?php if(isset($nav_spesialisasi)): ?>
+                                <?php $__currentLoopData = $nav_spesialisasi; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sp): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <a href="<?php echo e(route('dokter.by-spesialis', $sp->id)); ?>"
                                    class="nav-dropdown-item flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
                                     <i class="fas fa-stethoscope text-green-500 w-4 text-center text-xs"></i>
-                                    {{ $sp->nama_spesialis }}
+                                    <?php echo e($sp->nama_spesialis); ?>
+
                                 </a>
-                                @endforeach
-                                @endisset
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <?php endif; ?>
                                 <div style="border-top:1px solid #f1f5f9;margin:4px 0"></div>
-                                <a href="{{ route('dokter') }}" class="nav-dropdown-item flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                                <a href="<?php echo e(route('dokter')); ?>" class="nav-dropdown-item flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
                                     <i class="fas fa-list text-green-500 w-4 text-center text-xs"></i> Semua Poliklinik
                                 </a>
                             </div>
                         </div>
-                        {{-- Profil Dokter --}}
-                        <a href="{{ route('dokter') }}" class="nav-dropdown-item">
+                        
+                        <a href="<?php echo e(route('dokter')); ?>" class="nav-dropdown-item">
                             <i class="fas fa-user-md text-green-500 w-4 text-center"></i> Profil Dokter
                         </a>
-                        {{-- Layanan Online --}}
-                        <a href="{{ route('dokter.online') }}" class="nav-dropdown-item">
+                        
+                        <a href="<?php echo e(route('dokter.online')); ?>" class="nav-dropdown-item">
                             <i class="fas fa-laptop-medical text-green-500 w-4 text-center"></i> Layanan Online
                         </a>
                     </div>
                 </div>
 
-                <a href="{{ route('promo') }}" class="nav-item {{ request()->routeIs('promo*') ? 'active' : '' }}">Promo</a>
+                <a href="<?php echo e(route('promo')); ?>" class="nav-item <?php echo e(request()->routeIs('promo*') ? 'active' : ''); ?>">Promo</a>
 
                 <div class="nav-dropdown">
                     <button class="nav-item flex items-center gap-1">
                         Informasi <i class="fas fa-chevron-down text-[10px] opacity-80"></i>
                     </button>
                     <div class="nav-dropdown-menu">
-                        <a href="{{ route('artikel') }}" class="nav-dropdown-item">
+                        <a href="<?php echo e(route('artikel')); ?>" class="nav-dropdown-item">
                             <i class="fas fa-newspaper text-green-500 w-4 text-center"></i> Artikel
                         </a>
-                        <a href="{{ route('event') }}" class="nav-dropdown-item">
+                        <a href="<?php echo e(route('event')); ?>" class="nav-dropdown-item">
                             <i class="fas fa-calendar-alt text-green-500 w-4 text-center"></i> Event
                         </a>
-                        <a href="{{ route('tentang') }}" class="nav-dropdown-item">
+                        <a href="<?php echo e(route('tentang')); ?>" class="nav-dropdown-item">
                             <i class="fas fa-info-circle text-green-500 w-4 text-center"></i> Tentang Kami
                         </a>
                     </div>
                 </div>
 
-                <a href="{{ route('kontak') }}" class="nav-item {{ request()->routeIs('kontak') ? 'active' : '' }}">Hubungi Kami</a>
+                <a href="<?php echo e(route('kontak')); ?>" class="nav-item <?php echo e(request()->routeIs('kontak') ? 'active' : ''); ?>">Hubungi Kami</a>
             </div>
 
-            {{-- DAFTAR BTN --}}
+            
             <div class="hidden lg:flex items-center gap-3">
-                <a href="{{ route('dokter') }}" class="flex items-center gap-2 bg-white text-green-700 px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-50 transition-all shadow-sm">
+                <a href="<?php echo e(route('dokter')); ?>" class="flex items-center gap-2 bg-white text-green-700 px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-50 transition-all shadow-sm">
                     <i class="fas fa-calendar-check text-green-600"></i> Daftar Poliklinik
                 </a>
             </div>
 
-            {{-- HAMBURGER --}}
+            
             <button id="hamburger-btn" class="lg:hidden text-white p-2 rounded-lg hover:bg-white/15 transition-colors" aria-label="Menu">
                 <i class="fas fa-bars text-xl"></i>
             </button>
@@ -300,28 +302,28 @@
     </div>
 </nav>
 
-{{-- MOBILE MENU PANEL --}}
+
 <div id="mobile-menu-panel">
     <div id="mobile-overlay"></div>
     <div id="mobile-drawer">
         <div class="bg-green-600 p-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center overflow-hidden">
-                    @if($setting_global->logo ?? null)
-                        <img src="{{ Storage::url($setting_global->logo) }}" alt="{{ $setting_global->nama_rumahsakit ?? 'Logo RS' }}" class="w-full h-full object-contain p-0.5">
-                    @else
+                    <?php if($setting_global->logo ?? null): ?>
+                        <img src="<?php echo e(Storage::url($setting_global->logo)); ?>" alt="<?php echo e($setting_global->nama_rumahsakit ?? 'Logo RS'); ?>" class="w-full h-full object-contain p-0.5">
+                    <?php else: ?>
                         <i class="fas fa-hospital-alt text-green-600"></i>
-                    @endif
+                    <?php endif; ?>
                 </div>
                 <div>
-                    <div class="text-white font-bold text-sm">{{ $setting_global->nama_rumahsakit ?? 'RS Sari Sehat' }}</div>
-                    <div class="text-green-100 text-[10px]">{{ $setting_global->motto ?? 'Melayani dengan Kasih Sayang' }}</div>
+                    <div class="text-white font-bold text-sm"><?php echo e($setting_global->nama_rumahsakit ?? 'RS Sari Sehat'); ?></div>
+                    <div class="text-green-100 text-[10px]"><?php echo e($setting_global->motto ?? 'Melayani dengan Kasih Sayang'); ?></div>
                 </div>
             </div>
             <button id="close-drawer" class="text-white p-1"><i class="fas fa-times text-lg"></i></button>
         </div>
         <div class="p-4 space-y-1">
-            @foreach([
+            <?php $__currentLoopData = [
                 ['fa-home','Beranda','home'],
                 ['fa-stethoscope','Pelayanan','layanan'],
                 ['fa-user-md','Dokter','dokter'],
@@ -330,62 +332,63 @@
                 ['fa-calendar-alt','Kegiatan','event'],
                 ['fa-info-circle','Tentang Kami','tentang'],
                 ['fa-phone','Hubungi Kami','kontak'],
-            ] as [$ico,$lbl,$rt])
-            <a href="{{ route($rt) }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
-                <i class="fas {{ $ico }} text-green-500 w-4 text-center"></i> {{ $lbl }}
+            ]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as [$ico,$lbl,$rt]): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <a href="<?php echo e(route($rt)); ?>" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
+                <i class="fas <?php echo e($ico); ?> text-green-500 w-4 text-center"></i> <?php echo e($lbl); ?>
+
             </a>
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             <div class="pt-3">
-                <a href="{{ route('dokter') }}" class="block w-full text-center btn-green py-3 rounded-xl font-bold">
+                <a href="<?php echo e(route('dokter')); ?>" class="block w-full text-center btn-green py-3 rounded-xl font-bold">
                     <i class="fas fa-calendar-check mr-2"></i>Daftar Poliklinik
                 </a>
             </div>
             <div class="pt-3 mt-3 border-t border-gray-100">
-                @auth
+                <?php if(auth()->guard()->check()): ?>
                 <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-50 border border-green-100">
                     <div class="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
                         <i class="fas fa-user text-white text-xs"></i>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <p class="text-gray-900 text-sm font-extrabold truncate">{{ Auth::user()->nama }}</p>
-                        <p class="text-green-700 text-xs font-semibold">{{ Auth::user()->role_label }}</p>
+                        <p class="text-gray-900 text-sm font-extrabold truncate"><?php echo e(Auth::user()->nama); ?></p>
+                        <p class="text-green-700 text-xs font-semibold"><?php echo e(Auth::user()->role_label); ?></p>
                     </div>
                 </div>
-                @if(Auth::user()->isPasien())
-                <a href="{{ route('portal.profil') }}?tab=profil" class="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
+                <?php if(Auth::user()->isPasien()): ?>
+                <a href="<?php echo e(route('portal.profil')); ?>?tab=profil" class="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
                     <i class="fas fa-user-edit text-green-500 w-4 text-center"></i> Profil Saya
                 </a>
-                <a href="{{ route('portal.profil') }}?tab=riwayat" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
+                <a href="<?php echo e(route('portal.profil')); ?>?tab=riwayat" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
                     <i class="fas fa-calendar-check text-green-500 w-4 text-center"></i> Riwayat Poliklinik
                 </a>
-                <a href="{{ route('portal.profil') }}?tab=penjamin" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
+                <a href="<?php echo e(route('portal.profil')); ?>?tab=penjamin" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
                     <i class="fas fa-shield-halved text-green-500 w-4 text-center"></i> Penjamin & Asuransi
                 </a>
-                @else
-                <a href="{{ route('dashboard') }}" class="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
+                <?php else: ?>
+                <a href="<?php echo e(route('dashboard')); ?>" class="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm border border-gray-100">
                     <i class="fas fa-gauge-high text-green-500 w-4 text-center"></i> Dashboard
                 </a>
-                @endif
-                <form method="POST" action="{{ route('logout') }}" class="mt-2">
-                    @csrf
+                <?php endif; ?>
+                <form method="POST" action="<?php echo e(route('logout')); ?>" class="mt-2">
+                    <?php echo csrf_field(); ?>
                     <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-50 text-red-600 border border-red-100 font-bold text-sm">
                         <i class="fas fa-sign-out-alt"></i> Keluar
                     </button>
                 </form>
-                @else
-                <a href="{{ route('login') }}" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-green-50 text-green-700 border border-green-100 font-bold text-sm">
+                <?php else: ?>
+                <a href="<?php echo e(route('login')); ?>" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-green-50 text-green-700 border border-green-100 font-bold text-sm">
                     <i class="fas fa-user"></i> Masuk
                 </a>
-                @endauth
+                <?php endif; ?>
             </div>
         </div>
     </div>
 </div>
 
-{{-- MAIN --}}
-<main>@yield('content')</main>
 
-{{-- ===== SOCIAL MEDIA SECTION ===== --}}
+<main><?php echo $__env->yieldContent('content'); ?></main>
+
+
 <section class="social-section py-12">
     <div class="max-w-screen-xl mx-auto px-4 text-center">
         <div class="mb-6">
@@ -393,147 +396,149 @@
             <h2 class="text-white text-2xl font-extrabold">Sosial Media Kami</h2>
         </div>
         <div class="flex flex-wrap justify-center gap-4">
-            @foreach([
+            <?php $__currentLoopData = [
                 ['fab fa-instagram','Instagram','@rssarisehat','bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400','https://instagram.com'],
                 ['fab fa-facebook-f','Facebook','RS Sari Sehat','bg-blue-600','https://facebook.com'],
                 ['fab fa-youtube','YouTube','RS Sari Sehat Group','bg-red-600','https://youtube.com'],
                 ['fab fa-tiktok','TikTok','@rssarisehat','bg-gray-900','https://tiktok.com'],
                 ['fab fa-spotify','Spotify','RS Sari Sehat Podcast','bg-green-500','https://spotify.com'],
-            ] as [$icon,$platform,$handle,$bg,$url])
-            <a href="{{ $url }}" target="_blank" rel="noopener"
-               class="flex items-center gap-3 {{ $bg }} text-white px-5 py-3 rounded-xl font-semibold text-sm hover:opacity-90 hover:-translate-y-1 transition-all shadow-lg">
-                <i class="{{ $icon }} text-lg"></i>
+            ]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as [$icon,$platform,$handle,$bg,$url]): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <a href="<?php echo e($url); ?>" target="_blank" rel="noopener"
+               class="flex items-center gap-3 <?php echo e($bg); ?> text-white px-5 py-3 rounded-xl font-semibold text-sm hover:opacity-90 hover:-translate-y-1 transition-all shadow-lg">
+                <i class="<?php echo e($icon); ?> text-lg"></i>
                 <div class="text-left">
-                    <div class="text-xs opacity-80">{{ $platform }}</div>
-                    <div class="font-bold text-sm">{{ $handle }}</div>
+                    <div class="text-xs opacity-80"><?php echo e($platform); ?></div>
+                    <div class="font-bold text-sm"><?php echo e($handle); ?></div>
                 </div>
             </a>
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
     </div>
 </section>
 
-{{-- ===== FOOTER ===== --}}
+
 <footer class="footer-main text-white">
     <div class="max-w-screen-xl mx-auto px-4 py-12">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 
-            {{-- Brand --}}
+            
             <div class="lg:col-span-1">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-11 h-11 rounded-xl bg-green-600 flex items-center justify-center overflow-hidden">
-                        @if($setting_global->logo ?? null)
-                            <img src="{{ Storage::url($setting_global->logo) }}" alt="{{ $setting_global->nama_rumahsakit ?? 'Logo RS' }}" class="w-full h-full object-contain p-0.5">
-                        @else
+                        <?php if($setting_global->logo ?? null): ?>
+                            <img src="<?php echo e(Storage::url($setting_global->logo)); ?>" alt="<?php echo e($setting_global->nama_rumahsakit ?? 'Logo RS'); ?>" class="w-full h-full object-contain p-0.5">
+                        <?php else: ?>
                             <i class="fas fa-hospital-alt text-white text-lg"></i>
-                        @endif
+                        <?php endif; ?>
                     </div>
                     <div>
-                        <div class="font-extrabold text-base text-white">{{ $setting_global->nama_rumahsakit ?? 'RS Sari Sehat' }}</div>
-                        <div class="text-green-400 text-[10px] font-semibold uppercase tracking-wider">{{ $setting_global->motto ?? 'Melayani dengan Kasih Sayang' }}</div>
+                        <div class="font-extrabold text-base text-white"><?php echo e($setting_global->nama_rumahsakit ?? 'RS Sari Sehat'); ?></div>
+                        <div class="text-green-400 text-[10px] font-semibold uppercase tracking-wider"><?php echo e($setting_global->motto ?? 'Melayani dengan Kasih Sayang'); ?></div>
                     </div>
                 </div>
-                @if($setting_global->footer ?? null)
-                <p class="text-gray-400 text-sm leading-relaxed mb-5">{{ $setting_global->footer }}</p>
-                @else
+                <?php if($setting_global->footer ?? null): ?>
+                <p class="text-gray-400 text-sm leading-relaxed mb-5"><?php echo e($setting_global->footer); ?></p>
+                <?php else: ?>
                 <p class="text-gray-400 text-sm leading-relaxed mb-5">
                     Rumah sakit yang mengutamakan pelayanan kesehatan berkualitas dengan penuh kasih sayang.
                 </p>
-                @endif
+                <?php endif; ?>
                 <div class="space-y-2 text-sm">
-                    @if($setting_global->telepon ?? null)
+                    <?php if($setting_global->telepon ?? null): ?>
                     <div class="flex items-center gap-3">
                         <i class="fas fa-phone text-green-500 w-4"></i>
-                        <a href="tel:{{ preg_replace('/[^0-9]/', '', $setting_global->telepon) }}" class="text-gray-300 hover:text-white transition-colors">{{ $setting_global->telepon }}</a>
+                        <a href="tel:<?php echo e(preg_replace('/[^0-9]/', '', $setting_global->telepon)); ?>" class="text-gray-300 hover:text-white transition-colors"><?php echo e($setting_global->telepon); ?></a>
                     </div>
-                    @endif
-                    @if($setting_global->email ?? null)
+                    <?php endif; ?>
+                    <?php if($setting_global->email ?? null): ?>
                     <div class="flex items-center gap-3">
                         <i class="fas fa-envelope text-green-500 w-4"></i>
-                        <a href="mailto:{{ $setting_global->email }}" class="text-gray-300 hover:text-white transition-colors">{{ $setting_global->email }}</a>
+                        <a href="mailto:<?php echo e($setting_global->email); ?>" class="text-gray-300 hover:text-white transition-colors"><?php echo e($setting_global->email); ?></a>
                     </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
 
-            {{-- Menu --}}
+            
             <div>
                 <h4 class="text-white font-bold text-sm mb-4 uppercase tracking-wider">Menu</h4>
                 <ul class="space-y-2.5">
-                    @foreach([['Tentang Kami','tentang'],['Jadwal Dokter','dokter'],['Promo','promo'],['Hubungi Kami','kontak']] as [$lbl,$rt])
+                    <?php $__currentLoopData = [['Tentang Kami','tentang'],['Jadwal Dokter','dokter'],['Promo','promo'],['Hubungi Kami','kontak']]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as [$lbl,$rt]): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <li>
-                        <a href="{{ route($rt) }}" class="text-gray-400 hover:text-green-400 text-sm transition-colors flex items-center gap-2">
-                            <i class="fas fa-chevron-right text-green-600 text-xs"></i> {{ $lbl }}
+                        <a href="<?php echo e(route($rt)); ?>" class="text-gray-400 hover:text-green-400 text-sm transition-colors flex items-center gap-2">
+                            <i class="fas fa-chevron-right text-green-600 text-xs"></i> <?php echo e($lbl); ?>
+
                         </a>
                     </li>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </div>
 
-            {{-- Informasi --}}
+            
             <div>
                 <h4 class="text-white font-bold text-sm mb-4 uppercase tracking-wider">Informasi</h4>
                 <ul class="space-y-2.5">
-                    @foreach([['Promo','promo'],['Artikel','artikel'],['Jadwal Kegiatan','event'],['Medical Check-Up','mcu'],['Live Antrian','live.antrian']] as [$lbl,$rt])
+                    <?php $__currentLoopData = [['Promo','promo'],['Artikel','artikel'],['Jadwal Kegiatan','event'],['Medical Check-Up','mcu'],['Live Antrian','live.antrian']]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as [$lbl,$rt]): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <li>
-                        <a href="{{ route($rt) }}" class="text-gray-400 hover:text-green-400 text-sm transition-colors flex items-center gap-2">
-                            <i class="fas fa-chevron-right text-green-600 text-xs"></i> {{ $lbl }}
+                        <a href="<?php echo e(route($rt)); ?>" class="text-gray-400 hover:text-green-400 text-sm transition-colors flex items-center gap-2">
+                            <i class="fas fa-chevron-right text-green-600 text-xs"></i> <?php echo e($lbl); ?>
+
                         </a>
                     </li>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </div>
 
-            {{-- Kontak --}}
+            
             <div>
                 <h4 class="text-white font-bold text-sm mb-4 uppercase tracking-wider">Kontak</h4>
                 <ul class="space-y-2.5">
-                    @if($setting_global->alamat ?? null)
+                    <?php if($setting_global->alamat ?? null): ?>
                     <li class="text-gray-400 text-sm flex items-start gap-2">
                         <i class="fas fa-map-marker-alt text-green-500 text-xs w-3 mt-1 flex-shrink-0"></i>
-                        <span>{{ $setting_global->alamat }}</span>
+                        <span><?php echo e($setting_global->alamat); ?></span>
                     </li>
-                    @endif
-                    @if($setting_global->telepon ?? null)
+                    <?php endif; ?>
+                    <?php if($setting_global->telepon ?? null): ?>
                     <li class="text-gray-400 text-sm flex items-center gap-2">
                         <i class="fas fa-phone text-green-500 text-xs w-3"></i>
-                        <a href="tel:{{ preg_replace('/[^0-9]/', '', $setting_global->telepon) }}" class="hover:text-green-400 transition-colors">{{ $setting_global->telepon }}</a>
+                        <a href="tel:<?php echo e(preg_replace('/[^0-9]/', '', $setting_global->telepon)); ?>" class="hover:text-green-400 transition-colors"><?php echo e($setting_global->telepon); ?></a>
                     </li>
-                    @endif
-                    @if($setting_global->email ?? null)
+                    <?php endif; ?>
+                    <?php if($setting_global->email ?? null): ?>
                     <li class="text-gray-400 text-sm flex items-center gap-2">
                         <i class="fas fa-envelope text-green-500 text-xs w-3"></i>
-                        <a href="mailto:{{ $setting_global->email }}" class="hover:text-green-400 transition-colors">{{ $setting_global->email }}</a>
+                        <a href="mailto:<?php echo e($setting_global->email); ?>" class="hover:text-green-400 transition-colors"><?php echo e($setting_global->email); ?></a>
                     </li>
-                    @endif
-                    @if($setting_global->jam_operasional ?? null)
+                    <?php endif; ?>
+                    <?php if($setting_global->jam_operasional ?? null): ?>
                     <li class="text-gray-400 text-sm flex items-center gap-2">
                         <i class="fas fa-clock text-green-500 text-xs w-3"></i>
-                        <span>{{ $setting_global->jam_operasional }}</span>
+                        <span><?php echo e($setting_global->jam_operasional); ?></span>
                     </li>
-                    @endif
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>
     </div>
 
-    {{-- Akreditasi --}}
+    
     <div class="border-t border-white/10">
         <div class="max-w-screen-xl mx-auto px-4 py-4">
             <div class="flex flex-wrap justify-center gap-3 items-center">
                 <span class="text-gray-500 text-xs font-semibold">Terakreditasi:</span>
-                @foreach(['KARS Paripurna','ISO 9001:2015','SNARS Edisi 1.1','BPJS Kesehatan','Kemenkes RI'] as $a)
-                <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-green-400 font-bold">{{ $a }}</span>
-                @endforeach
+                <?php $__currentLoopData = ['KARS Paripurna','ISO 9001:2015','SNARS Edisi 1.1','BPJS Kesehatan','Kemenkes RI']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $a): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-green-400 font-bold"><?php echo e($a); ?></span>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
         </div>
     </div>
 
-    {{-- Copyright --}}
+    
     <div class="border-t border-white/10">
         <div class="max-w-screen-xl mx-auto px-4 py-4">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-gray-500">
-                <span>&copy; {{ date('Y') }} {{ $setting_global->copyright ?? ($setting_global->nama_rumahsakit ?? 'RS Sari Sehat') . '. All rights reserved.' }}</span>
+                <span>&copy; <?php echo e(date('Y')); ?> <?php echo e($setting_global->copyright ?? ($setting_global->nama_rumahsakit ?? 'RS Sari Sehat') . '. All rights reserved.'); ?></span>
                 <div class="flex gap-4">
                     <a href="#" class="hover:text-green-400 transition-colors">Kebijakan Privasi</a>
                     <a href="#" class="hover:text-green-400 transition-colors">Syarat Ketentuan</a>
@@ -544,13 +549,13 @@
     </div>
 </footer>
 
-{{-- BACK TO TOP --}}
+
 <button id="btn-back-to-top" aria-label="Kembali ke atas"
     class="fixed bottom-6 right-6 w-11 h-11 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-xl opacity-0 pointer-events-none transition-all duration-300 z-40 flex items-center justify-center">
     <i class="fas fa-arrow-up text-sm"></i>
 </button>
 
-{{-- WHATSAPP FLOAT --}}
+
 <a id="btn-whatsapp" href="https://wa.me/6221509438380" target="_blank" rel="noopener" aria-label="WhatsApp"
    class="fixed bottom-20 right-6 w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-110 z-40 group">
     <i class="fab fa-whatsapp text-2xl"></i>
@@ -559,40 +564,40 @@
     </span>
 </a>
 
-{{-- BOTTOM NAV MOBILE --}}
+
 <nav id="bottom-nav">
     <div class="bn-grid">
-        <a href="{{ route('home') }}" class="bn-item {{ request()->routeIs('home') ? 'active' : '' }}">
+        <a href="<?php echo e(route('home')); ?>" class="bn-item <?php echo e(request()->routeIs('home') ? 'active' : ''); ?>">
             <i class="fas fa-home"></i>
             <span>Beranda</span>
         </a>
-        <a href="{{ route('layanan') }}" class="bn-item {{ request()->routeIs('layanan*') ? 'active' : '' }}">
+        <a href="<?php echo e(route('layanan')); ?>" class="bn-item <?php echo e(request()->routeIs('layanan*') ? 'active' : ''); ?>">
             <i class="fas fa-stethoscope"></i>
             <span>Pelayanan</span>
         </a>
-        <a href="{{ route('dokter') }}" class="bn-item {{ request()->routeIs('dokter*') ? 'active' : '' }}">
+        <a href="<?php echo e(route('dokter')); ?>" class="bn-item <?php echo e(request()->routeIs('dokter*') ? 'active' : ''); ?>">
             <i class="fas fa-user-doctor"></i>
             <span>Dokter</span>
         </a>
-        <a href="{{ route('promo') }}" class="bn-item {{ request()->routeIs('promo*') ? 'active' : '' }}">
+        <a href="<?php echo e(route('promo')); ?>" class="bn-item <?php echo e(request()->routeIs('promo*') ? 'active' : ''); ?>">
             <i class="fas fa-tags"></i>
             <span>Promo</span>
         </a>
-        <a href="{{ route('artikel') }}" class="bn-item {{ request()->routeIs('artikel*') || request()->routeIs('event*') ? 'active' : '' }}">
+        <a href="<?php echo e(route('artikel')); ?>" class="bn-item <?php echo e(request()->routeIs('artikel*') || request()->routeIs('event*') ? 'active' : ''); ?>">
             <i class="fas fa-newspaper"></i>
             <span>Informasi</span>
         </a>
-        <a href="{{ route('kontak') }}" class="bn-item {{ request()->routeIs('kontak') ? 'active' : '' }}">
+        <a href="<?php echo e(route('kontak')); ?>" class="bn-item <?php echo e(request()->routeIs('kontak') ? 'active' : ''); ?>">
             <i class="fas fa-phone"></i>
             <span>Kontak</span>
         </a>
     </div>
 </nav>
 
-{{-- Spacer bawah agar konten tidak tertutup bottom nav --}}
+
 <div id="bottom-nav-spacer" style="display:none;height:60px"></div>
 
-@stack('scripts')
+<?php echo $__env->yieldPushContent('scripts'); ?>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // Navbar scroll
@@ -741,3 +746,4 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 </body>
 </html>
+<?php /**PATH D:\laragon\www\web-rumahsakit\web-rumahsakit\resources\views/layouts/app.blade.php ENDPATH**/ ?>

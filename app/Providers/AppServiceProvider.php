@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\WebsiteSetting;
+use App\Models\Spesialisasi;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,5 +27,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Share setting global ke semua view
         View::share('setting_global', WebsiteSetting::getSetting());
+
+        // Share spesialisasi & dokter counts ke layout public (navbar Dokter dinamis)
+        View::composer('layouts.app', function ($view) {
+            $view->with('nav_spesialisasi', Spesialisasi::orderBy('nama_spesialis')->get());
+        });
     }
 }
