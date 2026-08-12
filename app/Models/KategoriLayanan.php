@@ -5,51 +5,43 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Layanan extends Model
+class KategoriLayanan extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'layanan';
+    protected $table = 'kategori_layanan';
 
     const CREATED_AT = 'created_tm';
     const UPDATED_AT = 'updated_tm';
     const DELETED_AT = 'deleted_tm';
 
     protected $fillable = [
-        'kategori_layanan_id', 'nama_layanan', 'deskripsi', 'konten',
-        'gambar', 'icon', 'status', 'urutan',
+        'nama_kategori', 'icon', 'deskripsi', 'status',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
-    protected $casts = [];
-
     // ─── Relasi ───────────────────────────────────────
 
-    public function kategori(): BelongsTo
+    public function layanans(): HasMany
     {
-        return $this->belongsTo(KategoriLayanan::class, 'kategori_layanan_id');
+        return $this->hasMany(Layanan::class, 'kategori_layanan_id');
+    }
+
+    public function layananAktif(): HasMany
+    {
+        return $this->layanans()->where('status', 'aktif');
     }
 
     public function createdBy(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
     public function updatedBy(): BelongsTo { return $this->belongsTo(User::class, 'updated_by'); }
-    public function deletedBy(): BelongsTo { return $this->belongsTo(User::class, 'deleted_by'); }
 
     // ─── Scopes ───────────────────────────────────────
 
     public function scopeAktif(Builder $query): Builder
     {
-        return $query->where('status', 'aktif')->orderBy('urutan')->orderBy('id');
+        return $query->where('status', 'aktif')->orderBy('nama_kategori');
     }
-
-    public function scopeByKategori(Builder $query, int $kategoriId): Builder
-    {
-        return $query->where('kategori_layanan_id', $kategoriId);
-    }
-
-    // ─── Accessors ────────────────────────────────────
-
-    public function getIsAktifAttribute(): bool { return $this->status === 'aktif'; }
-    public function getNamaAttribute(): string   { return $this->nama_layanan; }
 }

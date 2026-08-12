@@ -1,54 +1,147 @@
 @extends('layouts.cms')
 @php $pageTitle = 'Edit Layanan'; $breadcrumb = 'CMS / Layanan / Edit'; @endphp
 @section('content')
-<div class="max-w-2xl">
-    <div class="card card-body">
-        @if($errors->any())
-        <div class="form-error mb-4"><ul>@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
-        @endif
-        <form method="POST" action="{{ route('cms.layanan.update',$layanan) }}" enctype="multipart/form-data">
-            @csrf @method('PUT')
-            <div class="form-row">
-                <div class="form-group" style="grid-column:1/-1">
-                    <label class="form-label">Nama Layanan <span style="color:#ef4444">*</span></label>
-                    <input type="text" name="nama_layanan" value="{{ old('nama_layanan',$layanan->nama_layanan) }}" class="form-input" required maxlength="255">
+<form method="POST" action="{{ route('cms.layanan.update', $layanan) }}" enctype="multipart/form-data">
+@csrf @method('PUT')
+@if($errors->any())
+<div class="form-error" style="margin-bottom:16px"><ul>@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
+@endif
+<div style="display:grid;grid-template-columns:1fr 300px;gap:24px">
+
+    {{-- KIRI --}}
+    <div style="display:flex;flex-direction:column;gap:20px">
+        <div class="card card-body">
+            <div class="form-group">
+                <label class="form-label">Nama Layanan <span style="color:#ef4444">*</span></label>
+                <input type="text" name="nama_layanan" value="{{ old('nama_layanan', $layanan->nama_layanan) }}" class="form-input" required maxlength="255"
+                    style="font-size:16px;font-weight:600">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Deskripsi Singkat</label>
+                <textarea name="deskripsi" rows="3" class="form-input">{{ old('deskripsi', $layanan->deskripsi) }}</textarea>
+                <p style="font-size:11px;color:#94a3b8;margin-top:4px">Maks ~200 karakter, tampil di kartu layanan.</p>
+            </div>
+        </div>
+
+        <div class="card card-body">
+            <p style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:16px">Konten Lengkap <span style="font-size:11px;color:#94a3b8;font-weight:400">(tampil di halaman detail)</span></p>
+            <div class="form-group">
+                <textarea name="konten" id="layanan-editor" class="form-input" rows="10">{{ old('konten', $layanan->konten) }}</textarea>
+            </div>
+        </div>
+    </div>
+
+    {{-- KANAN --}}
+    <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card card-body">
+            <p style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:16px">Pengaturan</p>
+
+            <div class="form-group">
+                <label class="form-label">Status <span style="color:#ef4444">*</span></label>
+                <select name="status" class="form-input">
+                    <option value="aktif"    {{ old('status', $layanan->status)=='aktif'    ? 'selected' : '' }}>Aktif</option>
+                    <option value="nonaktif" {{ old('status', $layanan->status)=='nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Kategori</label>
+                <select name="kategori_layanan_id" class="form-input">
+                    <option value="">— Tanpa Kategori —</option>
+                    @foreach($kategoris as $kat)
+                    <option value="{{ $kat->id }}" {{ old('kategori_layanan_id', $layanan->kategori_layanan_id) == $kat->id ? 'selected' : '' }}>
+                        {{ $kat->nama_kategori }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Icon <span style="font-size:11px;color:#94a3b8">(Font Awesome)</span></label>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input type="text" name="icon" id="icon-input" value="{{ old('icon', $layanan->icon ?? 'fa-stethoscope') }}" class="form-input" placeholder="fa-stethoscope">
+                    <div id="icon-preview" style="width:36px;height:36px;border-radius:8px;background:#dcfce7;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <i id="icon-display" class="fas {{ old('icon', $layanan->icon ?? 'fa-stethoscope') }}" style="color:#16a34a"></i>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Icon <span style="font-size:11px;color:#94a3b8">(Font Awesome class)</span></label>
-                    <input type="text" name="icon" value="{{ old('icon',$layanan->icon) }}" class="form-input" placeholder="fa-stethoscope">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Gambar Baru <span style="font-size:11px;color:#94a3b8">(kosongkan jika tidak diubah)</span></label>
-                    @if($layanan->gambar)
-                    <img id="gambar-preview" src="{{ Storage::url($layanan->gambar) }}" style="max-height:120px;border-radius:8px;margin-bottom:8px;border:2px solid #e2e8f0;display:block">
-                    @else
-                    <img id="gambar-preview" style="display:none;max-height:120px;border-radius:8px;margin-bottom:8px;border:2px solid #e2e8f0">
-                    @endif
-                    <input type="file" name="gambar" class="form-input" accept="image/*" id="gambar-input">
-                    <p style="font-size:11px;color:#94a3b8;margin-top:4px">Rekomendasi: format JPG/PNG, max 2MB. Kosongkan jika tidak ingin mengubah gambar.</p>
-                </div>
-                <div class="form-group" style="grid-column:1/-1">
-                    <label class="form-label">Deskripsi</label>
-                    <textarea name="deskripsi" rows="4" class="form-input">{{ old('deskripsi',$layanan->deskripsi) }}</textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-input">
-                        <option value="aktif"    {{ old('status',$layanan->status)=='aktif'?'selected':'' }}>Aktif</option>
-                        <option value="nonaktif" {{ old('status',$layanan->status)=='nonaktif'?'selected':'' }}>Nonaktif</option>
-                    </select>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+                    @foreach(['fa-stethoscope','fa-heartbeat','fa-baby','fa-brain','fa-bone','fa-eye','fa-tooth','fa-lungs','fa-spa','fa-dna','fa-microscope','fa-hospital','fa-ambulance','fa-pills','fa-syringe','fa-x-ray'] as $ic)
+                    <button type="button" onclick="setIcon('{{ $ic }}')"
+                        style="width:32px;height:32px;border-radius:6px;background:#f1f5f9;border:1px solid #e2e8f0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:#64748b;transition:all .15s"
+                        onmouseover="this.style.background='#dcfce7';this.style.color='#16a34a'"
+                        onmouseout="this.style.background='#f1f5f9';this.style.color='#64748b'"
+                        title="{{ $ic }}">
+                        <i class="fas {{ $ic }}"></i>
+                    </button>
+                    @endforeach
                 </div>
             </div>
-            <div style="display:flex;gap:10px;margin-top:8px">
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Perubahan</button>
-                <a href="{{ route('cms.layanan') }}" class="btn btn-secondary">Batal</a>
+
+            <div class="form-group">
+                <label class="form-label">Urutan Tampil</label>
+                <input type="number" name="urutan" value="{{ old('urutan', $layanan->urutan ?? 0) }}" class="form-input" min="0" max="999">
             </div>
-        </form>
+        </div>
+
+        <div class="card card-body">
+            <p style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px">Gambar <span style="font-size:11px;color:#94a3b8;font-weight:400">(kosongkan jika tidak diubah)</span></p>
+            @if($layanan->gambar)
+            <div style="margin-bottom:10px;position:relative">
+                <img id="gambar-preview" src="{{ Storage::url($layanan->gambar) }}"
+                     style="width:100%;max-height:140px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0">
+                <label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:#ef4444;cursor:pointer">
+                    <input type="checkbox" name="hapus_gambar" value="1"> Hapus gambar ini
+                </label>
+            </div>
+            @else
+            <img id="gambar-preview" style="display:none;width:100%;max-height:140px;object-fit:cover;border-radius:8px;margin-bottom:8px">
+            @endif
+            <input type="file" name="gambar" class="form-input" accept="image/*" id="gambar-input">
+            <p style="font-size:11px;color:#94a3b8;margin-top:4px">Format JPG/PNG, max 2MB.</p>
+        </div>
+
+        {{-- Preview link --}}
+        <a href="{{ route('layanan.detail', $layanan) }}" target="_blank"
+           style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border-radius:12px;border:1px solid #e2e8f0;font-size:13px;font-weight:600;color:#64748b;text-decoration:none;transition:all .15s"
+           onmouseover="this.style.borderColor='#16a34a';this.style.color='#16a34a'"
+           onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">
+            <i class="fas fa-external-link-alt"></i> Lihat di Website
+        </a>
+
+        <div style="display:flex;gap:8px">
+            <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center"><i class="fas fa-save"></i> Simpan</button>
+            <a href="{{ route('cms.layanan') }}" class="btn btn-secondary">Batal</a>
+        </div>
     </div>
 </div>
+</form>
 @endsection
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.3/tinymce.min.js"></script>
 <script>
+tinymce.init({
+    selector: '#layanan-editor',
+    license_key: 'gpl',
+    height: 400,
+    menubar: false,
+    base_url: 'https://cdn.jsdelivr.net/npm/tinymce@6.8.3',
+    suffix: '.min',
+    plugins: ['advlist','autolink','lists','link','charmap','preview','anchor','searchreplace','visualblocks','code','table','help','wordcount'],
+    toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright | bullist numlist | outdent indent | link table | removeformat | code | help',
+    content_style: 'body { font-family: "Plus Jakarta Sans", sans-serif; font-size:14px; line-height:1.8; color:#334155; padding:16px; }',
+    branding: false,
+    promotion: false,
+    setup: function(editor) { editor.on('change input', function() { editor.save(); }); }
+});
+
+function setIcon(ic) {
+    document.getElementById('icon-input').value = ic;
+    document.getElementById('icon-display').className = 'fas ' + ic;
+}
+document.getElementById('icon-input').addEventListener('input', function() {
+    document.getElementById('icon-display').className = 'fas ' + this.value;
+});
+
 document.getElementById('gambar-input').addEventListener('change', function() {
     const f = this.files[0]; if (!f) return;
     const p = document.getElementById('gambar-preview');

@@ -1,19 +1,10 @@
 @extends('layouts.app')
 @section('content')
 
-{{-- Hero --}}
-<div class="py-16" style="background: linear-gradient(135deg, #00521f, #00b04f);">
-    <div class="max-w-screen-xl mx-auto px-4 text-center">
-        <span class="text-green-300 text-xs font-black uppercase tracking-widest block mb-2">Penawaran Terbaik</span>
-        <h1 class="text-white font-extrabold text-4xl mb-3">Promo & Penawaran Spesial</h1>
-        <p class="text-green-100 text-sm max-w-xl mx-auto">Dapatkan layanan kesehatan terbaik dengan harga terjangkau</p>
-        <nav class="flex items-center justify-center gap-2 mt-5 text-sm text-green-200">
-            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-white font-semibold">Promo</span>
-        </nav>
-    </div>
-</div>
+<x-page-hero
+    page="promo"
+    :breadcrumbs="[['Beranda','home'],['Promo',null]]"
+/>
 
 {{-- List Promo --}}
 <section class="py-12 bg-gray-50">

@@ -193,18 +193,48 @@
                     <button class="nav-item flex items-center gap-1">
                         Pelayanan <i class="fas fa-chevron-down text-[10px] opacity-80"></i>
                     </button>
-                    <div class="nav-dropdown-menu">
-                        @foreach([
-                            ['fa-stethoscope','Pelayanan Utama','layanan'],
-                            ['fa-star','Pelayanan Khusus','layanan'],
-                            ['fa-heartbeat','Pusat Layanan Ibu & Anak','layanan'],
-                            ['fa-spa','Pain Clinic & Wellness','layanan'],
-                            ['fa-clipboard-check','Medical Check-Up','mcu'],
-                        ] as [$ico,$lbl,$rt])
-                        <a href="{{ route($rt) }}" class="nav-dropdown-item">
-                            <i class="fas {{ $ico }} text-green-500 w-4 text-center"></i> {{ $lbl }}
+                    <div class="nav-dropdown-menu" style="min-width:220px">
+                        {{-- Sub-menu dengan flyout kategori layanan --}}
+                        <div class="nav-dropdown-sub" style="position:relative">
+                            <a href="{{ route('layanan') }}" class="nav-dropdown-item flex items-center justify-between"
+                               id="sub-layanan-trigger"
+                               onmouseenter="document.getElementById('sub-layanan-menu').style.display='block'"
+                               onmouseleave="setTimeout(()=>{ if(!document.getElementById('sub-layanan-menu').matches(':hover')) document.getElementById('sub-layanan-menu').style.display='none' },120)">
+                                <span><i class="fas fa-stethoscope text-green-500 w-4 text-center"></i> Semua Pelayanan</span>
+                                @isset($nav_layanan_kategori)
+                                @if($nav_layanan_kategori->isNotEmpty())
+                                <i class="fas fa-chevron-right text-[9px] text-gray-400 ml-2"></i>
+                                @endif
+                                @endisset
+                            </a>
+                            {{-- Sub-menu kategori layanan --}}
+                            @isset($nav_layanan_kategori)
+                            @if($nav_layanan_kategori->isNotEmpty())
+                            <div id="sub-layanan-menu"
+                                 style="display:none;position:absolute;left:100%;top:0;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.12);border:1px solid #e5e7eb;min-width:210px;z-index:9999;padding:6px 0"
+                                 onmouseenter="this.style.display='block'"
+                                 onmouseleave="this.style.display='none'">
+                                @foreach($nav_layanan_kategori as $kat)
+                                <a href="{{ route('layanan.by-kategori', $kat->id) }}"
+                                   class="nav-dropdown-item flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                                    <i class="fas {{ $kat->icon ?? 'fa-stethoscope' }} text-green-500 w-4 text-center text-xs"></i>
+                                    {{ $kat->nama_kategori }}
+                                </a>
+                                @endforeach
+                                <div style="border-top:1px solid #f1f5f9;margin:4px 0"></div>
+                                <a href="{{ route('layanan') }}" class="nav-dropdown-item flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                                    <i class="fas fa-list text-green-500 w-4 text-center text-xs"></i> Semua Layanan
+                                </a>
+                            </div>
+                            @endif
+                            @endisset
+                        </div>
+                        <a href="{{ route('mcu') }}" class="nav-dropdown-item">
+                            <i class="fas fa-clipboard-check text-green-500 w-4 text-center"></i> Medical Check-Up
                         </a>
-                        @endforeach
+                        <a href="{{ route('dokter') }}" class="nav-dropdown-item">
+                            <i class="fas fa-calendar-check text-green-500 w-4 text-center"></i> Daftar Poliklinik
+                        </a>
                     </div>
                 </div>
 
