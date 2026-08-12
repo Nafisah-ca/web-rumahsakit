@@ -9,41 +9,72 @@ return new class extends Migration
      * Normalisasi format no_rekam_medis lama (RM2026XXXXX atau 2026XXXXX)
      * menjadi 8 digit angka polos tanpa prefix apapun (00000001, 00000002, dst).
      *
-     * Logika: strip semua karakter non-angka, ambil 5 digit terakhir
-     * (urutan aslinya), lalu pad jadi 8 digit.
-     *
-     * Contoh:
-     *   RM202600001 → strip → 202600001 → 5 digit terakhir → 00001 → pad → 00000001
-     *   202600003   → strip → 202600003 → 5 digit terakhir → 00003 → pad → 00000003
-     *   00000005    → sudah bersih, tidak berubah
+     * Jika hasil normalisasi menghasilkan duplikat, gunakan ID pasien
+     * sebagai fallback agar tetap unik.
      */
     public function up(): void
     {
-        // Ambil semua pasien yang no_rekam_medisnya belum format 8 digit polos
-        // (yaitu yang panjangnya > 8 atau mengandung huruf)
-        $pasiens = DB::table('pasien')
-            ->whereRaw("no_rekam_medis REGEXP '[^0-9]' OR LENGTH(no_rekam_medis) > 8")
-            ->get(['id', 'no_rekam_medis']);
+        // Nonaktifkan unique check sementara agar tidak error saat update bertahap
+        DB::statement('SET unique_checks = 0');
 
-        foreach ($pasiens as $pasien) {
-            // Strip semua non-angka
-            $digits = preg_replace('/\D/', '', $pasien->no_rekam_medis);
+        try {
+            // Ambil semua pasien, urutkan berdasarkan id agar konsisten
+            $pasiens = DB::table('pasien')
+                ->orderBy('id')
+                ->get(['id', 'no_rekam_medis']);
 
-            // Ambil 5 digit terakhir (urutan asli dari format lama RMYYYYnnnnn)
-            $urutan = (int) substr($digits, -5);
+            // Kumpulkan semua no_rekam_medis yang SUDAH ADA (sudah bersih)
+            // agar tidak bentrok saat assign nilai baru
+            $taken = DB::table('pasien')
+                ->whereRaw("no_rekam_medis NOT REGEXP '[^0-9]' AND LENGTH(no_rekam_medis) = 8")
+                ->pluck('no_rekam_medis', 'id')
+                ->toArray();
 
-            // Format ulang jadi 8 digit polos
-            $newNo = str_pad($urutan, 8, '0', STR_PAD_LEFT);
+            foreach ($pasiens as $pasien) {
+                $current = $pasien->no_rekam_medis;
 
-            DB::table('pasien')
-                ->where('id', $pasien->id)
-                ->update(['no_rekam_medis' => $newNo]);
+                // Sudah format 8 digit polos → skip
+                if (preg_match('/^\d{8}$/', $current)) {
+                    continue;
+                }
+
+                // Strip semua non-angka
+                $digits = preg_replace('/\D/', '', $current);
+
+                // Ambil 5 digit terakhir sebagai urutan
+                $urutan = (int) substr($digits, -5);
+
+                // Buat kandidat baru
+                $candidate = str_pad($urutan, 8, '0', STR_PAD_LEFT);
+
+                // Jika kandidat sudah dipakai pasien lain, gunakan ID sebagai fallback
+                if (in_array($candidate, $taken)) {
+                    $candidate = str_pad($pasien->id, 8, '0', STR_PAD_LEFT);
+                }
+
+                // Jika fallback ID pun masih duplikat, tambah suffix unik
+                $finalCandidate = $candidate;
+                $suffix = 1;
+                while (in_array($finalCandidate, $taken)) {
+                    $finalCandidate = str_pad($pasien->id * 1000 + $suffix, 8, '0', STR_PAD_LEFT);
+                    $suffix++;
+                }
+
+                // Simpan ke daftar taken dan update DB
+                $taken[$pasien->id] = $finalCandidate;
+
+                DB::table('pasien')
+                    ->where('id', $pasien->id)
+                    ->update(['no_rekam_medis' => $finalCandidate]);
+            }
+        } finally {
+            // Aktifkan kembali unique check
+            DB::statement('SET unique_checks = 1');
         }
     }
 
     public function down(): void
     {
         // Tidak bisa dikembalikan otomatis karena format lama sudah overwrite.
-        // Jika perlu rollback, restore dari backup database.
     }
 };
