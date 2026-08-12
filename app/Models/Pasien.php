@@ -57,6 +57,11 @@ class Pasien extends Model
         return $this->hasMany(Transaksi::class);
     }
 
+    public function bookingEvents(): HasMany
+    {
+        return $this->hasMany(BookingEvent::class)->orderByDesc('created_tm');
+    }
+
     // ─── Accessors ────────────────────────────────────
 
     public function getUmurAttribute(): ?int

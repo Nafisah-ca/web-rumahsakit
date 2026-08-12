@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Cms;
 
 use App\Http\Controllers\Controller;
 use App\Models\Artikel;
+use App\Models\BookingEvent;
 use App\Models\KategoriArtikel;
 use App\Models\Promo;
 use App\Models\Event;
@@ -204,6 +205,7 @@ class CmsController extends Controller
             'tanggal_event' => 'required|date',
             'waktu_event'   => 'required',
             'lokasi'        => 'nullable|string|max:255',
+            'kuota'         => 'nullable|integer|min:1',
             'status'        => 'required|in:aktif,nonaktif',
             'gambar'        => 'nullable|image|max:3072',
         ]);
@@ -229,6 +231,7 @@ class CmsController extends Controller
             'tanggal_event' => 'required|date',
             'waktu_event'   => 'required',
             'lokasi'        => 'nullable|string|max:255',
+            'kuota'         => 'nullable|integer|min:1',
             'status'        => 'required|in:aktif,nonaktif',
             'gambar'        => 'nullable|image|max:3072',
         ]);
@@ -251,6 +254,46 @@ class CmsController extends Controller
         $event->update(['deleted_by' => Auth::id()]);
         $event->delete();
         return back()->with('success', 'Event berhasil dihapus.');
+    }
+
+    public function pesertaEvent(Request $request, Event $event)
+    {
+        $query = BookingEvent::with(['pasien.user'])
+            ->where('event_id', $event->id);
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('kode_booking', 'like', "%{$search}%")
+                  ->orWhereHas('pasien.user', function ($q2) use ($search) {
+                      $q2->where('nama', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $peserta   = $query->orderByDesc('created_tm')->paginate(20)->withQueryString();
+        $total     = BookingEvent::where('event_id', $event->id)->count();
+        $confirmed = BookingEvent::where('event_id', $event->id)->where('status', 'confirmed')->count();
+        $pending   = BookingEvent::where('event_id', $event->id)->where('status', 'pending')->count();
+
+        return view('cms.event.peserta', compact('event', 'peserta', 'total', 'confirmed', 'pending'));
+    }
+
+    public function updateStatusPeserta(Request $request, Event $event, BookingEvent $bookingEvent)
+    {
+        $request->validate(['status' => 'required|in:pending,confirmed,cancelled']);
+        abort_unless($bookingEvent->event_id === $event->id, 404);
+
+        $bookingEvent->update([
+            'status'     => $request->status,
+            'updated_by' => Auth::id(),
+        ]);
+
+        return back()->with('success', 'Status peserta berhasil diperbarui.');
     }
 
     // ─────────────────────────── BANNER ──────────────────────────────
@@ -558,5 +601,63 @@ class CmsController extends Controller
         $guestBook->update(['deleted_by' => Auth::id()]);
         $guestBook->delete();
         return back()->with('success', 'Pesan berhasil dihapus.');
+    }
+
+    // ─────────────────────────── PROFILE & PASSWORD ──────────────────
+
+    public function profile()
+    {
+        $user = Auth::user();
+        return view('cms.setting.profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'nama'  => 'required|string|max:150',
+            'email' => 'required|email|max:150|unique:users,email,' . $user->id,
+            'no_hp' => 'nullable|string|max:20',
+            'foto'  => 'nullable|image|max:2048',
+        ]);
+
+        $data = $request->only(['nama', 'email', 'no_hp']);
+        $data['updated_by'] = $user->id;
+
+        if ($request->hasFile('foto')) {
+            if ($user->foto) Storage::disk('public')->delete($user->foto);
+            $data['foto'] = $request->file('foto')->store('profile', 'public');
+        }
+
+        $user->update($data);
+        return back()->with('success', 'Profile berhasil diperbarui.');
+    }
+
+    public function settingPassword()
+    {
+        return view('cms.setting.password');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'password_lama'              => 'required',
+            'password_baru'              => 'required|min:8|confirmed',
+            'password_baru_confirmation' => 'required',
+        ]);
+
+        if (!\Illuminate\Support\Facades\Hash::check($request->password_lama, $user->password)) {
+            return back()->withErrors(['password_lama' => 'Password lama yang Anda masukkan salah.'])->withInput();
+        }
+
+        $user->update([
+            'password'   => \Illuminate\Support\Facades\Hash::make($request->password_baru),
+            'updated_by' => $user->id,
+        ]);
+
+        return back()->with('success', 'Password berhasil diperbarui.');
     }
 }

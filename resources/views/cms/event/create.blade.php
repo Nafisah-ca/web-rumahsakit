@@ -41,6 +41,10 @@
                         <option value="aktif"    {{ old('status')=='aktif'?'selected':'' }}>Aktif (Tampil)</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Kuota Peserta <span style="font-size:11px;color:#94a3b8">(kosongkan = tidak terbatas)</span></label>
+                    <input type="number" name="kuota" value="{{ old('kuota') }}" class="form-input" min="1" placeholder="Contoh: 50">
+                </div>
             </div>
             <div style="display:flex;gap:10px;margin-top:8px">
                 <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Event</button>

@@ -95,10 +95,58 @@
                     </div>
 
                     <div class="mt-5 pt-4 border-t border-gray-100">
-                        <a href="{{ route('portal.booking.create') }}"
-                           class="block w-full text-center bg-purple-600 hover:bg-purple-700 text-white font-extrabold py-3 rounded-xl text-sm transition-colors">
-                            <i class="fas fa-calendar-check mr-2"></i>Buat Janji Temu
-                        </a>
+                        @php
+                            $sudahBooking = false;
+                            $kuotaPenuh   = $event->kuota_penuh;
+                            $eventLewat   = $event->tanggal_event?->isPast();
+                            if (auth()->check() && auth()->user()->pasien) {
+                                $sudahBooking = \App\Models\BookingEvent::where('event_id', $event->id)
+                                    ->where('pasien_id', auth()->user()->pasien->id)
+                                    ->whereIn('status', ['pending','confirmed'])
+                                    ->exists();
+                            }
+                        @endphp
+
+                        @if($eventLewat)
+                            <div class="w-full text-center bg-gray-100 text-gray-400 font-bold py-3 rounded-xl text-sm">
+                                <i class="fas fa-calendar-xmark mr-2"></i>Event Sudah Berlangsung
+                            </div>
+                        @elseif($sudahBooking)
+                            <div class="w-full text-center bg-green-50 text-green-700 border border-green-200 font-bold py-3 rounded-xl text-sm">
+                                <i class="fas fa-circle-check mr-2"></i>Anda Sudah Terdaftar
+                            </div>
+                            <a href="{{ route('portal.booking-event.riwayat') }}"
+                               class="block w-full text-center border-2 border-purple-600 text-purple-700 hover:bg-purple-50 font-bold py-2.5 rounded-xl text-sm transition-colors mt-2">
+                                <i class="fas fa-list mr-2"></i>Lihat Pendaftaran Saya
+                            </a>
+                        @elseif($kuotaPenuh)
+                            <div class="w-full text-center bg-red-50 text-red-500 border border-red-200 font-bold py-3 rounded-xl text-sm">
+                                <i class="fas fa-users-slash mr-2"></i>Kuota Penuh
+                            </div>
+                        @elseif(auth()->check())
+                            <a href="{{ route('portal.booking-event.create', $event) }}"
+                               class="block w-full text-center bg-purple-600 hover:bg-purple-700 text-white font-extrabold py-3 rounded-xl text-sm transition-colors">
+                                <i class="fas fa-ticket mr-2"></i>Daftar ke Event Ini
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}?redirect={{ urlencode(request()->url()) }}"
+                               class="block w-full text-center bg-purple-600 hover:bg-purple-700 text-white font-extrabold py-3 rounded-xl text-sm transition-colors">
+                                <i class="fas fa-ticket mr-2"></i>Daftar ke Event Ini
+                            </a>
+                            <p class="text-center text-xs text-gray-400 mt-2">Masuk terlebih dahulu untuk mendaftar</p>
+                        @endif
+
+                        @if($event->kuota && !$eventLewat)
+                        <div class="mt-3 text-center text-xs text-gray-400">
+                            @php $aktif = $event->pesertaAktif()->count(); @endphp
+                            <span>{{ $aktif }} / {{ $event->kuota }} peserta terdaftar</span>
+                            <div class="mt-1.5 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full {{ $kuotaPenuh ? 'bg-red-500' : 'bg-purple-500' }}"
+                                     style="width:{{ min(100, round($aktif / $event->kuota * 100)) }}%"></div>
+                            </div>
+                        </div>
+                        @endif
+
                         <a href="{{ route('kontak') }}"
                            class="block w-full text-center border-2 border-purple-600 text-purple-700 hover:bg-purple-50 font-bold py-2.5 rounded-xl text-sm transition-colors mt-2">
                             <i class="fas fa-phone mr-2"></i>Hubungi Kami

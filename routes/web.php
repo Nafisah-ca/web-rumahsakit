@@ -9,6 +9,7 @@ use App\Http\Controllers\Cms\CmsController;
 use App\Http\Controllers\Admin\SpesialisasiController;
 use App\Http\Controllers\Admin\TransaksiController;
 use App\Http\Controllers\Admin\PenjaminController;
+use App\Http\Controllers\EventBookingController;
 
 // ─────────────────────────── PUBLIC PORTAL ───────────────────────────────────
 
@@ -56,6 +57,12 @@ Route::middleware(['auth', 'role:pasien'])->prefix('portal')->name('portal.')->g
     Route::get('/booking/riwayat',                           [BookingController::class, 'riwayat'])->name('booking.riwayat');
     Route::post('/booking/{janjiTemu}/batal',                [BookingController::class, 'cancel'])->name('booking.cancel');
     Route::get('/booking/jadwal',                            [BookingController::class, 'jadwal'])->name('booking.jadwal');
+
+    // Booking Event
+    Route::get('/booking-event',                             [EventBookingController::class, 'riwayat'])->name('booking-event.riwayat');
+    Route::get('/booking-event/{event}',                     [EventBookingController::class, 'create'])->name('booking-event.create');
+    Route::post('/booking-event/{event}',                    [EventBookingController::class, 'store'])->name('booking-event.store');
+    Route::post('/booking-event/{bookingEvent}/batal',       [EventBookingController::class, 'cancel'])->name('booking-event.cancel');
 });
 
 // ─────────────────────────── ADMIN ────────────────────────────────────────────
@@ -170,6 +177,8 @@ Route::middleware(['auth', 'role:cms'])->prefix('cms')->name('cms.')->group(func
     Route::get('/event/{event}/edit',       [CmsController::class, 'editEvent'])->name('event.edit');
     Route::put('/event/{event}',            [CmsController::class, 'updateEvent'])->name('event.update');
     Route::delete('/event/{event}',         [CmsController::class, 'destroyEvent'])->name('event.destroy');
+    Route::get('/event/{event}/peserta',    [CmsController::class, 'pesertaEvent'])->name('event.peserta');
+    Route::put('/event/{event}/peserta/{bookingEvent}', [CmsController::class, 'updateStatusPeserta'])->name('event.peserta.status');
 
     // Banner
     Route::get('/banner',                   [CmsController::class, 'banner'])->name('banner');
@@ -209,4 +218,10 @@ Route::middleware(['auth', 'role:cms'])->prefix('cms')->name('cms.')->group(func
     // Website Setting
     Route::get('/website-setting',          [CmsController::class, 'websiteSetting'])->name('website-setting');
     Route::put('/website-setting',          [CmsController::class, 'updateWebsiteSetting'])->name('website-setting.update');
+
+    // Profile & Password
+    Route::get('/profile',                  [CmsController::class, 'profile'])->name('profile');
+    Route::put('/profile',                  [CmsController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/setting/password',         [CmsController::class, 'settingPassword'])->name('setting.password');
+    Route::put('/setting/password',         [CmsController::class, 'updatePassword'])->name('setting.password.update');
 });
