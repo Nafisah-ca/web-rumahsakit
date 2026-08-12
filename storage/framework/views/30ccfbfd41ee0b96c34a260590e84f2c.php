@@ -87,4 +87,4 @@
 
 <?php $__env->stopSection(); ?>
 
-<?php echo $__env->make('layouts.cms', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\web-rumahsakit\web-rumahsakit\resources\views/cms/dashboard.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('layouts.cms', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\rumahsakit\resources\views/cms/dashboard.blade.php ENDPATH**/ ?>

@@ -1,24 +1,23 @@
-@extends('layouts.app')
-@section('content')
+<?php $__env->startSection('content'); ?>
 
 <div class="py-16" style="background:linear-gradient(135deg,#1e3a5f,#0284c7)">
     <div class="max-w-screen-xl mx-auto px-4">
         <nav class="flex items-center gap-2 text-sm text-blue-200 mb-4">
-            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
+            <a href="<?php echo e(route('home')); ?>" class="hover:text-white">Beranda</a>
             <i class="fas fa-chevron-right text-xs"></i>
-            <a href="{{ route('artikel') }}" class="hover:text-white">Artikel</a>
+            <a href="<?php echo e(route('artikel')); ?>" class="hover:text-white">Artikel</a>
             <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-white font-semibold">{{ Str::limit($artikel->judul, 40) }}</span>
+            <span class="text-white font-semibold"><?php echo e(Str::limit($artikel->judul, 40)); ?></span>
         </nav>
-        <h1 class="text-white font-extrabold text-3xl md:text-4xl leading-tight max-w-3xl">{{ $artikel->judul }}</h1>
+        <h1 class="text-white font-extrabold text-3xl md:text-4xl leading-tight max-w-3xl"><?php echo e($artikel->judul); ?></h1>
         <div class="flex flex-wrap gap-4 mt-4 text-sm text-blue-200">
-            @if($artikel->kategori)
-            <span class="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">{{ $artikel->kategori->nama_kategori }}</span>
-            @endif
-            <span><i class="fas fa-clock mr-1"></i>{{ $artikel->created_tm?->format('d M Y') }}</span>
-            @if($artikel->penulis)
-            <span><i class="fas fa-user mr-1"></i>{{ $artikel->penulis->nama }}</span>
-            @endif
+            <?php if($artikel->kategori): ?>
+            <span class="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full"><?php echo e($artikel->kategori->nama_kategori); ?></span>
+            <?php endif; ?>
+            <span><i class="fas fa-clock mr-1"></i><?php echo e($artikel->created_tm?->format('d M Y')); ?></span>
+            <?php if($artikel->penulis): ?>
+            <span><i class="fas fa-user mr-1"></i><?php echo e($artikel->penulis->nama); ?></span>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -27,56 +26,57 @@
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2 space-y-6">
-                @if($artikel->gambar)
+                <?php if($artikel->gambar): ?>
                 <div class="rounded-2xl overflow-hidden shadow-sm">
-                    <img src="{{ Storage::url($artikel->gambar) }}" alt="{{ $artikel->judul }}" class="w-full object-cover max-h-80">
+                    <img src="<?php echo e(Storage::url($artikel->gambar)); ?>" alt="<?php echo e($artikel->judul); ?>" class="w-full object-cover max-h-80">
                 </div>
-                @else
+                <?php else: ?>
                 <div class="rounded-2xl h-48 flex items-center justify-center" style="background:linear-gradient(135deg,#1e3a5f,#0284c7)">
                     <i class="fas fa-newspaper text-6xl text-white opacity-20"></i>
                 </div>
-                @endif
+                <?php endif; ?>
 
                 <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-                    {{-- Render HTML dari TinyMCE --}}
+                    
                     <div class="prose prose-slate max-w-none" style="line-height:1.9;font-size:15px">
-                        {!! $artikel->isi !!}
+                        <?php echo $artikel->isi; ?>
+
                     </div>
                 </div>
 
-                {{-- ===== TOMBOL SHARE ===== --}}
+                
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
                     <p class="text-sm font-extrabold text-gray-700 mb-3"><i class="fas fa-share-nodes text-green-500 mr-2"></i>Bagikan Artikel</p>
                     <div class="flex flex-wrap gap-2">
-                        {{-- WhatsApp --}}
-                        <a href="https://wa.me/?text={{ urlencode($artikel->judul . ' - ' . request()->url()) }}"
+                        
+                        <a href="https://wa.me/?text=<?php echo e(urlencode($artikel->judul . ' - ' . request()->url())); ?>"
                            target="_blank" rel="noopener"
                            class="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all hover:-translate-y-0.5 hover:opacity-90"
                            style="background:#25d366">
                             <i class="fab fa-whatsapp text-sm"></i> WhatsApp
                         </a>
-                        {{-- Facebook --}}
-                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->url()) }}"
+                        
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo e(urlencode(request()->url())); ?>"
                            target="_blank" rel="noopener"
                            class="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all hover:-translate-y-0.5 hover:opacity-90"
                            style="background:#1877f2">
                             <i class="fab fa-facebook-f text-sm"></i> Facebook
                         </a>
-                        {{-- X / Twitter --}}
-                        <a href="https://twitter.com/intent/tweet?text={{ urlencode($artikel->judul) }}&url={{ urlencode(request()->url()) }}"
+                        
+                        <a href="https://twitter.com/intent/tweet?text=<?php echo e(urlencode($artikel->judul)); ?>&url=<?php echo e(urlencode(request()->url())); ?>"
                            target="_blank" rel="noopener"
                            class="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all hover:-translate-y-0.5 hover:opacity-90"
                            style="background:#000">
                             <i class="fab fa-x-twitter text-sm"></i> X
                         </a>
-                        {{-- Telegram --}}
-                        <a href="https://t.me/share/url?url={{ urlencode(request()->url()) }}&text={{ urlencode($artikel->judul) }}"
+                        
+                        <a href="https://t.me/share/url?url=<?php echo e(urlencode(request()->url())); ?>&text=<?php echo e(urlencode($artikel->judul)); ?>"
                            target="_blank" rel="noopener"
                            class="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all hover:-translate-y-0.5 hover:opacity-90"
                            style="background:#229ed9">
                             <i class="fab fa-telegram text-sm"></i> Telegram
                         </a>
-                        {{-- Copy Link --}}
+                        
                         <button id="btn-copy-link"
                                 onclick="copyArtikelLink()"
                                 class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:-translate-y-0.5"
@@ -92,25 +92,25 @@
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
                     <h3 class="font-extrabold text-gray-900 mb-4">Artikel Terkait</h3>
                     <div class="space-y-3">
-                        @forelse($related as $rel)
-                        <a href="{{ route('artikel.detail', $rel->slug) }}" class="flex gap-3 items-start hover:bg-gray-50 p-2 rounded-xl transition-colors group">
+                        <?php $__empty_1 = true; $__currentLoopData = $related; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $rel): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <a href="<?php echo e(route('artikel.detail', $rel->slug)); ?>" class="flex gap-3 items-start hover:bg-gray-50 p-2 rounded-xl transition-colors group">
                             <div class="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0" style="background:linear-gradient(135deg,#1e3a5f,#0284c7)">
-                                @if($rel->gambar)
-                                <img src="{{ Storage::url($rel->gambar) }}" class="w-full h-full object-cover">
-                                @elseif($rel->thumbnail)
-                                <img src="{{ Storage::url($rel->thumbnail) }}" class="w-full h-full object-cover">
-                                @else
+                                <?php if($rel->gambar): ?>
+                                <img src="<?php echo e(Storage::url($rel->gambar)); ?>" class="w-full h-full object-cover">
+                                <?php elseif($rel->thumbnail): ?>
+                                <img src="<?php echo e(Storage::url($rel->thumbnail)); ?>" class="w-full h-full object-cover">
+                                <?php else: ?>
                                 <div class="flex items-center justify-center h-full"><i class="fas fa-newspaper text-white opacity-50"></i></div>
-                                @endif
+                                <?php endif; ?>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-bold text-gray-900 leading-snug group-hover:text-blue-600 line-clamp-2">{{ $rel->judul }}</p>
-                                <p class="text-xs text-gray-400 mt-0.5">{{ $rel->created_tm?->format('d M Y') }}</p>
+                                <p class="text-sm font-bold text-gray-900 leading-snug group-hover:text-blue-600 line-clamp-2"><?php echo e($rel->judul); ?></p>
+                                <p class="text-xs text-gray-400 mt-0.5"><?php echo e($rel->created_tm?->format('d M Y')); ?></p>
                             </div>
                         </a>
-                        @empty
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <p class="text-sm text-gray-400">Tidak ada artikel terkait.</p>
-                        @endforelse
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -118,7 +118,7 @@
                     <i class="fas fa-calendar-check text-green-300 text-2xl mb-3 block"></i>
                     <h4 class="font-extrabold mb-2">Konsultasi Dokter</h4>
                     <p class="text-green-200 text-sm mb-4">Buat janji temu dengan dokter spesialis kami.</p>
-                    <a href="{{ route('portal.booking.create') }}" class="block w-full bg-white text-green-700 font-bold text-sm py-2.5 rounded-xl text-center hover:bg-green-50 transition-colors">
+                    <a href="<?php echo e(route('portal.booking.create')); ?>" class="block w-full bg-white text-green-700 font-bold text-sm py-2.5 rounded-xl text-center hover:bg-green-50 transition-colors">
                         Buat Janji Temu
                     </a>
                 </div>
@@ -126,11 +126,11 @@
         </div>
     </div>
 </section>
-@endsection
-@push('scripts')
+<?php $__env->stopSection(); ?>
+<?php $__env->startPush('scripts'); ?>
 <script>
 function copyArtikelLink() {
-    const url  = '{{ request()->url() }}';
+    const url  = '<?php echo e(request()->url()); ?>';
     const btn  = document.getElementById('btn-copy-link');
     const lbl  = document.getElementById('copy-label');
     navigator.clipboard.writeText(url).then(function () {
@@ -147,4 +147,6 @@ function copyArtikelLink() {
     });
 }
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\rumahsakit\resources\views/artikel-detail.blade.php ENDPATH**/ ?>

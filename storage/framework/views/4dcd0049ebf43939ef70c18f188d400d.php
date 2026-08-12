@@ -1,3 +1,4 @@
+
 <?php $__env->startSection('content'); ?>
 
 <div class="py-16" style="background:linear-gradient(135deg,#1e3a5f,#0284c7)">
@@ -95,4 +96,4 @@
 <?php $__env->stopPush(); ?>
 <?php $__env->stopSection(); ?>
 
-<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\web-rumahsakit\web-rumahsakit\resources\views/artikel.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\rumahsakit\resources\views/artikel.blade.php ENDPATH**/ ?>

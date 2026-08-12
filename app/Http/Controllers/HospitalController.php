@@ -26,7 +26,15 @@ class HospitalController extends Controller
         $informasis   = \App\Models\Informasi::terbaru(6)->get();
         $setting_global = \App\Models\WebsiteSetting::getSetting();
 
-        return view('home', compact('banners', 'spesialisasi', 'promos', 'events', 'articles', 'informasis', 'setting_global') + ['setting' => $setting_global]);
+        $totalInformasi = \App\Models\Informasi::published()->count();
+        $totalArtikel   = Artikel::published()->count();
+        $totalBanner    = Banner::aktif()->count();
+
+        return view('home', compact(
+            'banners', 'spesialisasi', 'promos', 'events',
+            'articles', 'informasis', 'setting_global',
+            'totalInformasi', 'totalArtikel', 'totalBanner'
+        ) + ['setting' => $setting_global]);
     }
 
     public function tentang()

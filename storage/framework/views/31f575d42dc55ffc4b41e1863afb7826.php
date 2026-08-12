@@ -1,3 +1,4 @@
+
 <?php $__env->startSection('content'); ?>
 
 <div class="py-20" style="background: linear-gradient(135deg, #00521f, #00b04f);">
@@ -219,4 +220,4 @@
 
 <?php $__env->stopSection(); ?>
 
-<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\web-rumahsakit\web-rumahsakit\resources\views/kontak.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\rumahsakit\resources\views/kontak.blade.php ENDPATH**/ ?>

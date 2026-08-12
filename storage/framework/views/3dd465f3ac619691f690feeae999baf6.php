@@ -746,4 +746,4 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 </body>
 </html>
-<?php /**PATH D:\laragon\www\web-rumahsakit\web-rumahsakit\resources\views/layouts/app.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\laragon\www\rumahsakit\resources\views/layouts/app.blade.php ENDPATH**/ ?>

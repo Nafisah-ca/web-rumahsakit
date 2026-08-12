@@ -1,3 +1,4 @@
+
 <?php $__env->startSection('content'); ?>
 
 
@@ -316,9 +317,11 @@
                 <span class="section-label">Kesehatan Terkini</span>
                 <h2 class="section-title">Informasi <span>Terkini</span></h2>
             </div>
+            <?php if($totalInformasi > 6): ?>
             <a href="<?php echo e(route('informasi')); ?>" class="btn-outline-green hidden md:inline-flex">
                 Lihat Semua <i class="fas fa-arrow-right"></i>
             </a>
+            <?php endif; ?>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 fade-up">
             <?php $__empty_1 = true; $__currentLoopData = $informasis; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $info): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
@@ -358,11 +361,13 @@
             <?php endif; ?>
         </div>
         <div class="mt-6 md:hidden text-center fade-up">
+            <?php if($totalInformasi > 6): ?>
             <a href="<?php echo e(route('informasi')); ?>" class="btn-outline-green">Lihat Semua <i class="fas fa-arrow-right"></i></a>
+            <?php endif; ?>
         </div>
     </div>
 </section>
 
 <?php $__env->stopSection(); ?>
 
-<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\web-rumahsakit\web-rumahsakit\resources\views/home.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\rumahsakit\resources\views/home.blade.php ENDPATH**/ ?>

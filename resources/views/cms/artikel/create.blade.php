@@ -17,8 +17,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Isi / Konten Artikel <span style="color:#ef4444">*</span></label>
-                <textarea name="isi" rows="20" class="form-input" required
-                    placeholder="Tulis konten lengkap artikel di sini...">{{ old('isi') }}</textarea>
+                <textarea name="isi" id="artikel-editor" class="form-input" required>{{ old('isi') }}</textarea>
             </div>
         </div>
     </div>
@@ -57,7 +56,41 @@
 </form>
 @endsection
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.3/tinymce.min.js"></script>
 <script>
+tinymce.init({
+    selector: '#artikel-editor',
+    license_key: 'gpl',
+    height: 500,
+    menubar: true,
+    base_url: 'https://cdn.jsdelivr.net/npm/tinymce@6.8.3',
+    suffix: '.min',
+    plugins: [
+        'advlist','autolink','lists','link','charmap','preview','anchor',
+        'searchreplace','visualblocks','code','fullscreen',
+        'table','help','wordcount'
+    ],
+    toolbar: 'undo redo | blocks | ' +
+             'bold italic underline strikethrough | ' +
+             'alignleft aligncenter alignright alignjustify | ' +
+             'bullist numlist | outdent indent | ' +
+             'link table | removeformat | code fullscreen | help',
+    content_style: [
+        'body {',
+        '  font-family: "Plus Jakarta Sans", sans-serif;',
+        '  font-size: 14px;',
+        '  line-height: 1.8;',
+        '  color: #334155;',
+        '  padding: 16px;',
+        '}'
+    ].join(''),
+    branding: false,
+    promotion: false,
+    setup: function (editor) {
+        editor.on('change input', function () { editor.save(); });
+    }
+});
+
 document.getElementById('gambar-input')?.addEventListener('change', function() {
     const f = this.files[0]; if (!f) return;
     const p = document.getElementById('gambar-preview');
