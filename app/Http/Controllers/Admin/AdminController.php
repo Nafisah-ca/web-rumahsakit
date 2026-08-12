@@ -598,4 +598,49 @@ class AdminController extends Controller
             'dailyData', 'dailyLabels', 'bulan', 'tahun'
         ));
     }
+
+    // ─────────────────────────── PENGUNJUNG ──────────────────────────
+
+    public function pengunjung(Request $request)
+    {
+        $query = \App\Models\PageVisit::query();
+
+        if ($request->tanggal) {
+            $query->whereDate('visited_at', $request->tanggal);
+        }
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('ip_address', 'like', "%{$request->search}%")
+                  ->orWhere('page_url', 'like', "%{$request->search}%");
+            });
+        }
+
+        $visits     = $query->orderByDesc('visited_at')->paginate(30)->withQueryString();
+        $totalToday = \App\Models\PageVisit::whereDate('visited_at', today())->count();
+        $totalAll   = \App\Models\PageVisit::count();
+        $uniqueToday = \App\Models\PageVisit::whereDate('visited_at', today())
+                            ->distinct('ip_address')->count('ip_address');
+
+        // Top 10 halaman terbanyak dikunjungi (30 hari terakhir)
+        $topPages = \App\Models\PageVisit::selectRaw('page_url, count(*) as total')
+            ->where('visited_at', '>=', now()->subDays(30))
+            ->groupBy('page_url')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        // Grafik kunjungan 14 hari terakhir
+        $chartLabels = [];
+        $chartData   = [];
+        for ($i = 13; $i >= 0; $i--) {
+            $day = now()->subDays($i);
+            $chartLabels[] = $day->format('d/m');
+            $chartData[]   = \App\Models\PageVisit::whereDate('visited_at', $day)->count();
+        }
+
+        return view('admin.pengunjung', compact(
+            'visits', 'totalToday', 'totalAll', 'uniqueToday',
+            'topPages', 'chartLabels', 'chartData'
+        ));
+    }
 }

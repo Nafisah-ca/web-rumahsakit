@@ -458,7 +458,43 @@ class CmsController extends Controller
         return redirect()->route('cms.website-setting')->with('success', 'Pengaturan website berhasil diperbarui.');
     }
 
-    // ─────────────────────────── KATEGORI ARTIKEL ────────────────────
+    // ─────────────────────────── KEBIJAKAN PRIVASI ───────────────────
+
+    public function privacyPolicyEditor()
+    {
+        $setting = WebsiteSetting::first() ?? new WebsiteSetting();
+        return view('cms.kebijakan-privasi.edit', compact('setting'));
+    }
+
+    public function updatePrivacyPolicy(Request $request)
+    {
+        $request->validate(['privacy_policy' => 'nullable|string']);
+        $setting = WebsiteSetting::firstOrNew([]);
+        $setting->privacy_policy = $request->privacy_policy;
+        $setting->updated_by     = Auth::id();
+        if (!$setting->exists) $setting->created_by = Auth::id();
+        $setting->save();
+        return back()->with('success', 'Kebijakan Privasi berhasil diperbarui.');
+    }
+
+    // ─────────────────────────── SYARAT & KETENTUAN ──────────────────
+
+    public function syaratKetentuanEditor()
+    {
+        $setting = WebsiteSetting::first() ?? new WebsiteSetting();
+        return view('cms.syarat-ketentuan.edit', compact('setting'));
+    }
+
+    public function updateSyaratKetentuan(Request $request)
+    {
+        $request->validate(['syarat_ketentuan' => 'nullable|string']);
+        $setting = WebsiteSetting::firstOrNew([]);
+        $setting->syarat_ketentuan = $request->syarat_ketentuan;
+        $setting->updated_by       = Auth::id();
+        if (!$setting->exists) $setting->created_by = Auth::id();
+        $setting->save();
+        return back()->with('success', 'Syarat & Ketentuan berhasil diperbarui.');
+    }
 
     public function kategoriArtikel(Request $request)
     {

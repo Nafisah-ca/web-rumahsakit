@@ -33,6 +33,10 @@ Route::get('/artikel/{slug}',  [HospitalController::class, 'artikelDetail'])->na
 Route::get('/medical-checkup', [HospitalController::class, 'mcu'])->name('mcu');
 Route::get('/live-antrian',    [HospitalController::class, 'liveAntrian'])->name('live.antrian');
 
+// Halaman Legal
+Route::get('/kebijakan-privasi', [HospitalController::class, 'kebijakanPrivasi'])->name('kebijakan-privasi');
+Route::get('/syarat-ketentuan',  [HospitalController::class, 'syaratKetentuan'])->name('syarat-ketentuan');
+
 // ─────────────────────────── AUTH ─────────────────────────────────────────────
 
 Route::middleware('guest')->group(function () {
@@ -128,6 +132,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Laporan
     Route::get('/laporan', [AdminController::class, 'laporan'])->name('laporan');
 
+    // Statistik Pengunjung
+    Route::get('/pengunjung', [AdminController::class, 'pengunjung'])->name('pengunjung');
+
     // Transaksi
     Route::get('/transaksi',                      [TransaksiController::class, 'index'])->name('transaksi');
     Route::get('/transaksi/create',               [TransaksiController::class, 'create'])->name('transaksi.create');
@@ -149,8 +156,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 });
 
 // ─────────────────────────── CMS ──────────────────────────────────────────────
-
-Route::middleware(['auth', 'role:cms'])->prefix('cms')->name('cms.')->group(function () {
+// Admin juga bisa akses CMS (role:admin,cms)
+Route::middleware(['auth', 'role:admin,cms'])->prefix('cms')->name('cms.')->group(function () {
 
     Route::get('/dashboard', [CmsController::class, 'dashboard'])->name('dashboard');
 
@@ -218,6 +225,14 @@ Route::middleware(['auth', 'role:cms'])->prefix('cms')->name('cms.')->group(func
     // Website Setting
     Route::get('/website-setting',          [CmsController::class, 'websiteSetting'])->name('website-setting');
     Route::put('/website-setting',          [CmsController::class, 'updateWebsiteSetting'])->name('website-setting.update');
+
+    // Kebijakan Privasi (CMS editor)
+    Route::get('/kebijakan-privasi',        [CmsController::class, 'privacyPolicyEditor'])->name('privacy-policy');
+    Route::put('/kebijakan-privasi',        [CmsController::class, 'updatePrivacyPolicy'])->name('privacy-policy.update');
+
+    // Syarat & Ketentuan (CMS editor)
+    Route::get('/syarat-ketentuan',         [CmsController::class, 'syaratKetentuanEditor'])->name('syarat-ketentuan');
+    Route::put('/syarat-ketentuan',         [CmsController::class, 'updateSyaratKetentuan'])->name('syarat-ketentuan.update');
 
     // Profile & Password
     Route::get('/profile',                  [CmsController::class, 'profile'])->name('profile');

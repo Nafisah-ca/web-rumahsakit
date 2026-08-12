@@ -103,16 +103,6 @@
                 </span>
             </div>
             <div class="flex items-center gap-4">
-                <a href="https://www.instagram.com/rssarisehat/" target="_blank" rel="noopener" aria-label="Instagram"
-                   class="text-gray-500 hover:text-pink-500 transition-colors text-sm"><i class="fab fa-instagram"></i></a>
-                <a href="https://www.facebook.com/rssarisehat/" target="_blank" rel="noopener" aria-label="Facebook"
-                   class="text-gray-500 hover:text-blue-600 transition-colors text-sm"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://www.youtube.com/@RSSariSehat" target="_blank" rel="noopener" aria-label="YouTube"
-                   class="text-gray-500 hover:text-red-500 transition-colors text-sm"><i class="fab fa-youtube"></i></a>
-                <a href="https://www.tiktok.com/@rssarisehat" target="_blank" rel="noopener" aria-label="TikTok"
-                   class="text-gray-500 hover:text-gray-900 transition-colors text-sm"><i class="fab fa-tiktok"></i></a>
-                <a href="https://open.spotify.com" target="_blank" rel="noopener" aria-label="Spotify"
-                   class="text-gray-500 hover:text-green-500 transition-colors text-sm"><i class="fab fa-spotify"></i></a>
                 <div class="w-px h-4 bg-gray-200"></div>
                 @auth
                 {{-- USER DROPDOWN TOPBAR --}}
@@ -385,33 +375,7 @@
 {{-- MAIN --}}
 <main>@yield('content')</main>
 
-{{-- ===== SOCIAL MEDIA SECTION ===== --}}
-<section class="social-section py-12">
-    <div class="max-w-screen-xl mx-auto px-4 text-center">
-        <div class="mb-6">
-            <span class="text-green-400 text-xs font-black uppercase tracking-widest block mb-2">Follow</span>
-            <h2 class="text-white text-2xl font-extrabold">Sosial Media Kami</h2>
-        </div>
-        <div class="flex flex-wrap justify-center gap-4">
-            @foreach([
-                ['fab fa-instagram','Instagram','@rssarisehat','bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400','https://instagram.com'],
-                ['fab fa-facebook-f','Facebook','RS Sari Sehat','bg-blue-600','https://facebook.com'],
-                ['fab fa-youtube','YouTube','RS Sari Sehat Group','bg-red-600','https://youtube.com'],
-                ['fab fa-tiktok','TikTok','@rssarisehat','bg-gray-900','https://tiktok.com'],
-                ['fab fa-spotify','Spotify','RS Sari Sehat Podcast','bg-green-500','https://spotify.com'],
-            ] as [$icon,$platform,$handle,$bg,$url])
-            <a href="{{ $url }}" target="_blank" rel="noopener"
-               class="flex items-center gap-3 {{ $bg }} text-white px-5 py-3 rounded-xl font-semibold text-sm hover:opacity-90 hover:-translate-y-1 transition-all shadow-lg">
-                <i class="{{ $icon }} text-lg"></i>
-                <div class="text-left">
-                    <div class="text-xs opacity-80">{{ $platform }}</div>
-                    <div class="font-bold text-sm">{{ $handle }}</div>
-                </div>
-            </a>
-            @endforeach
-        </div>
-    </div>
-</section>
+{{-- Social media section dihapus --}}
 
 {{-- ===== FOOTER ===== --}}
 <footer class="footer-main text-white">
@@ -443,8 +407,25 @@
                 <div class="space-y-2 text-sm">
                     @if($setting_global->telepon ?? null)
                     <div class="flex items-center gap-3">
-                        <i class="fas fa-phone text-green-500 w-4"></i>
-                        <a href="tel:{{ preg_replace('/[^0-9]/', '', $setting_global->telepon) }}" class="text-gray-300 hover:text-white transition-colors">{{ $setting_global->telepon }}</a>
+                        @php
+                            $telBrand = $setting_global->telepon;
+                            $waBrand  = preg_replace('/[^0-9]/', '', $telBrand);
+                            if (str_starts_with($waBrand, '0')) $waBrand = '62' . substr($waBrand, 1);
+                            if (empty($waBrand)) $waBrand = '6289501895170';
+                        @endphp
+                        <i class="fab fa-whatsapp text-green-400 w-4 text-base"></i>
+                        <a href="https://wa.me/{{ $waBrand }}" target="_blank" rel="noopener"
+                           class="text-gray-300 hover:text-green-400 transition-colors">
+                            {{ $telBrand }}
+                        </a>
+                    </div>
+                    @else
+                    <div class="flex items-center gap-3">
+                        <i class="fab fa-whatsapp text-green-400 w-4 text-base"></i>
+                        <a href="https://wa.me/6289501895170" target="_blank" rel="noopener"
+                           class="text-gray-300 hover:text-green-400 transition-colors">
+                            +62 895-0189-5170
+                        </a>
                     </div>
                     @endif
                     @if($setting_global->email ?? null)
@@ -496,8 +477,23 @@
                     @endif
                     @if($setting_global->telepon ?? null)
                     <li class="text-gray-400 text-sm flex items-center gap-2">
-                        <i class="fas fa-phone text-green-500 text-xs w-3"></i>
-                        <a href="tel:{{ preg_replace('/[^0-9]/', '', $setting_global->telepon) }}" class="hover:text-green-400 transition-colors">{{ $setting_global->telepon }}</a>
+                        @php
+                            $telKontak = $setting_global->telepon;
+                            $waKontak  = preg_replace('/[^0-9]/', '', $telKontak);
+                            if (str_starts_with($waKontak, '0')) $waKontak = '62' . substr($waKontak, 1);
+                            if (empty($waKontak)) $waKontak = '6289501895170';
+                        @endphp
+                        <i class="fab fa-whatsapp text-green-400 text-sm w-3"></i>
+                        <a href="https://wa.me/{{ $waKontak }}" target="_blank" rel="noopener"
+                           class="hover:text-green-400 transition-colors">
+                            {{ $telKontak }}
+                        </a>
+                    </li>
+                    @else
+                    <li class="text-gray-400 text-sm flex items-center gap-2">
+                        <i class="fab fa-whatsapp text-green-400 text-sm w-3"></i>
+                        <a href="https://wa.me/6289501895170" target="_blank" rel="noopener"
+                           class="hover:text-green-400 transition-colors">+62 895-0189-5170</a>
                     </li>
                     @endif
                     @if($setting_global->email ?? null)
@@ -528,16 +524,13 @@
             </div>
         </div>
     </div>
-
-    {{-- Copyright --}}
     <div class="border-t border-white/10">
         <div class="max-w-screen-xl mx-auto px-4 py-4">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-gray-500">
                 <span>&copy; {{ date('Y') }} {{ $setting_global->copyright ?? ($setting_global->nama_rumahsakit ?? 'RS Sari Sehat') . '. All rights reserved.' }}</span>
                 <div class="flex gap-4">
-                    <a href="#" class="hover:text-green-400 transition-colors">Kebijakan Privasi</a>
-                    <a href="#" class="hover:text-green-400 transition-colors">Syarat Ketentuan</a>
-                    <a href="#" class="hover:text-green-400 transition-colors">Kebijakan Cookie</a>
+                    <a href="{{ route('kebijakan-privasi') }}" class="hover:text-green-400 transition-colors">Kebijakan Privasi</a>
+                    <a href="{{ route('syarat-ketentuan') }}" class="hover:text-green-400 transition-colors">Syarat & Ketentuan</a>
                 </div>
             </div>
         </div>
@@ -551,7 +544,13 @@
 </button>
 
 {{-- WHATSAPP FLOAT --}}
-<a id="btn-whatsapp" href="https://wa.me/6221509438380" target="_blank" rel="noopener" aria-label="WhatsApp"
+@php
+    $floatWa = $setting_global->telepon ?? '';
+    $floatWa = preg_replace('/[^0-9]/', '', $floatWa);
+    if (str_starts_with($floatWa, '0')) $floatWa = '62' . substr($floatWa, 1);
+    if (empty($floatWa)) $floatWa = '6289501895170';
+@endphp
+<a id="btn-whatsapp" href="https://wa.me/{{ $floatWa }}" target="_blank" rel="noopener" aria-label="WhatsApp"
    class="fixed bottom-20 right-6 w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-110 z-40 group">
     <i class="fab fa-whatsapp text-2xl"></i>
     <span class="absolute right-full mr-3 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">

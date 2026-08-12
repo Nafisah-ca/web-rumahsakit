@@ -222,4 +222,16 @@ class HospitalController extends Controller
             
         return view('live-antrian', compact('antrians'));
     }
+
+    public function kebijakanPrivasi()
+    {
+        $setting = \App\Models\WebsiteSetting::getSetting();
+        return view('kebijakan-privasi', compact('setting'));
+    }
+
+    public function syaratKetentuan()
+    {
+        $setting = \App\Models\WebsiteSetting::getSetting();
+        return view('syarat-ketentuan', compact('setting'));
+    }
 }

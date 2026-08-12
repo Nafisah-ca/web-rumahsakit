@@ -222,6 +222,9 @@ nav[role="navigation"] a:hover { background: #f1f5f9; border-color: #cbd5e1; }
             <a href="{{ route('admin.laporan') }}" class="sidebar-link {{ request()->routeIs('admin.laporan') ? 'active' : '' }}">
                 <i class="fas fa-chart-column icon"></i> Laporan
             </a>
+            <a href="{{ route('admin.pengunjung') }}" class="sidebar-link {{ request()->routeIs('admin.pengunjung') ? 'active' : '' }}">
+                <i class="fas fa-chart-line icon"></i> Statistik Pengunjung
+            </a>
 
             <div class="sidebar-group">Master Data</div>
             <a href="{{ route('admin.dokter') }}" class="sidebar-link {{ request()->routeIs('admin.dokter*') ? 'active' : '' }}">

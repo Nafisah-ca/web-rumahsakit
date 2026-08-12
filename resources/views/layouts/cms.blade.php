@@ -204,10 +204,18 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
             <div class="sidebar-group">Interaksi</div>
             <a href="{{ route('cms.guest-book') }}" class="sidebar-link {{ request()->routeIs('cms.guest-book*') ? 'active' : '' }}">
                 @php $pesanBaru = \App\Models\GuestBook::where('status','baru')->count(); @endphp
-                <i class="fas fa-envelope icon"></i> Guest Book
+                <i class="fas fa-envelope icon"></i> Pesan Hubungi Kami
                 @if($pesanBaru > 0)
                 <span class="badge-count">{{ $pesanBaru }}</span>
                 @endif
+            </a>
+
+            <div class="sidebar-group">Legal</div>
+            <a href="{{ route('cms.privacy-policy') }}" class="sidebar-link {{ request()->routeIs('cms.privacy-policy*') ? 'active' : '' }}">
+                <i class="fas fa-shield-halved icon"></i> Kebijakan Privasi
+            </a>
+            <a href="{{ route('cms.syarat-ketentuan') }}" class="sidebar-link {{ request()->routeIs('cms.syarat-ketentuan*') ? 'active' : '' }}">
+                <i class="fas fa-file-contract icon"></i> Syarat & Ketentuan
             </a>
 
             <div class="sidebar-group">Lainnya</div>

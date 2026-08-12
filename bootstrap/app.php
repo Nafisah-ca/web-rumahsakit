@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\TrackPageVisit;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Track semua kunjungan halaman publik
+        $middleware->web(append: [
+            TrackPageVisit::class,
+        ]);
+
         $middleware->alias([
             'role' => RoleMiddleware::class,
         ]);

@@ -16,25 +16,29 @@
 
 <section class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-12">
             {{-- Data kontak dari website_setting --}}
-            @php
-                $telepon  = $setting->telepon ?? '(021) 5094-3838';
-                $email    = $setting->email   ?? 'info@sarisehat.id';
-            @endphp
 
-            {{-- Telepon --}}
-            <a href="tel:{{ preg_replace('/[^0-9+]/', '', $telepon) }}"
+            {{-- WhatsApp / Telepon --}}
+            @php
+                $waNumber = $setting->whatsapp ?? $setting->telepon ?? '089501895170';
+                $waClean  = preg_replace('/[^0-9]/', '', $waNumber);
+                if (str_starts_with($waClean, '0')) $waClean = '62' . substr($waClean, 1);
+                if (empty($waClean)) $waClean = '6289501895170';
+                $waDisplay = $setting->whatsapp ?? $setting->telepon ?? '+62 895-0189-5170';
+            @endphp
+            <a href="https://wa.me/{{ $waClean }}" target="_blank" rel="noopener"
                class="block p-6 rounded-2xl text-center border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group bg-green-50">
                 <div class="w-16 h-16 rounded-2xl bg-green-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-md">
-                    <i class="fas fa-phone-alt text-white text-2xl"></i>
+                    <i class="fab fa-whatsapp text-white text-3xl"></i>
                 </div>
-                <div class="font-extrabold text-gray-900 text-base mb-1">{{ $telepon }}</div>
-                <div class="font-semibold text-green-700 text-sm mb-1">Telepon & IGD</div>
+                <div class="font-extrabold text-gray-900 text-base mb-1">{{ $waDisplay }}</div>
+                <div class="font-semibold text-green-700 text-sm mb-1">WhatsApp & Telepon</div>
                 <div class="text-gray-500 text-xs">Tersedia 24 Jam</div>
             </a>
 
             {{-- Email --}}
+            @php $email = $setting->email ?? 'info@sarisehat.id'; @endphp
             <a href="mailto:{{ $email }}"
                class="block p-6 rounded-2xl text-center border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group bg-blue-50">
                 <div class="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-md">
@@ -45,24 +49,6 @@
                 <div class="text-gray-500 text-xs">Balas dalam 1×24 jam</div>
             </a>
 
-            {{-- WhatsApp --}}
-            @php
-                $waNumber = $setting->whatsapp ?? $setting->telepon ?? '6281234567890';
-                $waClean  = preg_replace('/[^0-9]/', '', $waNumber);
-                if (str_starts_with($waClean, '0')) $waClean = '62' . substr($waClean, 1);
-                $waLabel  = $setting->whatsapp ?? $setting->telepon ?? 'WhatsApp Chat';
-            @endphp
-            <a href="https://wa.me/{{ $waClean }}" target="_blank" rel="noopener"
-               style="display:block;padding:24px;border-radius:16px;text-align:center;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.08);background:#ecfdf5;text-decoration:none;transition:all .2s">
-                <div style="width:64px;height:64px;border-radius:14px;background:#059669;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 4px 12px rgba(5,150,105,.35)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="32" height="32">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                    </svg>
-                </div>
-                <div style="font-weight:800;color:#111827;font-size:15px;margin-bottom:4px">{{ $waLabel }}</div>
-                <div style="font-weight:600;color:#059669;font-size:13px;margin-bottom:4px">Konsultasi Online</div>
-                <div style="color:#6b7280;font-size:12px">Aktif setiap hari</div>
-            </a>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">

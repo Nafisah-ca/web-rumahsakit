@@ -20,7 +20,7 @@ class WebsiteSetting extends Model
         'nama_rumahsakit', 'logo', 'favicon', 'tentang_kami', 'visi', 'misi', 'sejarah',
         'motto', 'sambutan_direktur', 'alamat', 'telepon', 'email', 'google_maps',
         'facebook', 'instagram', 'youtube', 'jam_operasional', 'footer', 'copyright',
-        'whatsapp',
+        'whatsapp', 'privacy_policy', 'syarat_ketentuan',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
