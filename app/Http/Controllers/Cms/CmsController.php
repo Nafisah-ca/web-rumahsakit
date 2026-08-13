@@ -441,7 +441,8 @@ class CmsController extends Controller
             'nama_rumahsakit', 'tentang_kami', 'visi', 'misi', 'sejarah',
             'motto', 'sambutan_direktur', 'alamat', 'telepon', 'email',
             'google_maps', 'facebook', 'instagram', 'youtube',
-            'jam_operasional', 'footer', 'copyright', 'whatsapp',
+            'jam_operasional', 'jumlah_spesialisasi', 'jumlah_mitra_asuransi',
+            'footer', 'copyright', 'whatsapp',
             'privacy_policy', 'syarat_ketentuan',
         ]);
 

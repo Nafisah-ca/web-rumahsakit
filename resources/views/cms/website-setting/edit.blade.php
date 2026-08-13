@@ -45,6 +45,23 @@
     </div>
 
     <div class="card card-body">
+        <p style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f1f5f9"><i class="fas fa-chart-bar" style="color:#2563eb;margin-right:6px"></i>Statistik Halaman Utama</p>
+        <p style="font-size:11px;color:#94a3b8;margin-bottom:14px">Angka ditampilkan di bagian "Sekilas Tentang" homepage dengan tanda <strong>+</strong> di belakangnya.</p>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-stethoscope" style="color:#16a34a;width:14px"></i> Jumlah Spesialisasi</label>
+                <input type="number" name="jumlah_spesialisasi" value="{{ old('jumlah_spesialisasi', $setting->jumlah_spesialisasi ?? 5) }}" class="form-input" min="0" max="9999">
+                <p style="font-size:11px;color:#94a3b8;margin-top:4px">Tampil sebagai: <strong>{{ $setting->jumlah_spesialisasi ?? 5 }}+</strong> Spesialisasi</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-handshake" style="color:#16a34a;width:14px"></i> Jumlah Mitra Asuransi</label>
+                <input type="number" name="jumlah_mitra_asuransi" value="{{ old('jumlah_mitra_asuransi', $setting->jumlah_mitra_asuransi ?? 50) }}" class="form-input" min="0" max="9999">
+                <p style="font-size:11px;color:#94a3b8;margin-top:4px">Tampil sebagai: <strong>{{ $setting->jumlah_mitra_asuransi ?? 50 }}+</strong> Mitra Asuransi</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-body">
         <p style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f1f5f9"><i class="fas fa-image" style="color:#2563eb;margin-right:6px"></i>Logo & Favicon</p>
         <div class="form-group">
             <label class="form-label">Logo Utama</label>

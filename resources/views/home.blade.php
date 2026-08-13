@@ -165,8 +165,8 @@
                 {{-- Stats --}}
                 <div id="stats-section" class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 border-t lg:border-t-0 lg:border-l border-white/20 py-4 sm:py-0">
                     @foreach([
-                        ['5','Spesialisasi','fa-stethoscope'],
-                        ['50','Mitra Asuransi','fa-handshake'],
+                        [$setting->jumlah_spesialisasi ?? 5,'Spesialisasi','fa-stethoscope'],
+                        [$setting->jumlah_mitra_asuransi ?? 50,'Mitra Asuransi','fa-handshake'],
                     ] as [$val,$lbl,$ico])
                     <div class="stat-box w-full sm:w-1/2 flex flex-col items-center justify-center">
                         <i class="fas {{ $ico }} text-green-300 text-xl mb-2 block"></i>
