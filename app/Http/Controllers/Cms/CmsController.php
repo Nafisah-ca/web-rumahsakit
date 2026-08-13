@@ -440,8 +440,19 @@ class CmsController extends Controller
             'nama_rumahsakit', 'tentang_kami', 'visi', 'misi', 'sejarah',
             'motto', 'sambutan_direktur', 'alamat', 'telepon', 'email',
             'google_maps', 'facebook', 'instagram', 'youtube',
-            'jam_operasional', 'footer', 'copyright',
+            'jam_operasional', 'footer', 'copyright', 'whatsapp',
+            'privacy_policy', 'syarat_ketentuan',
         ]);
+
+        // Jadwal sholat — dari 5 input terpisah, simpan sebagai JSON
+        $sholat = [
+            'subuh'   => $request->sholat_subuh   ?? '04:30',
+            'dzuhur'  => $request->sholat_dzuhur  ?? '12:00',
+            'ashar'   => $request->sholat_ashar   ?? '15:20',
+            'maghrib' => $request->sholat_maghrib ?? '17:52',
+            'isya'    => $request->sholat_isya    ?? '19:06',
+        ];
+        $data['jadwal_sholat'] = json_encode($sholat);
         $data['updated_by'] = Auth::id();
         if (!$setting->exists) $data['created_by'] = Auth::id();
 

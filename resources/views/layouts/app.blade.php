@@ -99,7 +99,7 @@
                 </a>
                 <span class="flex items-center gap-1.5 text-gray-500" id="jam-sholat">
                     <i class="fas fa-mosque text-green-600 text-xs"></i>
-                    <span id="waktu-sholat">Loading...</span>
+                    <span id="waktu-sholat">...</span>
                 </span>
             </div>
             <div class="flex items-center gap-4">
@@ -676,34 +676,43 @@ document.addEventListener('DOMContentLoaded', function () {
         dots.forEach((d, i) => d.addEventListener('click', () => { stopAuto(); goTo(i); startAuto(); }));
     }
 
-    // Waktu sholat display (jadwal fixed - tampilkan hanya saat sedang waktu sholat)
-    // Jadwal: Subuh 04:42, Dzuhur 11:58, Asar 15:20, Maghrib 17:52, Isya 19:06
-    function updateClock() {
+    // ── Jadwal Sholat (data dari CMS, berganti-ganti) ─────────────────
+    (function () {
         const el = document.getElementById('waktu-sholat');
         if (!el) return;
 
-        const now = new Date();
+        @php
+            $sholatJson = $setting_global->jadwal_sholat ?? '{}';
+            $sholatData = json_decode($sholatJson, true) ?? [];
+            $sholatArr  = [
+                ['label' => 'Subuh',   'waktu' => $sholatData['subuh']   ?? '04:30'],
+                ['label' => 'Dzuhur',  'waktu' => $sholatData['dzuhur']  ?? '12:00'],
+                ['label' => 'Ashar',   'waktu' => $sholatData['ashar']   ?? '15:20'],
+                ['label' => 'Maghrib', 'waktu' => $sholatData['maghrib'] ?? '17:52'],
+                ['label' => 'Isya',    'waktu' => $sholatData['isya']    ?? '19:06'],
+            ];
+        @endphp
+
+        const jadwal = @json($sholatArr);
+        let idx = 0;
+
+        // Tentukan index awal: waktu sholat berikutnya
+        const now        = new Date();
         const minutesNow = now.getHours() * 60 + now.getMinutes();
+        function toMin(t) { const [h,m] = t.split(':').map(Number); return h*60+m; }
 
-        const jadwal = [
-            { name: 'Subuh',   at: 4 * 60 + 42 },
-            { name: 'Dzuhur',  at: 11 * 60 + 58 },
-            { name: 'Asar',     at: 15 * 60 + 20 },
-            { name: 'Maghrib',  at: 17 * 60 + 52 },
-            { name: 'Isya',     at: 19 * 60 + 6 },
-        ];
+        const nextIdx = jadwal.findIndex(j => toMin(j.waktu) > minutesNow);
+        idx = nextIdx >= 0 ? nextIdx : 0;
 
-        // Tampilkan jika sekarang berada di window +/- 5 menit dari jadwal sholat
-        const windowMin = 5;
-        const match = jadwal.find(j => Math.abs(minutesNow - j.at) <= windowMin);
+        function show() {
+            const j = jadwal[idx];
+            el.innerHTML = `<strong style="color:#15803d">${j.label}</strong>&nbsp;${j.waktu}`;
+            idx = (idx + 1) % jadwal.length;
+        }
 
-        const hh = String(now.getHours()).padStart(2,'0');
-        const mm = String(now.getMinutes()).padStart(2,'0');
-
-        // Tetap tampilkan jam sekarang, tapi label sholat tampil hanya saat sedang waktu sholat
-        el.textContent = match ? `${hh}:${mm} ${match.name}` : `${hh}:${mm}`;
-    }
-    updateClock(); setInterval(updateClock, 60000);
+        show();
+        setInterval(show, 3000); // ganti tiap 3 detik
+    })();
 
     // User dropdown (topbar)
     const dropBtn  = document.getElementById('user-dropdown-btn');

@@ -57,6 +57,15 @@ class Event extends Model
         return $query->published()->where('tanggal_event', '>=', now());
     }
 
+    /** Semua event aktif: mendatang dulu (ASC), lalu yang sudah lewat (DESC) */
+    public function scopeUrutanTerdekat(Builder $query): Builder
+    {
+        return $query->where('status', 'aktif')
+            ->orderByRaw("CASE WHEN tanggal_event >= CURDATE() THEN 0 ELSE 1 END ASC")
+            ->orderByRaw("CASE WHEN tanggal_event >= CURDATE() THEN tanggal_event END ASC")
+            ->orderByRaw("CASE WHEN tanggal_event < CURDATE() THEN tanggal_event END DESC");
+    }
+
     // ─── Accessors ────────────────────────────────────
 
     public function getTanggalFormatAttribute(): string

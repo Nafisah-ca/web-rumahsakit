@@ -167,8 +167,27 @@ class HospitalController extends Controller
 
     public function event()
     {
-        $events = Event::published()->paginate(12);
-        return view('event', compact('events'));
+        // Event mendatang (aktif, tanggal >= hari ini) — urut terdekat dulu
+        $eventsMendatang = Event::where('status', 'aktif')
+            ->where('tanggal_event', '>=', today())
+            ->orderBy('tanggal_event', 'asc')
+            ->paginate(9, ['*'], 'mendatang');
+
+        // Event sudah lewat (aktif, tanggal < hari ini) — urut terbaru dulu
+        $eventsLewat = Event::where('status', 'aktif')
+            ->where('tanggal_event', '<', today())
+            ->orderBy('tanggal_event', 'desc')
+            ->paginate(6, ['*'], 'lewat');
+
+        // Banner event: ambil event mendatang yg punya gambar, maks 5
+        $bannerEvents = Event::where('status', 'aktif')
+            ->where('tanggal_event', '>=', today())
+            ->whereNotNull('gambar')
+            ->orderBy('tanggal_event', 'asc')
+            ->limit(5)
+            ->get();
+
+        return view('event', compact('eventsMendatang', 'eventsLewat', 'bannerEvents'));
     }
 
     public function eventDetail(\App\Models\Event $event)

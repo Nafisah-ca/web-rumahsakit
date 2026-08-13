@@ -91,6 +91,38 @@
     </div>
 
     <div class="card card-body">
+        <p style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f1f5f9">
+            <i class="fas fa-mosque" style="color:#2563eb;margin-right:6px"></i>Jadwal Sholat
+        </p>
+        <p style="font-size:11px;color:#94a3b8;margin-bottom:14px">Ditampilkan berganti-ganti di topbar website. Format: HH:MM (24 jam)</p>
+        @php
+            $sholat = json_decode($setting->jadwal_sholat ?? '{}', true) ?? [];
+        @endphp
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-sun" style="color:#f59e0b;width:14px"></i> Subuh</label>
+                <input type="time" name="sholat_subuh" value="{{ old('sholat_subuh', $sholat['subuh'] ?? '04:30') }}" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-sun" style="color:#f97316;width:14px"></i> Dzuhur</label>
+                <input type="time" name="sholat_dzuhur" value="{{ old('sholat_dzuhur', $sholat['dzuhur'] ?? '12:00') }}" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-cloud-sun" style="color:#eab308;width:14px"></i> Ashar</label>
+                <input type="time" name="sholat_ashar" value="{{ old('sholat_ashar', $sholat['ashar'] ?? '15:20') }}" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-sunset" style="color:#ef4444;width:14px"></i> Maghrib</label>
+                <input type="time" name="sholat_maghrib" value="{{ old('sholat_maghrib', $sholat['maghrib'] ?? '17:52') }}" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-moon" style="color:#6366f1;width:14px"></i> Isya</label>
+                <input type="time" name="sholat_isya" value="{{ old('sholat_isya', $sholat['isya'] ?? '19:06') }}" class="form-input">
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-body">
         <p style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f1f5f9"><i class="fas fa-share-nodes" style="color:#2563eb;margin-right:6px"></i>Media Sosial</p>
         <div class="form-group">
             <label class="form-label"><i class="fab fa-instagram" style="color:#e1306c;width:16px"></i> Instagram</label>
