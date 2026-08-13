@@ -18,19 +18,13 @@ class Layanan extends Model
     const DELETED_AT = 'deleted_tm';
 
     protected $fillable = [
-        'kategori_layanan_id', 'nama_layanan', 'deskripsi', 'konten',
-        'gambar', 'icon', 'status', 'urutan',
+        'nama_layanan', 'deskripsi', 'gambar', 'icon', 'status',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
     protected $casts = [];
 
     // ─── Relasi ───────────────────────────────────────
-
-    public function kategori(): BelongsTo
-    {
-        return $this->belongsTo(KategoriLayanan::class, 'kategori_layanan_id');
-    }
 
     public function createdBy(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
     public function updatedBy(): BelongsTo { return $this->belongsTo(User::class, 'updated_by'); }
@@ -40,16 +34,10 @@ class Layanan extends Model
 
     public function scopeAktif(Builder $query): Builder
     {
-        return $query->where('status', 'aktif')->orderBy('urutan')->orderBy('id');
+        return $query->where('status', 'aktif')->orderBy('id');
     }
 
-    public function scopeByKategori(Builder $query, int $kategoriId): Builder
-    {
-        return $query->where('kategori_layanan_id', $kategoriId);
-    }
-
-    // ─── Accessors ────────────────────────────────────
-
+    // Backward compatibility
     public function getIsAktifAttribute(): bool { return $this->status === 'aktif'; }
     public function getNamaAttribute(): string   { return $this->nama_layanan; }
 }

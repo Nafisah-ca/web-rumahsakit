@@ -8,7 +8,6 @@ use App\Models\Promo;
 use App\Models\Event;
 use App\Models\Artikel;
 use App\Models\Layanan;
-use App\Models\KategoriLayanan;
 use App\Models\Dokter;
 use App\Models\JanjiTemu;
 use App\Models\GuestBook;
@@ -46,42 +45,8 @@ class HospitalController extends Controller
 
     public function layanan()
     {
-        $kategoris   = KategoriLayanan::aktif()->withCount(['layananAktif'])->get();
-        $layananList = Layanan::aktif()->with('kategori')->get();
-        return view('layanan', compact('layananList', 'kategoris') + [
-            'activeKategoriId'   => null,
-            'activeKategoriNama' => null,
-        ]);
-    }
-
-    public function layananByKategori(int $kategoriId)
-    {
-        $kategoris = KategoriLayanan::aktif()->withCount(['layananAktif'])->get();
-        $kat       = KategoriLayanan::where('status', 'aktif')->findOrFail($kategoriId);
-
-        $layananList = Layanan::aktif()->with('kategori')
-            ->where('kategori_layanan_id', $kat->id)
-            ->get();
-
-        return view('layanan', compact('layananList', 'kategoris') + [
-            'activeKategoriId'   => $kat->id,
-            'activeKategoriNama' => $kat->nama_kategori,
-        ]);
-    }
-
-    public function layananDetail(Layanan $layanan)
-    {
-        abort_if($layanan->status !== 'aktif', 404);
-
-        $kategoris = KategoriLayanan::aktif()->withCount(['layananAktif'])->get();
-
-        // Layanan terkait dalam kategori yang sama
-        $related = Layanan::aktif()->with('kategori')
-            ->where('id', '!=', $layanan->id)
-            ->when($layanan->kategori_layanan_id, fn($q) => $q->where('kategori_layanan_id', $layanan->kategori_layanan_id))
-            ->limit(3)->get();
-
-        return view('layanan-detail', compact('layanan', 'related', 'kategoris'));
+        $layananList = Layanan::aktif()->get();
+        return view('layanan', compact('layananList'));
     }
 
     public function dokter()

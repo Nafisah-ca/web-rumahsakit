@@ -1,16 +1,20 @@
 @extends('layouts.app')
 @section('content')
 
-@php
-    $isOnline = isset($online) && $online;
-@endphp
-
-<x-page-hero
-    page="dokter"
-    :override-judul="$isOnline ? 'Layanan Online' : null"
-    :override-label="$isOnline ? 'Layanan Kesehatan Digital' : null"
-    :breadcrumbs="[['Beranda','home'],[$isOnline ? 'Layanan Online' : 'Jadwal Dokter', null]]"
-/>
+<div class="py-20" style="background: linear-gradient(135deg, #00521f, #00b04f);">
+    <div class="max-w-screen-xl mx-auto px-4 text-center">
+        <span class="text-green-300 text-xs font-black uppercase tracking-widest block mb-2">Tim Medis Profesional</span>
+        <h1 class="text-white font-extrabold text-4xl mb-3">
+            {{ isset($online) && $online ? 'Layanan Online' : 'Jadwal Dokter' }}
+        </h1>
+        <p class="text-green-100 text-sm max-w-xl mx-auto">Temukan dokter spesialis terbaik kami dan buat janji temu dengan mudah.</p>
+        <nav class="flex items-center justify-center gap-2 mt-5 text-sm text-green-200">
+            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-white font-semibold">Jadwal Dokter</span>
+        </nav>
+    </div>
+</div>
 
 {{-- Filter spesialisasi --}}
 <div class="bg-white border-b border-gray-100 sticky top-16 z-40 shadow-sm">
