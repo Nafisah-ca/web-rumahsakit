@@ -7,7 +7,6 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Cms\CmsController;
 use App\Http\Controllers\Admin\SpesialisasiController;
-use App\Http\Controllers\Admin\TransaksiController;
 use App\Http\Controllers\Admin\PenjaminController;
 use App\Http\Controllers\EventBookingController;
 
@@ -137,14 +136,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Statistik Pengunjung
     Route::get('/pengunjung', [AdminController::class, 'pengunjung'])->name('pengunjung');
-
-    // Transaksi
-    Route::get('/transaksi',                      [TransaksiController::class, 'index'])->name('transaksi');
-    Route::get('/transaksi/create',               [TransaksiController::class, 'create'])->name('transaksi.create');
-    Route::post('/transaksi',                     [TransaksiController::class, 'store'])->name('transaksi.store');
-    Route::get('/transaksi/{transaksi}',          [TransaksiController::class, 'show'])->name('transaksi.show');
-    Route::put('/transaksi/{transaksi}/status',   [TransaksiController::class, 'updateStatus'])->name('transaksi.status');
-    Route::delete('/transaksi/{transaksi}',       [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
 
     // Penjamin
     Route::get('/penjamin',                       [PenjaminController::class, 'index'])->name('penjamin');
