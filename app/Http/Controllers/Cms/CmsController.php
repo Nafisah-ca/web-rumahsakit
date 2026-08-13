@@ -946,44 +946,57 @@ class CmsController extends Controller
 
     public function pageBanner()
     {
-        $banners = PageBanner::orderBy('nama_halaman')->get();
-        return view('cms.page-banner.index', compact('banners'));
+        $banners     = PageBanner::get()->keyBy('page_key');
+        $halamanList = PageBanner::HALAMAN_LIST;
+        return view('cms.page-banner.index', compact('banners', 'halamanList'));
     }
 
-    public function editPageBanner(PageBanner $pageBanner)
+    public function storePageBanner(Request $request)
     {
-        $banner = $pageBanner;
-        return view('cms.page-banner.edit', compact('banner'));
+        $request->validate([
+            'page_key' => 'required|in:' . implode(',', array_keys(PageBanner::HALAMAN_LIST)),
+            'gambar'   => 'required|image|max:4096',
+            'status'   => 'required|in:aktif,nonaktif',
+        ]);
+
+        $old = PageBanner::where('page_key', $request->page_key)->first();
+        if ($old) {
+            if ($old->gambar) Storage::disk('public')->delete($old->gambar);
+            $old->delete();
+        }
+
+        PageBanner::create([
+            'page_key'   => $request->page_key,
+            'gambar'     => $request->file('gambar')->store('page-banner', 'public'),
+            'status'     => $request->status,
+            'updated_by' => Auth::id(),
+        ]);
+
+        return redirect()->route('cms.page-banner')->with('success', 'Banner berhasil disimpan.');
     }
 
     public function updatePageBanner(Request $request, PageBanner $pageBanner)
     {
         $request->validate([
-            'judul'       => 'required|string|max:200',
-            'label_atas'  => 'nullable|string|max:100',
-            'subjudul'    => 'nullable|string|max:300',
-            'warna_awal'  => 'nullable|string|max:20',
-            'warna_akhir' => 'nullable|string|max:20',
-            'status'      => 'required|in:aktif,nonaktif',
-            'gambar'      => 'nullable|image|max:3072',
+            'gambar' => 'nullable|image|max:4096',
+            'status' => 'required|in:aktif,nonaktif',
         ]);
 
-        $data = $request->only(['judul','label_atas','subjudul','warna_awal','warna_akhir','status']);
-        $data['updated_by'] = Auth::id();
+        $data = ['status' => $request->status, 'updated_by' => Auth::id()];
 
-        // Hapus gambar jika diminta
-        if ($request->hapus_gambar && $pageBanner->gambar) {
-            Storage::disk('public')->delete($pageBanner->gambar);
-            $data['gambar'] = null;
-        }
-
-        // Upload gambar baru
         if ($request->hasFile('gambar')) {
             if ($pageBanner->gambar) Storage::disk('public')->delete($pageBanner->gambar);
             $data['gambar'] = $request->file('gambar')->store('page-banner', 'public');
         }
 
         $pageBanner->update($data);
-        return redirect()->route('cms.page-banner')->with('success', 'Banner halaman berhasil diperbarui.');
+        return redirect()->route('cms.page-banner')->with('success', 'Banner berhasil diperbarui.');
+    }
+
+    public function destroyPageBanner(PageBanner $pageBanner)
+    {
+        if ($pageBanner->gambar) Storage::disk('public')->delete($pageBanner->gambar);
+        $pageBanner->delete();
+        return back()->with('success', 'Banner berhasil dihapus.');
     }
 }
