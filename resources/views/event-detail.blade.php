@@ -1,27 +1,12 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="py-16" style="background: linear-gradient(135deg, #4c1d95, #7c3aed);">
-    <div class="max-w-screen-xl mx-auto px-4">
-        <nav class="flex items-center gap-2 text-sm text-purple-200 mb-4">
-            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <a href="{{ route('event') }}" class="hover:text-white">Event</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-white font-semibold">{{ Str::limit($event->judul, 40) }}</span>
-        </nav>
-        <h1 class="text-white font-extrabold text-3xl md:text-4xl leading-tight max-w-3xl">
-            {{ $event->judul }}
-        </h1>
-        <div class="flex flex-wrap gap-4 mt-4 text-sm text-purple-200">
-            <span><i class="fas fa-calendar mr-1"></i>{{ $event->tanggal_event?->format('d M Y') }}</span>
-            <span><i class="fas fa-clock mr-1"></i>{{ substr($event->waktu_event ?? '', 0, 5) }} WIB</span>
-            @if($event->lokasi)
-            <span><i class="fas fa-location-dot mr-1"></i>{{ $event->lokasi }}</span>
-            @endif
-        </div>
-    </div>
-</div>
+{{-- Hero --}}
+@include('_partials.page-hero', ['banner' => $banner ?? \App\Models\PageBanner::getForPage('event'), 'pageTitle' => $event->judul, 'breadcrumbs' => [
+    ['label' => 'Beranda', 'url' => route('home')],
+    ['label' => 'Event',   'url' => route('event')],
+    ['label' => Str::limit($event->judul, 40)],
+]])
 
 <section class="py-12 bg-gray-50">
     <div class="max-w-screen-xl mx-auto px-4">

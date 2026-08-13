@@ -2,27 +2,11 @@
 @section('content')
 
 {{-- Hero --}}
-<div class="py-16" style="background: linear-gradient(135deg, #00521f, #00b04f);">
-    <div class="max-w-screen-xl mx-auto px-4">
-        <nav class="flex items-center gap-2 text-sm text-green-200 mb-4">
-            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <a href="{{ route('promo') }}" class="hover:text-white">Promo</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-white font-semibold">{{ Str::limit($promo->judul, 40) }}</span>
-        </nav>
-        <h1 class="text-white font-extrabold text-3xl md:text-4xl leading-tight max-w-2xl">
-            {{ $promo->judul }}
-        </h1>
-        <div class="flex flex-wrap gap-4 mt-4 text-sm text-green-200">
-            <span><i class="fas fa-calendar mr-1"></i>Mulai: {{ $promo->tanggal_mulai?->format('d M Y') }}</span>
-            <span><i class="fas fa-clock mr-1"></i>Berakhir: {{ $promo->tanggal_selesai?->format('d M Y') ?? 'Tidak terbatas' }}</span>
-            @if($promo->status === 'aktif')
-            <span class="bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">Aktif</span>
-            @endif
-        </div>
-    </div>
-</div>
+@include('_partials.page-hero', ['banner' => $banner ?? \App\Models\PageBanner::getForPage('promo'), 'pageTitle' => $promo->judul, 'breadcrumbs' => [
+    ['label' => 'Beranda', 'url' => route('home')],
+    ['label' => 'Promo',   'url' => route('promo')],
+    ['label' => Str::limit($promo->judul, 40)],
+]])
 
 <section class="py-12 bg-gray-50">
     <div class="max-w-screen-xl mx-auto px-4">

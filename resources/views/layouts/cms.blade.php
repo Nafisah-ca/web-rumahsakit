@@ -177,6 +177,9 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
             <a href="{{ route('cms.website-setting') }}" class="sidebar-link {{ request()->routeIs('cms.website-setting*') ? 'active' : '' }}">
                 <i class="fas fa-sliders icon"></i> Website Setting
             </a>
+            <a href="{{ route('cms.page-banner') }}" class="sidebar-link {{ request()->routeIs('cms.page-banner*') ? 'active' : '' }}">
+                <i class="fas fa-image icon"></i> Banner Halaman
+            </a>
             <a href="{{ route('cms.banner') }}" class="sidebar-link {{ request()->routeIs('cms.banner*') ? 'active' : '' }}">
                 <i class="fas fa-panorama icon"></i> Home Page Banner
             </a>
@@ -197,6 +200,9 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
             </a>
 
             <div class="sidebar-group">Master Data</div>
+            <a href="{{ route('cms.kategori-layanan') }}" class="sidebar-link {{ request()->routeIs('cms.kategori-layanan*') ? 'active' : '' }}">
+                <i class="fas fa-folder-tree icon"></i> Kategori Layanan
+            </a>
             <a href="{{ route('cms.layanan') }}" class="sidebar-link {{ request()->routeIs('cms.layanan*') ? 'active' : '' }}">
                 <i class="fas fa-stethoscope icon"></i> Layanan
             </a>

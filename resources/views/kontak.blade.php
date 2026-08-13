@@ -24,18 +24,11 @@
 </style>
 @endpush
 
-<div class="py-20" style="background: linear-gradient(135deg, #00521f, #00b04f);">
-    <div class="max-w-screen-xl mx-auto px-4 text-center">
-        <span class="text-green-300 text-xs font-black uppercase tracking-widest block mb-2">Hubungi Kami</span>
-        <h1 class="text-white font-extrabold text-4xl mb-3">Kontak</h1>
-        <p class="text-green-100 text-sm max-w-xl mx-auto">Kami siap membantu Anda. Hubungi kami atau buat janji temu dengan dokter spesialis pilihan Anda.</p>
-        <nav class="flex items-center justify-center gap-2 mt-5 text-sm text-green-200">
-            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-white font-semibold">Kontak</span>
-        </nav>
-    </div>
-</div>
+{{-- Hero --}}
+@include('_partials.page-hero', ['banner' => $banner ?? \App\Models\PageBanner::getForPage('kontak'), 'breadcrumbs' => [
+    ['label' => 'Beranda', 'url' => route('home')],
+    ['label' => 'Hubungi Kami'],
+]])
 
 <section class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
@@ -61,8 +54,11 @@
             </a>
 
             {{-- Email --}}
-            @php $email = $setting->email ?? 'info@sarisehat.id'; @endphp
-            <a href="mailto:{{ $email }}"
+            @php
+                $email = $setting->email ?? 'rssarisehat@gmail.com';
+                $gmailCompose = 'https://mail.google.com/mail/?view=cm&to=' . urlencode($email);
+            @endphp
+            <a href="{{ $gmailCompose }}" target="_blank" rel="noopener"
                class="block p-6 rounded-2xl text-center border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group bg-blue-50">
                 <div class="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-md">
                     <i class="fas fa-envelope text-white text-2xl"></i>
@@ -212,7 +208,9 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="font-bold text-gray-900 text-sm">Email</p>
-                            <p class="text-gray-500 text-xs mt-0.5">{{ $setting->email }}</p>
+                            <a href="https://mail.google.com/mail/?view=cm&to={{ urlencode($setting->email) }}"
+                               target="_blank" rel="noopener"
+                               class="text-blue-600 hover:underline text-xs mt-0.5 block">{{ $setting->email }}</a>
                         </div>
                     </div>
                     @endif

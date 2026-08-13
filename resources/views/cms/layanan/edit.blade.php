@@ -13,10 +13,30 @@
                     <label class="form-label">Nama Layanan <span style="color:#ef4444">*</span></label>
                     <input type="text" name="nama_layanan" value="{{ old('nama_layanan',$layanan->nama_layanan) }}" class="form-input" required maxlength="255">
                 </div>
+
+                <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Kategori Layanan</label>
+                    <select name="kategori_layanan_id" class="form-input">
+                        <option value="">— Tanpa Kategori —</option>
+                        @foreach($kategoris as $k)
+                        <option value="{{ $k->id }}" {{ old('kategori_layanan_id', $layanan->kategori_layanan_id)==$k->id?'selected':'' }}>
+                            {{ $k->nama_kategori }}
+                        </option>
+                        @endforeach
+                    </select>
+                    <p class="form-hint"><a href="{{ route('cms.kategori-layanan') }}" target="_blank" style="color:#2563eb">Kelola kategori →</a></p>
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">Icon <span style="font-size:11px;color:#94a3b8">(Font Awesome class)</span></label>
-                    <input type="text" name="icon" value="{{ old('icon',$layanan->icon) }}" class="form-input" placeholder="fa-stethoscope">
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <input type="text" name="icon" id="icon-input" value="{{ old('icon',$layanan->icon) }}" class="form-input" placeholder="fa-stethoscope" style="flex:1">
+                        <div style="width:38px;height:38px;border-radius:10px;background:#dcfce7;display:flex;align-items:center;justify-content:center;color:#16a34a;flex-shrink:0">
+                            <i class="fas {{ $layanan->icon ?? 'fa-stethoscope' }}" id="icon-preview"></i>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="form-group">
                     <label class="form-label">Gambar Baru <span style="font-size:11px;color:#94a3b8">(kosongkan jika tidak diubah)</span></label>
                     @if($layanan->gambar)
@@ -25,12 +45,14 @@
                     <img id="gambar-preview" style="display:none;max-height:120px;border-radius:8px;margin-bottom:8px;border:2px solid #e2e8f0">
                     @endif
                     <input type="file" name="gambar" class="form-input" accept="image/*" id="gambar-input">
-                    <p style="font-size:11px;color:#94a3b8;margin-top:4px">Rekomendasi: format JPG/PNG, max 2MB. Kosongkan jika tidak ingin mengubah gambar.</p>
+                    <p class="form-hint">Format JPG/PNG/WebP, max 2MB</p>
                 </div>
+
                 <div class="form-group" style="grid-column:1/-1">
                     <label class="form-label">Deskripsi</label>
                     <textarea name="deskripsi" rows="4" class="form-input">{{ old('deskripsi',$layanan->deskripsi) }}</textarea>
                 </div>
+
                 <div class="form-group">
                     <label class="form-label">Status</label>
                     <select name="status" class="form-input">
@@ -49,6 +71,9 @@
 @endsection
 @push('scripts')
 <script>
+document.getElementById('icon-input').addEventListener('input', function() {
+    document.getElementById('icon-preview').className = 'fas ' + (this.value || 'fa-stethoscope');
+});
 document.getElementById('gambar-input').addEventListener('change', function() {
     const f = this.files[0]; if (!f) return;
     const p = document.getElementById('gambar-preview');

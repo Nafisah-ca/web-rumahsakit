@@ -5,30 +5,35 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Schema;
 
-class Layanan extends Model
+class KategoriLayanan extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'layanan';
+    protected $table = 'kategori_layanan';
 
     const CREATED_AT = 'created_tm';
     const UPDATED_AT = 'updated_tm';
     const DELETED_AT = 'deleted_tm';
 
     protected $fillable = [
-        'kategori_layanan_id', 'nama_layanan', 'deskripsi', 'gambar', 'icon', 'status',
+        'nama_kategori', 'icon', 'deskripsi', 'urutan', 'status',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
-    protected $casts = [];
-
     // ─── Relasi ───────────────────────────────────────
 
-    public function kategori(): BelongsTo
+    public function layanans(): HasMany
     {
-        return $this->belongsTo(KategoriLayanan::class, 'kategori_layanan_id');
+        return $this->hasMany(Layanan::class, 'kategori_layanan_id');
+    }
+
+    public function layanansAktif(): HasMany
+    {
+        return $this->layanans()->where('status', 'aktif')->orderBy('id');
     }
 
     public function createdBy(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
@@ -39,10 +44,13 @@ class Layanan extends Model
 
     public function scopeAktif(Builder $query): Builder
     {
-        return $query->where('status', 'aktif')->orderBy('id');
-    }
+        $q = $query->where('status', 'aktif');
 
-    // Backward compatibility
-    public function getIsAktifAttribute(): bool { return $this->status === 'aktif'; }
-    public function getNamaAttribute(): string   { return $this->nama_layanan; }
+        // Gunakan urutan hanya jika kolom sudah ada di DB
+        if (Schema::hasColumn('kategori_layanan', 'urutan')) {
+            $q->orderBy('urutan');
+        }
+
+        return $q->orderBy('nama_kategori');
+    }
 }

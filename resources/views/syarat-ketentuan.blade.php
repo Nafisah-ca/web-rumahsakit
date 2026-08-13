@@ -2,18 +2,11 @@
 @php $title = 'Syarat & Ketentuan'; @endphp
 @section('content')
 
-<div class="py-16" style="background: linear-gradient(135deg, #00521f, #00b04f);">
-    <div class="max-w-screen-xl mx-auto px-4 text-center">
-        <span class="text-green-300 text-xs font-black uppercase tracking-widest block mb-2">Legal</span>
-        <h1 class="text-white font-extrabold text-4xl mb-3">Syarat & Ketentuan</h1>
-        <p class="text-green-100 text-sm max-w-xl mx-auto">Ketentuan penggunaan layanan dan website {{ $setting->nama_rumahsakit ?? 'RS Sari Sehat' }}.</p>
-        <nav class="flex items-center justify-center gap-2 mt-5 text-sm text-green-200">
-            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-white font-semibold">Syarat & Ketentuan</span>
-        </nav>
-    </div>
-</div>
+{{-- Hero --}}
+@include('_partials.page-hero', ['banner' => \App\Models\PageBanner::getForPage('syarat-ketentuan'), 'breadcrumbs' => [
+    ['label' => 'Beranda', 'url' => route('home')],
+    ['label' => 'Syarat & Ketentuan'],
+]])
 
 <section class="py-14 bg-white">
     <div class="max-w-3xl mx-auto px-4">
@@ -108,7 +101,7 @@
                         <p class="font-bold text-gray-900">{{ $setting->nama_rumahsakit ?? 'RS Sari Sehat' }}</p>
                         @if($setting->alamat)<p class="text-sm text-gray-600 mt-1">{{ $setting->alamat }}</p>@endif
                         @if($setting->telepon)<p class="text-sm text-gray-600">Telepon: {{ $setting->telepon }}</p>@endif
-                        @if($setting->email)<p class="text-sm text-gray-600">Email: <a href="mailto:{{ $setting->email }}" class="text-green-600 hover:underline">{{ $setting->email }}</a></p>@endif
+                        @if($setting->email)<p class="text-sm text-gray-600">Email: <a href="https://mail.google.com/mail/?view=cm&to={{ urlencode($setting->email) }}" target="_blank" rel="noopener" class="text-green-600 hover:underline">{{ $setting->email }}</a></p>@endif
                     </div>
                 </div>
             @endif

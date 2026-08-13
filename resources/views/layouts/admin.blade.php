@@ -210,9 +210,6 @@ nav[role="navigation"] a:hover { background: #f1f5f9; border-color: #cbd5e1; }
                 @php $pending = \App\Models\JanjiTemu::where('status','pending')->count() @endphp
                 @if($pending > 0)<span class="badge-count">{{ $pending }}</span>@endif
             </a>
-            <a href="{{ route('admin.transaksi') }}" class="sidebar-link {{ request()->routeIs('admin.transaksi*') ? 'active' : '' }}">
-                <i class="fas fa-receipt icon"></i> Transaksi
-            </a>
             <a href="{{ route('admin.pasien') }}" class="sidebar-link {{ request()->routeIs('admin.pasien*') ? 'active' : '' }}">
                 <i class="fas fa-bed-pulse icon"></i> Data Pasien
             </a>

@@ -7,7 +7,6 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Cms\CmsController;
 use App\Http\Controllers\Admin\SpesialisasiController;
-use App\Http\Controllers\Admin\TransaksiController;
 use App\Http\Controllers\Admin\PenjaminController;
 use App\Http\Controllers\EventBookingController;
 
@@ -15,7 +14,8 @@ use App\Http\Controllers\EventBookingController;
 
 Route::get('/',                [HospitalController::class, 'home'])->name('home');
 Route::get('/tentang-kami',    [HospitalController::class, 'tentang'])->name('tentang');
-Route::get('/pelayanan',       [HospitalController::class, 'layanan'])->name('layanan');
+Route::get('/pelayanan',          [HospitalController::class, 'layanan'])->name('layanan');
+Route::get('/pelayanan/{id}',     [HospitalController::class, 'layananByKategori'])->name('layanan.by-kategori');
 Route::get('/dokter',          [HospitalController::class, 'dokter'])->name('dokter');
 Route::get('/dokter/online',   [HospitalController::class, 'dokterOnline'])->name('dokter.online');
 Route::get('/dokter/{spSlug}', [HospitalController::class, 'dokterBySpesialis'])->name('dokter.by-spesialis');
@@ -138,14 +138,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Statistik Pengunjung
     Route::get('/pengunjung', [AdminController::class, 'pengunjung'])->name('pengunjung');
 
-    // Transaksi
-    Route::get('/transaksi',                      [TransaksiController::class, 'index'])->name('transaksi');
-    Route::get('/transaksi/create',               [TransaksiController::class, 'create'])->name('transaksi.create');
-    Route::post('/transaksi',                     [TransaksiController::class, 'store'])->name('transaksi.store');
-    Route::get('/transaksi/{transaksi}',          [TransaksiController::class, 'show'])->name('transaksi.show');
-    Route::put('/transaksi/{transaksi}/status',   [TransaksiController::class, 'updateStatus'])->name('transaksi.status');
-    Route::delete('/transaksi/{transaksi}',       [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
-
     // Penjamin
     Route::get('/penjamin',                       [PenjaminController::class, 'index'])->name('penjamin');
     Route::post('/penjamin',                      [PenjaminController::class, 'store'])->name('penjamin.store');
@@ -206,6 +198,12 @@ Route::middleware(['auth', 'role:admin,cms'])->prefix('cms')->name('cms.')->grou
     Route::put('/layanan/{layanan}',        [CmsController::class, 'updateLayanan'])->name('layanan.update');
     Route::delete('/layanan/{layanan}',     [CmsController::class, 'destroyLayanan'])->name('layanan.destroy');
 
+    // Kategori Layanan
+    Route::get('/kategori-layanan',                              [CmsController::class, 'kategoriLayanan'])->name('kategori-layanan');
+    Route::post('/kategori-layanan',                             [CmsController::class, 'storeKategoriLayanan'])->name('kategori-layanan.store');
+    Route::put('/kategori-layanan/{kategoriLayanan}',            [CmsController::class, 'updateKategoriLayanan'])->name('kategori-layanan.update');
+    Route::delete('/kategori-layanan/{kategoriLayanan}',         [CmsController::class, 'destroyKategoriLayanan'])->name('kategori-layanan.destroy');
+
     // Kategori Artikel
     Route::get('/kategori-artikel',                       [CmsController::class, 'kategoriArtikel'])->name('kategori-artikel');
     Route::post('/kategori-artikel',                      [CmsController::class, 'storeKategoriArtikel'])->name('kategori-artikel.store');
@@ -256,4 +254,9 @@ Route::middleware(['auth', 'role:admin,cms'])->prefix('cms')->name('cms.')->grou
     Route::put('/profile',                  [CmsController::class, 'updateProfile'])->name('profile.update');
     Route::get('/setting/password',         [CmsController::class, 'settingPassword'])->name('setting.password');
     Route::put('/setting/password',         [CmsController::class, 'updatePassword'])->name('setting.password.update');
+
+    // Page Banner
+    Route::get('/page-banner',                      [CmsController::class, 'pageBanner'])->name('page-banner');
+    Route::get('/page-banner/{pageBanner}/edit',    [CmsController::class, 'editPageBanner'])->name('page-banner.edit');
+    Route::put('/page-banner/{pageBanner}',         [CmsController::class, 'updatePageBanner'])->name('page-banner.update');
 });

@@ -1,18 +1,11 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="py-16" style="background:linear-gradient(135deg,#1e3a5f,#0284c7)">
-    <div class="max-w-screen-xl mx-auto px-4 text-center">
-        <span class="text-blue-300 text-xs font-black uppercase tracking-widest block mb-2">Tips & Edukasi</span>
-        <h1 class="text-white font-extrabold text-4xl mb-3">Artikel Kesehatan</h1>
-        <p class="text-blue-100 text-sm max-w-xl mx-auto">Informasi kesehatan terkini dari tim medis RS Sari Sehat</p>
-        <nav class="flex items-center justify-center gap-2 mt-5 text-sm text-blue-200">
-            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-white font-semibold">Artikel</span>
-        </nav>
-    </div>
-</div>
+{{-- Hero --}}
+@include('_partials.page-hero', ['banner' => $banner ?? \App\Models\PageBanner::getForPage('artikel'), 'breadcrumbs' => [
+    ['label' => 'Beranda', 'url' => route('home')],
+    ['label' => 'Artikel'],
+]])
 
 <section class="py-12 bg-gray-50">
     <div class="max-w-screen-xl mx-auto px-4">
