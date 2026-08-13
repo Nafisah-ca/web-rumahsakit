@@ -171,13 +171,13 @@ class HospitalController extends Controller
         $eventsMendatang = Event::where('status', 'aktif')
             ->where('tanggal_event', '>=', today())
             ->orderBy('tanggal_event', 'asc')
-            ->paginate(9, ['*'], 'mendatang');
+            ->paginate(9, ['*'], 'page_m');
 
         // Event sudah lewat (aktif, tanggal < hari ini) — urut terbaru dulu
         $eventsLewat = Event::where('status', 'aktif')
             ->where('tanggal_event', '<', today())
             ->orderBy('tanggal_event', 'desc')
-            ->paginate(6, ['*'], 'lewat');
+            ->paginate(6, ['*'], 'page_l');
 
         // Banner event: ambil event mendatang yg punya gambar, maks 5
         $bannerEvents = Event::where('status', 'aktif')
