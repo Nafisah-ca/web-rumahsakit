@@ -22,6 +22,8 @@ Route::get('/dokter/{spSlug}', [HospitalController::class, 'dokterBySpesialis'])
 Route::get('/fasilitas',       [HospitalController::class, 'fasilitas'])->name('fasilitas');
 Route::get('/kontak',          [HospitalController::class, 'kontak'])->name('kontak');
 Route::post('/kontak',         [HospitalController::class, 'storeKontak'])->name('kontak.store');
+Route::post('/ulasan',         [HospitalController::class, 'storeUlasan'])->name('ulasan.store');
+Route::get('/ulasan',          [HospitalController::class, 'ulasanPublic'])->name('ulasan.public');
 Route::get('/promo',              [HospitalController::class, 'promo'])->name('promo');
 Route::get('/promo/{promo}',      [HospitalController::class, 'promoDetail'])->name('promo.detail');
 Route::get('/event',              [HospitalController::class, 'event'])->name('event');
@@ -221,6 +223,12 @@ Route::middleware(['auth', 'role:admin,cms'])->prefix('cms')->name('cms.')->grou
     Route::get('/guest-book/{guestBook}',               [CmsController::class, 'showGuestBook'])->name('guest-book.show');
     Route::put('/guest-book/{guestBook}/mark',          [CmsController::class, 'markGuestBook'])->name('guest-book.mark');
     Route::delete('/guest-book/{guestBook}',            [CmsController::class, 'destroyGuestBook'])->name('guest-book.destroy');
+
+    // Ulasan Pasien
+    Route::get('/ulasan',                     [CmsController::class, 'ulasan'])->name('ulasan');
+    Route::get('/ulasan/{ulasan}',            [CmsController::class, 'showUlasan'])->name('ulasan.show');
+    Route::put('/ulasan/{ulasan}/mark',       [CmsController::class, 'markUlasan'])->name('ulasan.mark');
+    Route::delete('/ulasan/{ulasan}',         [CmsController::class, 'destroyUlasan'])->name('ulasan.destroy');
 
     // Website Setting
     Route::get('/website-setting',          [CmsController::class, 'websiteSetting'])->name('website-setting');

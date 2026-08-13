@@ -354,4 +354,87 @@
     </div>
 </section>
 
+{{-- ===== ULASAN PASIEN ===== --}}
+@if($ulasanHome->count() > 0)
+<section class="py-14 bg-white">
+    <div class="max-w-screen-xl mx-auto px-4">
+        <div class="flex items-end justify-between mb-8 fade-up">
+            <div>
+                <span class="section-label">Testimoni</span>
+                <h2 class="section-title">Ulasan <span>Pasien</span></h2>
+            </div>
+            <a href="{{ route('ulasan.public') }}" class="btn-outline-green hidden md:inline-flex">
+                Lihat Semua <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        {{-- Rating Summary --}}
+        @php
+            $avgRating = $ulasanHome->avg('rating');
+            $totalUlasan = \App\Models\Ulasan::approved()->count();
+        @endphp
+        <div class="flex items-center gap-6 mb-8 p-5 bg-green-50 rounded-2xl border border-green-100 fade-up">
+            <div class="text-center flex-shrink-0">
+                <div class="text-5xl font-black text-green-600">{{ number_format($avgRating, 1) }}</div>
+                <div class="flex justify-center gap-0.5 my-1">
+                    @for($i = 1; $i <= 5; $i++)
+                    <i class="fas fa-star text-sm {{ $i <= round($avgRating) ? 'text-yellow-400' : 'text-gray-200' }}"></i>
+                    @endfor
+                </div>
+                <div class="text-xs text-gray-500">{{ $totalUlasan }} ulasan</div>
+            </div>
+            <div class="flex-1">
+                @for($star = 5; $star >= 1; $star--)
+                @php $count = \App\Models\Ulasan::approved()->where('rating', $star)->count(); $pct = $totalUlasan > 0 ? ($count/$totalUlasan)*100 : 0; @endphp
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs text-gray-500 w-3">{{ $star }}</span>
+                    <i class="fas fa-star text-yellow-400 text-xs"></i>
+                    <div class="flex-1 bg-gray-200 rounded-full h-1.5">
+                        <div class="bg-yellow-400 h-1.5 rounded-full" style="width:{{ $pct }}%"></div>
+                    </div>
+                    <span class="text-xs text-gray-400 w-5">{{ $count }}</span>
+                </div>
+                @endfor
+            </div>
+            <a href="{{ route('kontak') }}#ulasan-form" class="hidden md:flex flex-col items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-sm transition-colors flex-shrink-0">
+                <i class="fas fa-star text-lg"></i> Tulis Ulasan
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 fade-up">
+            @foreach($ulasanHome as $u)
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all flex flex-col">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <span class="text-green-700 font-black text-base">{{ strtoupper(substr($u->nama, 0, 1)) }}</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-900 text-sm">{{ $u->nama }}</p>
+                            <p class="text-gray-400 text-xs">{{ $u->created_tm?->format('d M Y') }}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-0.5 flex-shrink-0">
+                        @for($i = 1; $i <= 5; $i++)
+                        <i class="fas fa-star text-xs {{ $i <= $u->rating ? 'text-yellow-400' : 'text-gray-200' }}"></i>
+                        @endfor
+                    </div>
+                </div>
+                @if($u->judul)
+                <p class="font-bold text-gray-800 text-sm mb-1">{{ $u->judul }}</p>
+                @endif
+                <p class="text-gray-600 text-xs leading-relaxed flex-1 line-clamp-4">{{ $u->isi }}</p>
+            </div>
+            @endforeach
+        </div>
+
+        <div class="mt-6 text-center fade-up">
+            <a href="{{ route('ulasan.public') }}" class="btn-outline-green md:hidden">
+                Lihat Semua <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+@endif
+
 @endsection

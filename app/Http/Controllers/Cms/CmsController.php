@@ -12,6 +12,7 @@ use App\Models\Banner;
 use App\Models\Layanan;
 use App\Models\Informasi;
 use App\Models\GuestBook;
+use App\Models\Ulasan;
 use App\Models\WebsiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -648,6 +649,73 @@ class CmsController extends Controller
         $guestBook->update(['deleted_by' => Auth::id()]);
         $guestBook->delete();
         return back()->with('success', 'Pesan berhasil dihapus.');
+    }
+
+    // ─────────────────────────── ULASAN PASIEN ───────────────────────
+
+    public function ulasan(Request $request)
+    {
+        $query = Ulasan::query();
+
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('nama', 'like', "%{$request->search}%")
+                  ->orWhere('isi', 'like', "%{$request->search}%")
+                  ->orWhere('judul', 'like', "%{$request->search}%");
+            });
+        }
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->rating) {
+            $query->where('rating', $request->rating);
+        }
+
+        $ulasans = $query->orderByDesc('created_tm')->paginate(20)->withQueryString();
+
+        $stats = [
+            'total'    => Ulasan::count(),
+            'pending'  => Ulasan::pending()->count(),
+            'approved' => Ulasan::approved()->count(),
+            'rejected' => Ulasan::where('status', 'rejected')->count(),
+            'avg'      => round(Ulasan::approved()->avg('rating'), 1),
+        ];
+
+        return view('cms.ulasan.index', compact('ulasans', 'stats'));
+    }
+
+    public function showUlasan(Ulasan $ulasan)
+    {
+        return view('cms.ulasan.show', compact('ulasan'));
+    }
+
+    public function markUlasan(Request $request, Ulasan $ulasan)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,approved,rejected',
+        ]);
+
+        $ulasan->update([
+            'status'     => $request->status,
+            'updated_by' => Auth::id(),
+        ]);
+
+        $label = match ($request->status) {
+            'approved' => 'ditampilkan',
+            'rejected' => 'ditolak',
+            default    => 'dikembalikan ke pending',
+        };
+
+        return back()->with('success', "Ulasan berhasil {$label}.");
+    }
+
+    public function destroyUlasan(Ulasan $ulasan)
+    {
+        $ulasan->update(['deleted_by' => Auth::id()]);
+        $ulasan->delete();
+        return back()->with('success', 'Ulasan berhasil dihapus.');
     }
 
     // ─────────────────────────── PROFILE & PASSWORD ──────────────────

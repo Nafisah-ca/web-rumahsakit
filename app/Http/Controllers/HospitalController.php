@@ -11,6 +11,7 @@ use App\Models\Layanan;
 use App\Models\Dokter;
 use App\Models\JanjiTemu;
 use App\Models\GuestBook;
+use App\Models\Ulasan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -29,11 +30,13 @@ class HospitalController extends Controller
         $totalInformasi = \App\Models\Informasi::published()->count();
         $totalArtikel   = Artikel::published()->count();
         $totalBanner    = Banner::aktif()->count();
+        $ulasanHome     = Ulasan::approved()->orderByDesc('created_tm')->limit(6)->get();
 
         return view('home', compact(
             'banners', 'spesialisasi', 'promos', 'events',
             'articles', 'informasis', 'setting_global',
-            'totalInformasi', 'totalArtikel', 'totalBanner'
+            'totalInformasi', 'totalArtikel', 'totalBanner',
+            'ulasanHome'
         ) + ['setting' => $setting_global]);
     }
 
@@ -122,8 +125,9 @@ class HospitalController extends Controller
 
     public function kontak()
     {
-        $setting = \App\Models\WebsiteSetting::getSetting();
-        return view('kontak', compact('setting'));
+        $setting      = \App\Models\WebsiteSetting::getSetting();
+        $ulasanPublic = Ulasan::approved()->orderByDesc('created_tm')->limit(6)->get();
+        return view('kontak', compact('setting', 'ulasanPublic'));
     }
 
     public function storeKontak(Request $request)
@@ -148,6 +152,58 @@ class HospitalController extends Controller
         ]);
 
         return back()->with('success', 'Pesan Anda telah terkirim. Kami akan segera menghubungi Anda dalam 1×24 jam.');
+    }
+
+    public function storeUlasan(Request $request)
+    {
+        $request->validate([
+            'nama'   => 'required|string|max:150',
+            'email'  => 'nullable|email|max:150',
+            'rating' => 'required|integer|min:1|max:5',
+            'judul'  => 'nullable|string|max:200',
+            'isi'    => 'required|string|max:1000',
+        ], [
+            'nama.required'   => 'Nama wajib diisi.',
+            'rating.required' => 'Rating wajib dipilih.',
+            'rating.min'      => 'Rating minimal 1 bintang.',
+            'rating.max'      => 'Rating maksimal 5 bintang.',
+            'isi.required'    => 'Ulasan wajib diisi.',
+        ]);
+
+        Ulasan::create([
+            'nama'   => $request->nama,
+            'email'  => $request->email,
+            'rating' => $request->rating,
+            'judul'  => $request->judul,
+            'isi'    => $request->isi,
+            'status' => 'pending',
+        ]);
+
+        // Cek dari mana form disubmit — kontak atau halaman ulasan
+        $referer = request()->headers->get('referer', '');
+        $target  = str_contains($referer, '/ulasan')
+            ? route('ulasan.public') . '#form-ulasan'
+            : route('kontak') . '#ulasan-form';
+
+        return redirect($target)
+            ->with('success_ulasan', 'Terima kasih! Ulasan Anda sedang ditinjau dan akan segera ditampilkan.');
+    }
+
+    public function ulasanPublic(Request $request)
+    {
+        $rating   = $request->get('rating');
+        $query    = Ulasan::approved()->orderByDesc('created_tm');
+        if ($rating && in_array($rating, [1,2,3,4,5])) {
+            $query->where('rating', $rating);
+        }
+        $ulasans      = $query->paginate(12)->withQueryString();
+        $ratingCounts = Ulasan::approved()
+            ->selectRaw('rating, count(*) as total')
+            ->groupBy('rating')
+            ->pluck('total', 'rating');
+        $avgRating    = Ulasan::approved()->avg('rating');
+        $totalUlasan  = Ulasan::approved()->count();
+        return view('ulasan', compact('ulasans', 'ratingCounts', 'avgRating', 'totalUlasan', 'rating'));
     }
 
     public function promo()

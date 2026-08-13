@@ -209,6 +209,13 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
                 <span class="badge-count">{{ $pesanBaru }}</span>
                 @endif
             </a>
+            <a href="{{ route('cms.ulasan') }}" class="sidebar-link {{ request()->routeIs('cms.ulasan*') ? 'active' : '' }}">
+                @php $ulasanPending = \App\Models\Ulasan::where('status','pending')->count(); @endphp
+                <i class="fas fa-star icon"></i> Ulasan Pasien
+                @if($ulasanPending > 0)
+                <span class="badge-count">{{ $ulasanPending }}</span>
+                @endif
+            </a>
 
             <div class="sidebar-group">Legal</div>
             <a href="{{ route('cms.privacy-policy') }}" class="sidebar-link {{ request()->routeIs('cms.privacy-policy*') ? 'active' : '' }}">
