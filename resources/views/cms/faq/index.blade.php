@@ -1,17 +1,80 @@
 @extends('layouts.cms')
 @php $pageTitle = 'FAQ'; $breadcrumb = 'CMS / FAQ'; @endphp
 @section('content')
-<div class="card card-body" style="max-width:600px">
-    <div style="text-align:center;padding:40px 20px">
-        <i class="fas fa-circle-info" style="font-size:48px;color:#94a3b8;margin-bottom:16px;display:block"></i>
-        <h3 style="font-size:18px;font-weight:700;color:#0f172a;margin-bottom:8px">Fitur FAQ</h3>
-        <p style="font-size:14px;color:#64748b;line-height:1.6">
-            Fitur FAQ tidak tersedia pada versi database saat ini.<br>
-            Gunakan <strong>Informasi Terkini</strong> untuk menampilkan konten FAQ kepada pengunjung.
-        </p>
-        <a href="{{ route('cms.informasi') }}" class="btn btn-primary" style="margin-top:20px;display:inline-flex">
-            <i class="fas fa-arrow-right"></i> Ke Informasi Terkini
-        </a>
+<div class="card">
+    <div class="card-header">
+        <h3>Daftar FAQ</h3>
+        <div style="display:flex;gap:10px">
+            <form style="display:flex;gap:8px" method="GET">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari pertanyaan..." class="form-input" style="width:220px">
+                <select name="status" class="form-input" style="width:130px">
+                    <option value="">Semua Status</option>
+                    <option value="aktif"    {{ request('status')==='aktif'    ? 'selected' : '' }}>Aktif</option>
+                    <option value="nonaktif" {{ request('status')==='nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                </select>
+                <button type="submit" class="btn btn-secondary"><i class="fas fa-search"></i></button>
+                @if(request('search') || request('status'))
+                    <a href="{{ route('cms.faq') }}" class="btn btn-secondary"><i class="fas fa-xmark"></i></a>
+                @endif
+            </form>
+            <a href="{{ route('cms.faq.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah FAQ</a>
+        </div>
     </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:50px">No.</th>
+                    <th>Pertanyaan</th>
+                    <th style="width:80px">Urutan</th>
+                    <th style="width:100px">Status</th>
+                    <th style="width:120px">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($faqs as $f)
+                <tr>
+                    <td style="color:#94a3b8;font-size:12px">{{ $faqs->firstItem() + $loop->index }}</td>
+                    <td>
+                        <p style="font-weight:600;font-size:13px;color:#0f172a;margin-bottom:4px">{{ $f->pertanyaan }}</p>
+                        <p style="font-size:11px;color:#94a3b8;max-width:500px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                            {{ strip_tags($f->jawaban) }}
+                        </p>
+                    </td>
+                    <td>
+                        <span class="badge badge-slate">{{ $f->urutan }}</span>
+                    </td>
+                    <td>
+                        <span class="badge {{ $f->status === 'aktif' ? 'badge-green' : 'badge-slate' }}">
+                            {{ $f->status === 'aktif' ? 'Aktif' : 'Nonaktif' }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:6px">
+                            <a href="{{ route('cms.faq.edit', $f) }}" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-pen"></i> Edit
+                            </a>
+                            <form method="POST" action="{{ route('cms.faq.destroy', $f) }}"
+                                  onsubmit="return confirm('Hapus FAQ ini?')">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <i class="fas fa-circle-question"></i>
+                            <p>Belum ada FAQ. <a href="{{ route('cms.faq.create') }}" style="color:#2563eb">Tambah sekarang</a>.</p>
+                        </div>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    <div class="table-footer">{{ $faqs->links() }}</div>
 </div>
 @endsection

@@ -317,4 +317,10 @@ class HospitalController extends Controller
         $setting = \App\Models\WebsiteSetting::getSetting();
         return view('syarat-ketentuan', compact('setting'));
     }
+
+    public function faq()
+    {
+        $faqs = \App\Models\Faq::aktif()->get();
+        return view('faq', compact('faqs'));
+    }
 }

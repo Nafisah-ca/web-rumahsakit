@@ -38,6 +38,7 @@ Route::get('/live-antrian',    [HospitalController::class, 'liveAntrian'])->name
 // Halaman Legal
 Route::get('/kebijakan-privasi', [HospitalController::class, 'kebijakanPrivasi'])->name('kebijakan-privasi');
 Route::get('/syarat-ketentuan',  [HospitalController::class, 'syaratKetentuan'])->name('syarat-ketentuan');
+Route::get('/faq',               [HospitalController::class, 'faq'])->name('faq');
 
 // ─────────────────────────── AUTH ─────────────────────────────────────────────
 
@@ -228,7 +229,7 @@ Route::middleware(['auth', 'role:admin,cms'])->prefix('cms')->name('cms.')->grou
     Route::get('/ulasan',                     [CmsController::class, 'ulasan'])->name('ulasan');
     Route::get('/ulasan/{ulasan}',            [CmsController::class, 'showUlasan'])->name('ulasan.show');
     Route::put('/ulasan/{ulasan}/mark',       [CmsController::class, 'markUlasan'])->name('ulasan.mark');
-    Route::delete('/ulasan/{ulasan}',         [CmsController::class, 'destroyUlasan'])->name('ulasan.destroy');
+    Route::delete('/ulasan/{ulasan}',         [CmsController::class, 'destroyUlasan'])->name('ulasan.destroy'); 
 
     // Website Setting
     Route::get('/website-setting',          [CmsController::class, 'websiteSetting'])->name('website-setting');
@@ -241,6 +242,14 @@ Route::middleware(['auth', 'role:admin,cms'])->prefix('cms')->name('cms.')->grou
     // Syarat & Ketentuan (CMS editor)
     Route::get('/syarat-ketentuan',         [CmsController::class, 'syaratKetentuanEditor'])->name('syarat-ketentuan');
     Route::put('/syarat-ketentuan',         [CmsController::class, 'updateSyaratKetentuan'])->name('syarat-ketentuan.update');
+
+    // FAQ
+    Route::get('/faq',                      [CmsController::class, 'faq'])->name('faq');
+    Route::get('/faq/create',               [CmsController::class, 'createFaq'])->name('faq.create');
+    Route::post('/faq',                     [CmsController::class, 'storeFaq'])->name('faq.store');
+    Route::get('/faq/{faq}/edit',           [CmsController::class, 'editFaq'])->name('faq.edit');
+    Route::put('/faq/{faq}',                [CmsController::class, 'updateFaq'])->name('faq.update');
+    Route::delete('/faq/{faq}',             [CmsController::class, 'destroyFaq'])->name('faq.destroy');
 
     // Profile & Password
     Route::get('/profile',                  [CmsController::class, 'profile'])->name('profile');

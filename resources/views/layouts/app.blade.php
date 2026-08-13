@@ -462,6 +462,11 @@
                         </a>
                     </li>
                     @endforeach
+                    <li>
+                        <a href="{{ route('faq') }}" class="text-gray-400 hover:text-green-400 text-sm transition-colors flex items-center gap-2">
+                            <i class="fas fa-chevron-right text-green-600 text-xs"></i> FAQ
+                        </a>
+                    </li>
                 </ul>
             </div>
 

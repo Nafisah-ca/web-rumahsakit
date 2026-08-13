@@ -13,6 +13,7 @@ use App\Models\Layanan;
 use App\Models\Informasi;
 use App\Models\GuestBook;
 use App\Models\Ulasan;
+use App\Models\Faq;
 use App\Models\WebsiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -419,7 +420,7 @@ class CmsController extends Controller
         $layanan->delete();
         return back()->with('success', 'Layanan berhasil dihapus.');
     }
-
+    
     // ─────────────────────────── WEBSITE SETTING ────────────────────
 
     public function websiteSetting()
@@ -717,6 +718,74 @@ class CmsController extends Controller
         $ulasan->update(['deleted_by' => Auth::id()]);
         $ulasan->delete();
         return back()->with('success', 'Ulasan berhasil dihapus.');
+    }
+
+    // ─────────────────────────── FAQ ─────────────────────────────────
+
+    public function faq(Request $request)
+    {
+        $faqs = Faq::when($request->search, fn($q) => $q->where('pertanyaan', 'like', "%{$request->search}%"))
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->orderBy('urutan')->orderBy('created_tm')
+            ->paginate(20)->withQueryString();
+        return view('cms.faq.index', compact('faqs'));
+    }
+
+    public function createFaq()
+    {
+        return view('cms.faq.create');
+    }
+
+    public function storeFaq(Request $request)
+    {
+        $request->validate([
+            'pertanyaan' => 'required|string|max:300',
+            'jawaban'    => 'required|string',
+            'urutan'     => 'nullable|integer|min:0',
+            'status'     => 'required|in:aktif,nonaktif',
+        ]);
+
+        Faq::create([
+            'pertanyaan' => $request->pertanyaan,
+            'jawaban'    => $request->jawaban,
+            'urutan'     => $request->urutan ?? 0,
+            'status'     => $request->status,
+            'created_by' => Auth::id(),
+        ]);
+
+        return redirect()->route('cms.faq')->with('success', 'FAQ berhasil disimpan.');
+    }
+
+    public function editFaq(Faq $faq)
+    {
+        return view('cms.faq.edit', compact('faq'));
+    }
+
+    public function updateFaq(Request $request, Faq $faq)
+    {
+        $request->validate([
+            'pertanyaan' => 'required|string|max:300',
+            'jawaban'    => 'required|string',
+            'urutan'     => 'nullable|integer|min:0',
+            'status'     => 'required|in:aktif,nonaktif',
+        ]);
+
+        $faq->update([
+            'pertanyaan' => $request->pertanyaan,
+            'jawaban'    => $request->jawaban,
+            'urutan'     => $request->urutan ?? 0,
+            'status'     => $request->status,
+            'updated_by' => Auth::id(),
+        ]);
+
+        return redirect()->route('cms.faq')->with('success', 'FAQ berhasil diperbarui.');
+    }
+
+    public function destroyFaq(Faq $faq)
+    {
+        $faq->update(['deleted_by' => Auth::id()]);
+        $faq->delete();
+        return back()->with('success', 'FAQ berhasil dihapus.');
     }
 
     // ─────────────────────────── PROFILE & PASSWORD ──────────────────

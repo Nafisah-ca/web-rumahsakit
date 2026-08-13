@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Faq;
 use App\Models\WebsiteSetting;
 use App\Models\Spesialisasi;
 use Illuminate\Support\Facades\View;
@@ -31,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
         // Share spesialisasi & dokter counts ke layout public (navbar Dokter dinamis)
         View::composer('layouts.app', function ($view) {
             $view->with('nav_spesialisasi', Spesialisasi::orderBy('nama_spesialis')->get());
+            $view->with('footer_faqs', Faq::aktif()->get());
         });
     }
 }
