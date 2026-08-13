@@ -27,18 +27,11 @@
 </style>
 @endpush
 
-<div class="py-16" style="background:linear-gradient(135deg,#00521f,#00b04f)">
-    <div class="max-w-screen-xl mx-auto px-4 text-center">
-        <span class="text-green-300 text-xs font-black uppercase tracking-widest block mb-2">Testimoni</span>
-        <h1 class="text-white font-extrabold text-4xl mb-3">Ulasan Pasien</h1>
-        <p class="text-green-100 text-sm max-w-xl mx-auto">Pengalaman nyata pasien yang telah mempercayakan kesehatan mereka kepada kami.</p>
-        <nav class="flex items-center justify-center gap-2 mt-5 text-sm text-green-200">
-            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-white font-semibold">Ulasan Pasien</span>
-        </nav>
-    </div>
-</div>
+{{-- Hero --}}
+@include('_partials.page-hero', ['banner' => $banner ?? \App\Models\PageBanner::getForPage('ulasan'), 'breadcrumbs' => [
+    ['label' => 'Beranda', 'url' => route('home')],
+    ['label' => 'Ulasan Pasien'],
+]])
 
 <section class="py-12 bg-gray-50">
     <div class="max-w-screen-xl mx-auto px-4">

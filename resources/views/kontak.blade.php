@@ -24,18 +24,11 @@
 </style>
 @endpush
 
-<div class="py-20" style="background: linear-gradient(135deg, #00521f, #00b04f);">
-    <div class="max-w-screen-xl mx-auto px-4 text-center">
-        <span class="text-green-300 text-xs font-black uppercase tracking-widest block mb-2">Hubungi Kami</span>
-        <h1 class="text-white font-extrabold text-4xl mb-3">Kontak</h1>
-        <p class="text-green-100 text-sm max-w-xl mx-auto">Kami siap membantu Anda. Hubungi kami atau buat janji temu dengan dokter spesialis pilihan Anda.</p>
-        <nav class="flex items-center justify-center gap-2 mt-5 text-sm text-green-200">
-            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-white font-semibold">Kontak</span>
-        </nav>
-    </div>
-</div>
+{{-- Hero --}}
+@include('_partials.page-hero', ['banner' => $banner ?? \App\Models\PageBanner::getForPage('kontak'), 'breadcrumbs' => [
+    ['label' => 'Beranda', 'url' => route('home')],
+    ['label' => 'Hubungi Kami'],
+]])
 
 <section class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">

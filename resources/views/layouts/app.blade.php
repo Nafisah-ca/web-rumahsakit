@@ -190,21 +190,53 @@
                 <a href="{{ route('home') }}" class="nav-item {{ request()->routeIs('home') ? 'active' : '' }}">Beranda</a>
 
                 <div class="nav-dropdown">
-                    <button class="nav-item flex items-center gap-1">
+                    <button class="nav-item flex items-center gap-1 {{ request()->routeIs('layanan') || request()->routeIs('igd') ? 'active' : '' }}">
                         Pelayanan <i class="fas fa-chevron-down text-[10px] opacity-80"></i>
                     </button>
-                    <div class="nav-dropdown-menu">
-                        @foreach([
-                            ['fa-stethoscope','Pelayanan Utama','layanan'],
-                            ['fa-star','Pelayanan Khusus','layanan'],
-                            ['fa-heartbeat','Pusat Layanan Ibu & Anak','layanan'],
-                            ['fa-spa','Pain Clinic & Wellness','layanan'],
-                            ['fa-clipboard-check','Medical Check-Up','mcu'],
-                        ] as [$ico,$lbl,$rt])
-                        <a href="{{ route($rt) }}" class="nav-dropdown-item">
-                            <i class="fas {{ $ico }} text-green-500 w-4 text-center"></i> {{ $lbl }}
+                    <div class="nav-dropdown-menu" style="min-width:220px">
+
+                        {{-- Daftar Pelayanan — dengan sub-menu kategori di kanan (mirip Daftar Poliklinik) --}}
+                        <div class="nav-dropdown-sub" style="position:relative"
+                             onmouseenter="showNavSub('sub-pelayanan-menu')"
+                             onmouseleave="hideNavSub('sub-pelayanan-menu')">
+                            <a href="{{ route('layanan') }}"
+                               class="nav-dropdown-item flex items-center justify-between">
+                                <span><i class="fas fa-stethoscope text-green-500 w-4 text-center"></i> Daftar Pelayanan</span>
+                                @if(isset($nav_kategori_layanan) && $nav_kategori_layanan->isNotEmpty())
+                                <i class="fas fa-chevron-right text-[9px] text-gray-400 ml-2"></i>
+                                @endif
+                            </a>
+                            {{-- Sub-menu kanan: daftar kategori layanan --}}
+                            @if(isset($nav_kategori_layanan) && $nav_kategori_layanan->isNotEmpty())
+                            <div id="sub-pelayanan-menu"
+                                 style="display:none;position:absolute;left:100%;top:0;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.12);border:1px solid #e5e7eb;min-width:200px;z-index:9999;padding:6px 0"
+                                 onmouseenter="showNavSub('sub-pelayanan-menu')"
+                                 onmouseleave="hideNavSub('sub-pelayanan-menu')">
+                                @foreach($nav_kategori_layanan as $navKat)
+                                <a href="{{ route('layanan.by-kategori', $navKat->id) }}"
+                                   class="nav-dropdown-item">
+                                    <i class="fas {{ $navKat->icon ?? 'fa-hospital' }} text-green-500 w-4 text-center"></i>
+                                    {{ $navKat->nama_kategori }}
+                                </a>
+                                @endforeach
+                                <div style="border-top:1px solid #f1f5f9;margin:4px 0"></div>
+                                <a href="{{ route('layanan') }}" class="nav-dropdown-item">
+                                    <i class="fas fa-list text-green-500 w-4 text-center"></i> Semua Pelayanan
+                                </a>
+                            </div>
+                            @endif
+                        </div>
+
+                        {{-- Profil Pelayanan --}}
+                        <a href="{{ route('layanan') }}" class="nav-dropdown-item">
+                            <i class="fas fa-hospital text-green-500 w-4 text-center"></i> Profil Pelayanan
                         </a>
-                        @endforeach
+
+                        {{-- Medical Check-Up --}}
+                        <a href="{{ route('mcu') }}" class="nav-dropdown-item">
+                            <i class="fas fa-clipboard-check text-green-500 w-4 text-center"></i> Medical Check-Up
+                        </a>
+
                     </div>
                 </div>
 
@@ -311,20 +343,58 @@
             <button id="close-drawer" class="text-white p-1"><i class="fas fa-times text-lg"></i></button>
         </div>
         <div class="p-4 space-y-1">
-            @foreach([
-                ['fa-home','Beranda','home'],
-                ['fa-stethoscope','Pelayanan','layanan'],
-                ['fa-user-md','Dokter','dokter'],
-                ['fa-tags','Promo','promo'],
-                ['fa-newspaper','Artikel','artikel'],
-                ['fa-calendar-alt','Kegiatan','event'],
-                ['fa-info-circle','Tentang Kami','tentang'],
-                ['fa-phone','Hubungi Kami','kontak'],
-            ] as [$ico,$lbl,$rt])
-            <a href="{{ route($rt) }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
-                <i class="fas {{ $ico }} text-green-500 w-4 text-center"></i> {{ $lbl }}
+            {{-- Beranda --}}
+            <a href="{{ route('home') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
+                <i class="fas fa-home text-green-500 w-4 text-center"></i> Beranda
             </a>
-            @endforeach
+
+            {{-- Pelayanan accordion --}}
+            <div>
+                <button onclick="toggleMobileAcc('acc-pelayanan')"
+                    class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
+                    <span class="flex items-center gap-3">
+                        <i class="fas fa-stethoscope text-green-500 w-4 text-center"></i> Pelayanan
+                    </span>
+                    <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform" id="acc-pelayanan-icon"></i>
+                </button>
+                <div id="acc-pelayanan" style="display:none" class="pl-4 space-y-0.5 mt-1">
+                    <a href="{{ route('layanan') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-green-50 hover:text-green-700 font-bold transition-colors text-sm">
+                        <i class="fas fa-hospital text-green-500 w-4 text-center text-xs"></i> Profil Pelayanan
+                    </a>
+                    @if(isset($nav_kategori_layanan) && $nav_kategori_layanan->isNotEmpty())
+                        @foreach($nav_kategori_layanan as $mKat)
+                        <a href="{{ route('layanan.by-kategori', $mKat->id) }}"
+                           class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
+                            <i class="fas {{ $mKat->icon ?? 'fa-hospital' }} text-green-400 w-4 text-center text-xs"></i>
+                            {{ $mKat->nama_kategori }}
+                        </a>
+                        @endforeach
+                    @endif
+                    <a href="{{ route('mcu') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
+                        <i class="fas fa-clipboard-check text-green-400 w-4 text-center text-xs"></i> Medical Check-Up
+                    </a>
+                </div>
+            </div>
+
+            {{-- Dokter --}}
+            <a href="{{ route('dokter') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
+                <i class="fas fa-user-md text-green-500 w-4 text-center"></i> Dokter
+            </a>
+            <a href="{{ route('promo') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
+                <i class="fas fa-tags text-green-500 w-4 text-center"></i> Promo
+            </a>
+            <a href="{{ route('artikel') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
+                <i class="fas fa-newspaper text-green-500 w-4 text-center"></i> Artikel
+            </a>
+            <a href="{{ route('event') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
+                <i class="fas fa-calendar-alt text-green-500 w-4 text-center"></i> Kegiatan
+            </a>
+            <a href="{{ route('tentang') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
+                <i class="fas fa-info-circle text-green-500 w-4 text-center"></i> Tentang Kami
+            </a>
+            <a href="{{ route('kontak') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-semibold transition-colors text-sm">
+                <i class="fas fa-phone text-green-500 w-4 text-center"></i> Hubungi Kami
+            </a>
             <div class="pt-3">
                 <a href="{{ route('dokter') }}" class="block w-full text-center btn-green py-3 rounded-xl font-bold">
                     <i class="fas fa-calendar-check mr-2"></i>Daftar Poliklinik
@@ -746,6 +816,30 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 });
+
+// ── Navbar sub-menu helper (kategori layanan & spesialisasi) ──────────
+var _navSubTimers = {};
+function showNavSub(id) {
+    clearTimeout(_navSubTimers[id]);
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'block';
+}
+function hideNavSub(id) {
+    _navSubTimers[id] = setTimeout(function() {
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    }, 120);
+}
+
+// ── Mobile accordion Pelayanan ────────────────────────────────────────
+function toggleMobileAcc(id) {
+    var el   = document.getElementById(id);
+    var icon = document.getElementById(id + '-icon');
+    if (!el) return;
+    var open = el.style.display === 'block';
+    el.style.display   = open ? 'none' : 'block';
+    if (icon) icon.style.transform = open ? '' : 'rotate(180deg)';
+}
 </script>
 </body>
 </html>

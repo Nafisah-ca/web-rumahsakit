@@ -14,6 +14,7 @@ use App\Models\Informasi;
 use App\Models\GuestBook;
 use App\Models\Ulasan;
 use App\Models\WebsiteSetting;
+use App\Models\PageBanner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -362,20 +363,30 @@ class CmsController extends Controller
 
     public function layanan(Request $request)
     {
-        $layanans = Layanan::when($request->search, fn($q) => $q->where('nama_layanan', 'like', "%{$request->search}%"))
-            ->orderBy('id')->paginate(15)->withQueryString();
-        return view('cms.layanan.index', compact('layanans'));
+        $layanans = Layanan::with('kategori')
+            ->when($request->search, fn($q) => $q->where('nama_layanan', 'like', "%{$request->search}%"))
+            ->when($request->kategori_id, fn($q) => $q->where('kategori_layanan_id', $request->kategori_id))
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->orderBy('kategori_layanan_id')->orderBy('id')
+            ->paginate(15)->withQueryString();
+        $kategoris = \App\Models\KategoriLayanan::aktif()->get();
+        return view('cms.layanan.index', compact('layanans', 'kategoris'));
     }
 
-    public function createLayanan() { return view('cms.layanan.create'); }
+    public function createLayanan()
+    {
+        $kategoris = \App\Models\KategoriLayanan::aktif()->get();
+        return view('cms.layanan.create', compact('kategoris'));
+    }
 
     public function storeLayanan(Request $request)
     {
         $request->validate([
-            'nama_layanan' => 'required|string|max:255',
-            'deskripsi'    => 'nullable|string',
-            'status'       => 'nullable|in:aktif,nonaktif',
-            'gambar'       => 'nullable|image|max:2048',
+            'nama_layanan'        => 'required|string|max:255',
+            'kategori_layanan_id' => 'nullable|exists:kategori_layanan,id',
+            'deskripsi'           => 'nullable|string',
+            'status'              => 'nullable|in:aktif,nonaktif',
+            'gambar'              => 'nullable|image|max:2048',
         ]);
 
         $data = $request->except(['_token', 'gambar']);
@@ -390,15 +401,20 @@ class CmsController extends Controller
         return redirect()->route('cms.layanan')->with('success', 'Layanan berhasil disimpan.');
     }
 
-    public function editLayanan(Layanan $layanan) { return view('cms.layanan.edit', compact('layanan')); }
+    public function editLayanan(Layanan $layanan)
+    {
+        $kategoris = \App\Models\KategoriLayanan::aktif()->get();
+        return view('cms.layanan.edit', compact('layanan', 'kategoris'));
+    }
 
     public function updateLayanan(Request $request, Layanan $layanan)
     {
         $request->validate([
-            'nama_layanan' => 'required|string|max:255',
-            'deskripsi'    => 'nullable|string',
-            'status'       => 'nullable|in:aktif,nonaktif',
-            'gambar'       => 'nullable|image|max:2048',
+            'nama_layanan'        => 'required|string|max:255',
+            'kategori_layanan_id' => 'nullable|exists:kategori_layanan,id',
+            'deskripsi'           => 'nullable|string',
+            'status'              => 'nullable|in:aktif,nonaktif',
+            'gambar'              => 'nullable|image|max:2048',
         ]);
 
         $data = $request->except(['_token', '_method', 'gambar']);
@@ -415,9 +431,89 @@ class CmsController extends Controller
 
     public function destroyLayanan(Layanan $layanan)
     {
+        if ($layanan->gambar) Storage::disk('public')->delete($layanan->gambar);
         $layanan->update(['deleted_by' => Auth::id()]);
         $layanan->delete();
         return back()->with('success', 'Layanan berhasil dihapus.');
+    }
+
+    // ─────────────────────────── KATEGORI LAYANAN ────────────────────
+
+    public function kategoriLayanan(Request $request)
+    {
+        $query = \App\Models\KategoriLayanan::withCount(['layanans' => fn($q) => $q->where('status','aktif')])
+            ->when($request->search, fn($q) => $q->where('nama_kategori', 'like', "%{$request->search}%"));
+
+        // Pakai urutan hanya jika kolom sudah ada
+        if (\Illuminate\Support\Facades\Schema::hasColumn('kategori_layanan', 'urutan')) {
+            $query->orderBy('urutan');
+        }
+        $query->orderBy('nama_kategori');
+
+        $kategoris = $query->paginate(20)->withQueryString();
+        return view('cms.kategori-layanan.index', compact('kategoris'));
+    }
+
+    public function storeKategoriLayanan(Request $request)
+    {
+        $rules = [
+            'nama_kategori' => 'required|string|max:100|unique:kategori_layanan,nama_kategori',
+            'icon'          => 'nullable|string|max:50',
+        ];
+        $hasUrutan = \Illuminate\Support\Facades\Schema::hasColumn('kategori_layanan', 'urutan');
+        if ($hasUrutan) $rules['urutan'] = 'nullable|integer|min:0';
+
+        $request->validate($rules);
+
+        $data = [
+            'nama_kategori' => $request->nama_kategori,
+            'icon'          => $request->icon ?? 'fa-hospital',
+            'status'        => 'aktif',
+            'created_by'    => Auth::id(),
+        ];
+        if ($hasUrutan)                          $data['urutan']    = $request->urutan ?? 0;
+        if (\Illuminate\Support\Facades\Schema::hasColumn('kategori_layanan', 'deskripsi'))
+                                                 $data['deskripsi'] = $request->deskripsi;
+
+        \App\Models\KategoriLayanan::create($data);
+        return back()->with('success', 'Kategori layanan berhasil disimpan.');
+    }
+
+    public function updateKategoriLayanan(Request $request, \App\Models\KategoriLayanan $kategoriLayanan)
+    {
+        $rules = [
+            'nama_kategori' => 'required|string|max:100|unique:kategori_layanan,nama_kategori,' . $kategoriLayanan->id,
+            'icon'          => 'nullable|string|max:50',
+            'status'        => 'required|in:aktif,nonaktif',
+        ];
+        $hasUrutan = \Illuminate\Support\Facades\Schema::hasColumn('kategori_layanan', 'urutan');
+        if ($hasUrutan) $rules['urutan'] = 'nullable|integer|min:0';
+
+        $request->validate($rules);
+
+        $data = [
+            'nama_kategori' => $request->nama_kategori,
+            'icon'          => $request->icon ?? 'fa-hospital',
+            'status'        => $request->status,
+            'updated_by'    => Auth::id(),
+        ];
+        if ($hasUrutan)                          $data['urutan']    = $request->urutan ?? 0;
+        if (\Illuminate\Support\Facades\Schema::hasColumn('kategori_layanan', 'deskripsi'))
+                                                 $data['deskripsi'] = $request->deskripsi;
+
+        $kategoriLayanan->update($data);
+        return back()->with('success', 'Kategori layanan berhasil diperbarui.');
+    }
+
+    public function destroyKategoriLayanan(\App\Models\KategoriLayanan $kategoriLayanan)
+    {
+        // Null-kan foreign key di layanan yang pakai kategori ini sebelum hapus
+        Layanan::where('kategori_layanan_id', $kategoriLayanan->id)
+            ->update(['kategori_layanan_id' => null]);
+
+        $kategoriLayanan->update(['deleted_by' => Auth::id()]);
+        $kategoriLayanan->delete();
+        return back()->with('success', 'Kategori layanan berhasil dihapus.');
     }
 
     // ─────────────────────────── WEBSITE SETTING ────────────────────
@@ -775,5 +871,50 @@ class CmsController extends Controller
         ]);
 
         return back()->with('success', 'Password berhasil diperbarui.');
+    }
+
+    // ─────────────────────────── PAGE BANNER ─────────────────────────
+
+    public function pageBanner()
+    {
+        $banners = PageBanner::orderBy('nama_halaman')->get();
+        return view('cms.page-banner.index', compact('banners'));
+    }
+
+    public function editPageBanner(PageBanner $pageBanner)
+    {
+        $banner = $pageBanner;
+        return view('cms.page-banner.edit', compact('banner'));
+    }
+
+    public function updatePageBanner(Request $request, PageBanner $pageBanner)
+    {
+        $request->validate([
+            'judul'       => 'required|string|max:200',
+            'label_atas'  => 'nullable|string|max:100',
+            'subjudul'    => 'nullable|string|max:300',
+            'warna_awal'  => 'nullable|string|max:20',
+            'warna_akhir' => 'nullable|string|max:20',
+            'status'      => 'required|in:aktif,nonaktif',
+            'gambar'      => 'nullable|image|max:3072',
+        ]);
+
+        $data = $request->only(['judul','label_atas','subjudul','warna_awal','warna_akhir','status']);
+        $data['updated_by'] = Auth::id();
+
+        // Hapus gambar jika diminta
+        if ($request->hapus_gambar && $pageBanner->gambar) {
+            Storage::disk('public')->delete($pageBanner->gambar);
+            $data['gambar'] = null;
+        }
+
+        // Upload gambar baru
+        if ($request->hasFile('gambar')) {
+            if ($pageBanner->gambar) Storage::disk('public')->delete($pageBanner->gambar);
+            $data['gambar'] = $request->file('gambar')->store('page-banner', 'public');
+        }
+
+        $pageBanner->update($data);
+        return redirect()->route('cms.page-banner')->with('success', 'Banner halaman berhasil diperbarui.');
     }
 }

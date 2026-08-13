@@ -15,7 +15,8 @@ use App\Http\Controllers\EventBookingController;
 
 Route::get('/',                [HospitalController::class, 'home'])->name('home');
 Route::get('/tentang-kami',    [HospitalController::class, 'tentang'])->name('tentang');
-Route::get('/pelayanan',       [HospitalController::class, 'layanan'])->name('layanan');
+Route::get('/pelayanan',          [HospitalController::class, 'layanan'])->name('layanan');
+Route::get('/pelayanan/{id}',     [HospitalController::class, 'layananByKategori'])->name('layanan.by-kategori');
 Route::get('/dokter',          [HospitalController::class, 'dokter'])->name('dokter');
 Route::get('/dokter/online',   [HospitalController::class, 'dokterOnline'])->name('dokter.online');
 Route::get('/dokter/{spSlug}', [HospitalController::class, 'dokterBySpesialis'])->name('dokter.by-spesialis');
@@ -205,6 +206,12 @@ Route::middleware(['auth', 'role:admin,cms'])->prefix('cms')->name('cms.')->grou
     Route::put('/layanan/{layanan}',        [CmsController::class, 'updateLayanan'])->name('layanan.update');
     Route::delete('/layanan/{layanan}',     [CmsController::class, 'destroyLayanan'])->name('layanan.destroy');
 
+    // Kategori Layanan
+    Route::get('/kategori-layanan',                              [CmsController::class, 'kategoriLayanan'])->name('kategori-layanan');
+    Route::post('/kategori-layanan',                             [CmsController::class, 'storeKategoriLayanan'])->name('kategori-layanan.store');
+    Route::put('/kategori-layanan/{kategoriLayanan}',            [CmsController::class, 'updateKategoriLayanan'])->name('kategori-layanan.update');
+    Route::delete('/kategori-layanan/{kategoriLayanan}',         [CmsController::class, 'destroyKategoriLayanan'])->name('kategori-layanan.destroy');
+
     // Kategori Artikel
     Route::get('/kategori-artikel',                       [CmsController::class, 'kategoriArtikel'])->name('kategori-artikel');
     Route::post('/kategori-artikel',                      [CmsController::class, 'storeKategoriArtikel'])->name('kategori-artikel.store');
@@ -247,4 +254,9 @@ Route::middleware(['auth', 'role:admin,cms'])->prefix('cms')->name('cms.')->grou
     Route::put('/profile',                  [CmsController::class, 'updateProfile'])->name('profile.update');
     Route::get('/setting/password',         [CmsController::class, 'settingPassword'])->name('setting.password');
     Route::put('/setting/password',         [CmsController::class, 'updatePassword'])->name('setting.password.update');
+
+    // Page Banner
+    Route::get('/page-banner',                      [CmsController::class, 'pageBanner'])->name('page-banner');
+    Route::get('/page-banner/{pageBanner}/edit',    [CmsController::class, 'editPageBanner'])->name('page-banner.edit');
+    Route::put('/page-banner/{pageBanner}',         [CmsController::class, 'updatePageBanner'])->name('page-banner.update');
 });

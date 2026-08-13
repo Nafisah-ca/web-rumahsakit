@@ -1,28 +1,12 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="py-16" style="background:linear-gradient(135deg,#1e3a5f,#0284c7)">
-    <div class="max-w-screen-xl mx-auto px-4">
-        <nav class="flex items-center gap-2 text-sm text-blue-200 mb-4">
-            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <a href="{{ route('artikel') }}" class="hover:text-white">Artikel</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-white font-semibold">{{ Str::limit($artikel->judul, 40) }}</span>
-        </nav>
-        <h1 class="text-white font-extrabold text-3xl md:text-4xl leading-tight max-w-3xl">{{ $artikel->judul }}</h1>
-        <div class="flex flex-wrap gap-4 mt-4 text-sm text-blue-200">
-            @if($artikel->kategori)
-            <span class="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">{{ $artikel->kategori->nama_kategori }}</span>
-            @endif
-            <span><i class="fas fa-clock mr-1"></i>{{ $artikel->created_tm?->format('d M Y') }}</span>
-            @if($artikel->penulis)
-            <span><i class="fas fa-user mr-1"></i>{{ $artikel->penulis->nama }}</span>
-            @endif
-        </div>
-    </div>
-</div>
-
+{{-- Hero --}}
+@include('_partials.page-hero', ['banner' => $banner ?? \App\Models\PageBanner::getForPage('artikel'), 'pageTitle' => $artikel->judul, 'breadcrumbs' => [
+    ['label' => 'Beranda', 'url' => route('home')],
+    ['label' => 'Artikel',  'url' => route('artikel')],
+    ['label' => Str::limit($artikel->judul, 40)],
+]])
 <section class="py-12 bg-gray-50">
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">

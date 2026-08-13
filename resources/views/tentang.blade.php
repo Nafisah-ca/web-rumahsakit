@@ -1,18 +1,11 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="py-20" style="background: linear-gradient(135deg, #00521f, #00b04f);">
-    <div class="max-w-screen-xl mx-auto px-4 text-center">
-        <span class="text-green-300 text-xs font-black uppercase tracking-widest block mb-2">Profil Rumah Sakit</span>
-        <h1 class="text-white font-extrabold text-4xl mb-3">Tentang Kami</h1>
-        <p class="text-green-100 text-sm max-w-xl mx-auto">Mengenal lebih dekat {{ $setting->nama_rumahsakit ?? 'RS Sari Sehat' }}, visi, misi, dan komitmen kami untuk kesehatan masyarakat.</p>
-        <nav class="flex items-center justify-center gap-2 mt-5 text-sm text-green-200">
-            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-white font-semibold">Tentang Kami</span>
-        </nav>
-    </div>
-</div>
+{{-- Hero --}}
+@include('_partials.page-hero', ['banner' => $banner ?? \App\Models\PageBanner::getForPage('tentang'), 'breadcrumbs' => [
+    ['label' => 'Beranda', 'url' => route('home')],
+    ['label' => 'Tentang Kami'],
+]])
 
 {{-- Profil Singkat --}}
 <section class="py-16 bg-white">

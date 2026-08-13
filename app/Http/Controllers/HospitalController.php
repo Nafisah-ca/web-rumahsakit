@@ -12,6 +12,7 @@ use App\Models\Dokter;
 use App\Models\JanjiTemu;
 use App\Models\GuestBook;
 use App\Models\Ulasan;
+use App\Models\KategoriLayanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -43,33 +44,41 @@ class HospitalController extends Controller
     public function tentang()
     {
         $setting = \App\Models\WebsiteSetting::getSetting();
-        return view('tentang', compact('setting'));
+        $banner  = \App\Models\PageBanner::getForPage('tentang');
+        return view('tentang', compact('setting', 'banner'));
     }
 
     public function layanan()
     {
-        $layananList = Layanan::aktif()->get();
-        return view('layanan', compact('layananList'));
+        $kategoriList = \App\Models\KategoriLayanan::with(['layanansAktif'])
+            ->aktif()->get()
+            ->filter(fn($k) => $k->layanansAktif->isNotEmpty());
+        $layananTanpaKategori = Layanan::aktif()->whereNull('kategori_layanan_id')->get();
+        $totalLayanan = Layanan::aktif()->count();
+        $banner = \App\Models\PageBanner::getForPage('pelayanan');
+        return view('layanan', compact('kategoriList', 'layananTanpaKategori', 'totalLayanan', 'banner'));
+    }
+
+    public function layananByKategori(int $id)
+    {
+        $kategoriList  = KategoriLayanan::aktif()->get();
+        $aktifKategori = KategoriLayanan::findOrFail($id);
+        abort_if($aktifKategori->status !== 'aktif', 404);
+        $layanans = Layanan::aktif()->where('kategori_layanan_id', $id)->get();
+        $banner   = \App\Models\PageBanner::getForPage('layanan-kategori');
+        return view('layanan-kategori', compact('kategoriList', 'aktifKategori', 'layanans', 'banner'));
     }
 
     public function dokter()
     {
         $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
-
-        // Batas: max 3 dokter per spesialis
-        $dokterList = $spesialisasis
-            ->pluck('id')
-            ->flatMap(function ($spId) {
-                return Dokter::with(['spesialisasi', 'jadwalAktif'])
-                    ->where('status', 'aktif')
-                    ->where('spesialis_id', $spId)
-                    ->orderBy('nama_dokter')
-                    ->limit(3)
-                    ->get();
-            })
+        $dokterList = $spesialisasis->pluck('id')
+            ->flatMap(fn($spId) => Dokter::with(['spesialisasi','jadwalAktif'])
+                ->where('status','aktif')->where('spesialis_id',$spId)
+                ->orderBy('nama_dokter')->limit(3)->get())
             ->values();
-
-        return view('dokter', compact('dokterList', 'spesialisasis') + [
+        $banner = \App\Models\PageBanner::getForPage('dokter');
+        return view('dokter', compact('dokterList','spesialisasis','banner') + [
             'activeSpesialisSlug' => null,
             'activeSpesialisNama' => null,
         ]);
@@ -78,56 +87,42 @@ class HospitalController extends Controller
     public function dokterOnline()
     {
         $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
-
-        // Batas: max 3 dokter per spesialis (semua dokter aktif dianggap "online")
-        $dokterList = $spesialisasis
-            ->pluck('id')
-            ->flatMap(function ($spId) {
-                return Dokter::with(['spesialisasi', 'jadwalAktif'])
-                    ->where('status', 'aktif')
-                    ->where('spesialis_id', $spId)
-                    ->orderBy('nama_dokter')
-                    ->limit(3)
-                    ->get();
-            })
+        $dokterList = $spesialisasis->pluck('id')
+            ->flatMap(fn($spId) => Dokter::with(['spesialisasi','jadwalAktif'])
+                ->where('status','aktif')->where('spesialis_id',$spId)
+                ->orderBy('nama_dokter')->limit(3)->get())
             ->values();
-
-        return view('dokter', compact('dokterList', 'spesialisasis') + ['online' => true]);
+        $banner = \App\Models\PageBanner::getForPage('dokter');
+        return view('dokter', compact('dokterList','spesialisasis','banner') + ['online' => true]);
     }
 
     public function dokterBySpesialis(string $spSlug)
     {
-        // DB baru tidak punya kolom slug, gunakan ID sebagai parameter
         $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
-        $sp = Spesialisasi::find($spSlug); // spSlug sekarang adalah ID
-
+        $sp = Spesialisasi::find($spSlug);
         abort_if(!$sp, 404);
-
-        $dokterList = Dokter::with(['spesialisasi', 'jadwalAktif'])
-            ->where('status', 'aktif')
-            ->where('spesialis_id', $sp->id)
-            ->orderBy('nama_dokter')
-            ->limit(3)
-            ->get();
-
-        return view('dokter', compact('dokterList', 'spesialisasis') + [
+        $dokterList = Dokter::with(['spesialisasi','jadwalAktif'])
+            ->where('status','aktif')->where('spesialis_id',$sp->id)
+            ->orderBy('nama_dokter')->limit(3)->get();
+        $banner = \App\Models\PageBanner::getForPage('dokter');
+        return view('dokter', compact('dokterList','spesialisasis','banner') + [
             'activeSpesialisSlug' => $sp->id,
             'activeSpesialisNama' => $sp->nama_spesialis,
         ]);
     }
 
-
-
     public function fasilitas()
     {
-        return view('fasilitas');
+        $banner = \App\Models\PageBanner::getForPage('fasilitas');
+        return view('fasilitas', compact('banner'));
     }
 
     public function kontak()
     {
         $setting      = \App\Models\WebsiteSetting::getSetting();
         $ulasanPublic = Ulasan::approved()->orderByDesc('created_tm')->limit(6)->get();
-        return view('kontak', compact('setting', 'ulasanPublic'));
+        $banner       = \App\Models\PageBanner::getForPage('kontak');
+        return view('kontak', compact('setting', 'ulasanPublic', 'banner'));
     }
 
     public function storeKontak(Request $request)
@@ -197,112 +192,88 @@ class HospitalController extends Controller
             $query->where('rating', $rating);
         }
         $ulasans      = $query->paginate(12)->withQueryString();
-        $ratingCounts = Ulasan::approved()
-            ->selectRaw('rating, count(*) as total')
-            ->groupBy('rating')
-            ->pluck('total', 'rating');
+        $ratingCounts = Ulasan::approved()->selectRaw('rating, count(*) as total')->groupBy('rating')->pluck('total', 'rating');
         $avgRating    = Ulasan::approved()->avg('rating');
         $totalUlasan  = Ulasan::approved()->count();
-        return view('ulasan', compact('ulasans', 'ratingCounts', 'avgRating', 'totalUlasan', 'rating'));
+        $banner       = \App\Models\PageBanner::getForPage('ulasan');
+        return view('ulasan', compact('ulasans', 'ratingCounts', 'avgRating', 'totalUlasan', 'rating', 'banner'));
     }
 
     public function promo()
     {
         $promos = Promo::aktif()->paginate(10);
-        return view('promo', compact('promos'));
+        $banner = \App\Models\PageBanner::getForPage('promo');
+        return view('promo', compact('promos', 'banner'));
     }
 
     public function promoDetail(\App\Models\Promo $promo)
     {
         abort_if($promo->status !== 'aktif', 404);
-        $related = Promo::aktif()
-            ->where('id', '!=', $promo->id)
-            ->limit(3)->get();
-        return view('promo-detail', compact('promo', 'related'));
+        $related = Promo::aktif()->where('id', '!=', $promo->id)->limit(3)->get();
+        $banner  = \App\Models\PageBanner::getForPage('promo');
+        return view('promo-detail', compact('promo', 'related', 'banner'));
     }
 
     public function event()
     {
-        // Event mendatang (aktif, tanggal >= hari ini) — urut terdekat dulu
-        $eventsMendatang = Event::where('status', 'aktif')
-            ->where('tanggal_event', '>=', today())
-            ->orderBy('tanggal_event', 'asc')
-            ->paginate(9, ['*'], 'page_m');
-
-        // Event sudah lewat (aktif, tanggal < hari ini) — urut terbaru dulu
-        $eventsLewat = Event::where('status', 'aktif')
-            ->where('tanggal_event', '<', today())
-            ->orderBy('tanggal_event', 'desc')
-            ->paginate(6, ['*'], 'page_l');
-
-        // Banner event: ambil event mendatang yg punya gambar, maks 5
-        $bannerEvents = Event::where('status', 'aktif')
-            ->where('tanggal_event', '>=', today())
-            ->whereNotNull('gambar')
-            ->orderBy('tanggal_event', 'asc')
-            ->limit(5)
-            ->get();
-
-        return view('event', compact('eventsMendatang', 'eventsLewat', 'bannerEvents'));
+        $eventsMendatang = Event::where('status','aktif')->where('tanggal_event','>=',today())->orderBy('tanggal_event','asc')->paginate(9,['*'],'page_m');
+        $eventsLewat     = Event::where('status','aktif')->where('tanggal_event','<',today())->orderBy('tanggal_event','desc')->paginate(6,['*'],'page_l');
+        $bannerEvents    = Event::where('status','aktif')->where('tanggal_event','>=',today())->whereNotNull('gambar')->orderBy('tanggal_event','asc')->limit(5)->get();
+        $banner          = \App\Models\PageBanner::getForPage('event');
+        return view('event', compact('eventsMendatang', 'eventsLewat', 'bannerEvents', 'banner'));
     }
 
     public function eventDetail(\App\Models\Event $event)
     {
         abort_if($event->status !== 'aktif', 404);
-        $related = Event::published()
-            ->where('id', '!=', $event->id)
-            ->limit(3)->get();
-        return view('event-detail', compact('event', 'related'));
+        $related = Event::published()->where('id','!=',$event->id)->limit(3)->get();
+        $banner  = \App\Models\PageBanner::getForPage('event');
+        return view('event-detail', compact('event', 'related', 'banner'));
     }
 
     public function informasiPublic()
     {
         $informasis = \App\Models\Informasi::published()->paginate(12);
-        return view('informasi', compact('informasis'));
+        $banner     = \App\Models\PageBanner::getForPage('informasi');
+        return view('informasi', compact('informasis', 'banner'));
     }
 
     public function informasiDetail(\App\Models\Informasi $informasi)
     {
         abort_if($informasi->status !== 'publish', 404);
-        $related = \App\Models\Informasi::published()
-            ->where('id', '!=', $informasi->id)
-            ->limit(3)->get();
-        return view('informasi-detail', compact('informasi', 'related'));
+        $related = \App\Models\Informasi::published()->where('id','!=',$informasi->id)->limit(3)->get();
+        $banner  = \App\Models\PageBanner::getForPage('informasi');
+        return view('informasi-detail', compact('informasi', 'related', 'banner'));
     }
 
     public function artikel()
     {
         $articles  = Artikel::published()->with(['kategori', 'penulis'])->paginate(9);
-        $kategoris = \App\Models\KategoriArtikel::withCount(['artikels' => fn($q) => $q->where('status', 'publish')])->aktif()->get();
-        return view('artikel', compact('articles', 'kategoris'));
+        $kategoris = \App\Models\KategoriArtikel::withCount(['artikels' => fn($q) => $q->where('status','publish')])->aktif()->get();
+        $banner    = \App\Models\PageBanner::getForPage('artikel');
+        return view('artikel', compact('articles', 'kategoris', 'banner'));
     }
 
     public function artikelDetail(string $slug)
     {
-        $artikel = Artikel::where('slug', $slug)->where('status', 'publish')->firstOrFail();
-        
-        $related = Artikel::where('status', 'publish')
-                        ->where('kategori_artikel_id', $artikel->kategori_artikel_id)
-                        ->where('id', '!=', $artikel->id)
-                        ->limit(3)->get();
-                        
-        return view('artikel-detail', compact('artikel', 'related'));
+        $artikel = Artikel::where('slug', $slug)->where('status','publish')->firstOrFail();
+        $related = Artikel::where('status','publish')->where('kategori_artikel_id',$artikel->kategori_artikel_id)->where('id','!=',$artikel->id)->limit(3)->get();
+        $banner  = \App\Models\PageBanner::getForPage('artikel');
+        return view('artikel-detail', compact('artikel', 'related', 'banner'));
     }
 
     public function mcu()
     {
-        return view('mcu');
+        $banner = \App\Models\PageBanner::getForPage('mcu');
+        return view('mcu', compact('banner'));
     }
 
     public function liveAntrian()
     {
-        // Ambil antrian hari ini yang statusnya approved atau pending
         $antrians = JanjiTemu::with(['jadwalDokter.dokter.spesialisasi', 'pasien.user'])
             ->whereDate('tanggal_booking', today())
             ->whereIn('status', ['pending', 'approved'])
-            ->orderBy('nomor_antrian')
-            ->get();
-            
+            ->orderBy('nomor_antrian')->get();
         return view('live-antrian', compact('antrians'));
     }
 
