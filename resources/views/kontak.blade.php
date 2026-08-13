@@ -54,8 +54,11 @@
             </a>
 
             {{-- Email --}}
-            @php $email = $setting->email ?? 'info@sarisehat.id'; @endphp
-            <a href="mailto:{{ $email }}"
+            @php
+                $email = $setting->email ?? 'rssarisehat@gmail.com';
+                $gmailCompose = 'https://mail.google.com/mail/?view=cm&to=' . urlencode($email);
+            @endphp
+            <a href="{{ $gmailCompose }}" target="_blank" rel="noopener"
                class="block p-6 rounded-2xl text-center border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group bg-blue-50">
                 <div class="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-md">
                     <i class="fas fa-envelope text-white text-2xl"></i>
@@ -205,7 +208,9 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="font-bold text-gray-900 text-sm">Email</p>
-                            <p class="text-gray-500 text-xs mt-0.5">{{ $setting->email }}</p>
+                            <a href="https://mail.google.com/mail/?view=cm&to={{ urlencode($setting->email) }}"
+                               target="_blank" rel="noopener"
+                               class="text-blue-600 hover:underline text-xs mt-0.5 block">{{ $setting->email }}</a>
                         </div>
                     </div>
                     @endif

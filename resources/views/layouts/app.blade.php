@@ -500,8 +500,11 @@
                     @endif
                     @if($setting_global->email ?? null)
                     <div class="flex items-center gap-3">
+                        @php
+                            $gmailLink = 'https://mail.google.com/mail/?view=cm&to=' . urlencode($setting_global->email);
+                        @endphp
                         <i class="fas fa-envelope text-green-500 w-4"></i>
-                        <a href="mailto:{{ $setting_global->email }}" class="text-gray-300 hover:text-white transition-colors">{{ $setting_global->email }}</a>
+                        <a href="{{ $gmailLink }}" target="_blank" rel="noopener" class="text-gray-300 hover:text-white transition-colors">{{ $setting_global->email }}</a>
                     </div>
                     @endif
                 </div>
@@ -568,8 +571,11 @@
                     @endif
                     @if($setting_global->email ?? null)
                     <li class="text-gray-400 text-sm flex items-center gap-2">
+                        @php
+                            $gmailLinkKontak = 'https://mail.google.com/mail/?view=cm&to=' . urlencode($setting_global->email);
+                        @endphp
                         <i class="fas fa-envelope text-green-500 text-xs w-3"></i>
-                        <a href="mailto:{{ $setting_global->email }}" class="hover:text-green-400 transition-colors">{{ $setting_global->email }}</a>
+                        <a href="{{ $gmailLinkKontak }}" target="_blank" rel="noopener" class="hover:text-green-400 transition-colors">{{ $setting_global->email }}</a>
                     </li>
                     @endif
                     @if($setting_global->jam_operasional ?? null)

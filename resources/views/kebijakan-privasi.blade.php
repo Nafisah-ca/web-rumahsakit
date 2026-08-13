@@ -89,7 +89,7 @@
                         <p class="font-bold text-gray-900">{{ $setting->nama_rumahsakit ?? 'RS Sari Sehat' }}</p>
                         @if($setting->alamat)<p class="text-sm text-gray-600 mt-1">{{ $setting->alamat }}</p>@endif
                         @if($setting->telepon)<p class="text-sm text-gray-600">Telepon: {{ $setting->telepon }}</p>@endif
-                        @if($setting->email)<p class="text-sm text-gray-600">Email: <a href="mailto:{{ $setting->email }}" class="text-green-600 hover:underline">{{ $setting->email }}</a></p>@endif
+                        @if($setting->email)<p class="text-sm text-gray-600">Email: <a href="https://mail.google.com/mail/?view=cm&to={{ urlencode($setting->email) }}" target="_blank" rel="noopener" class="text-green-600 hover:underline">{{ $setting->email }}</a></p>@endif
                     </div>
                 </div>
             @endif
