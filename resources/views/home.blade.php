@@ -170,7 +170,7 @@
                     ] as [$val,$lbl,$ico])
                     <div class="stat-box w-full sm:w-1/2 flex flex-col items-center justify-center">
                         <i class="fas {{ $ico }} text-green-300 text-xl mb-2 block"></i>
-                        <div class="stat-number">{{ $val }}</div>
+                        <div class="stat-number">{{ $val }}+</div>
                         <div class="stat-label">{{ $lbl }}</div>
                     </div>
                     @endforeach
