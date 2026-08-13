@@ -1,10 +1,18 @@
 @extends('layouts.app')
 @section('content')
 
-<x-page-hero
-    page="mcu"
-    :breadcrumbs="[['Beranda','home'],['Medical Check-Up',null]]"
-/>
+<div class="py-20" style="background: linear-gradient(135deg, #1e3a5f, #0f4c81);">
+    <div class="max-w-screen-xl mx-auto px-4 text-center">
+        <span class="text-blue-300 text-xs font-black uppercase tracking-widest block mb-2">Deteksi Dini</span>
+        <h1 class="text-white font-extrabold text-4xl mb-3">Medical Check-Up</h1>
+        <p class="text-blue-100 text-sm max-w-xl mx-auto">Paket MCU komprehensif untuk individu dan perusahaan. Hasil lengkap dalam satu hari kunjungan.</p>
+        <nav class="flex items-center justify-center gap-2 mt-5 text-sm text-blue-200">
+            <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-white font-semibold">Medical Check-Up</span>
+        </nav>
+    </div>
+</div>
 
 <section class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
