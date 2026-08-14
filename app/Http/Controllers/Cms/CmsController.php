@@ -1004,43 +1004,29 @@ class CmsController extends Controller
 
     public function pageBanner()
     {
-        $banners     = PageBanner::get()->keyBy('page_key');
-        $halamanList = PageBanner::HALAMAN_LIST;
-        return view('cms.page-banner.index', compact('banners', 'halamanList'));
+        $banners = PageBanner::orderBy('nama_halaman')->get();
+        return view('cms.page-banner.index', compact('banners'));
     }
 
-    public function storePageBanner(Request $request)
+    public function editPageBanner(PageBanner $pageBanner)
     {
-        $request->validate([
-            'page_key' => 'required|in:' . implode(',', array_keys(PageBanner::HALAMAN_LIST)),
-            'gambar'   => 'required|image|max:4096',
-            'status'   => 'required|in:aktif,nonaktif',
-        ]);
-
-        $old = PageBanner::where('page_key', $request->page_key)->first();
-        if ($old) {
-            if ($old->gambar) Storage::disk('public')->delete($old->gambar);
-            $old->delete();
-        }
-
-        PageBanner::create([
-            'page_key'   => $request->page_key,
-            'gambar'     => $request->file('gambar')->store('page-banner', 'public'),
-            'status'     => $request->status,
-            'updated_by' => Auth::id(),
-        ]);
-
-        return redirect()->route('cms.page-banner')->with('success', 'Banner berhasil disimpan.');
+        $banner = $pageBanner;
+        return view('cms.page-banner.edit', compact('banner'));
     }
 
     public function updatePageBanner(Request $request, PageBanner $pageBanner)
     {
         $request->validate([
-            'gambar' => 'nullable|image|max:4096',
-            'status' => 'required|in:aktif,nonaktif',
+            'judul'       => 'required|string|max:200',
+            'label_atas'  => 'nullable|string|max:100',
+            'subjudul'    => 'nullable|string|max:300',
+            'warna_awal'  => 'nullable|string|max:20',
+            'warna_akhir' => 'nullable|string|max:20',
+            'status'      => 'required|in:aktif,nonaktif',
+            'gambar'      => 'nullable|image|max:4096',
         ]);
 
-        $data = $request->only(['judul','label_atas','subjudul','warna_awal','warna_akhir','status']);
+        $data = $request->only(['judul', 'label_atas', 'subjudul', 'warna_awal', 'warna_akhir', 'status']);
         $data['updated_by'] = Auth::id();
 
         // Hapus gambar jika diminta
@@ -1060,129 +1046,67 @@ class CmsController extends Controller
         }
 
         $pageBanner->update($data);
-        
-return redirect()
-    ->route('cms.page-banner')
-    ->with('success', 'Banner berhasil diperbarui.');
-}
 
-public function destroyPageBanner(PageBanner $pageBanner)
-{
-    if ($pageBanner->gambar) {
-        Storage::disk('public')->delete($pageBanner->gambar);
+        return redirect()->route('cms.page-banner')->with('success', 'Banner halaman berhasil diperbarui.');
     }
 
-    $pageBanner->delete();
+    /**
+     * Konversi file gambar ke Base64 Data URL dengan kompresi GD (jika tersedia).
+     * Gambar disimpan 100% di database sehingga ketika database di-export, gambar tetap ikut terbawa.
+     */
+    private function convertImageToBase64($file): string
+    {
+        $realPath = $file->getRealPath();
+        $mime     = $file->getMimeType() ?: 'image/jpeg';
 
-    return back()->with('success', 'Banner berhasil dihapus.');
-}
+        if (extension_loaded('gd') && function_exists('imagecreatefromstring')) {
+            try {
+                $imageData = file_get_contents($realPath);
+                if ($imageData !== false) {
+                    $srcImage = @imagecreatefromstring($imageData);
+                    if ($srcImage !== false) {
+                        $origW = imagesx($srcImage);
+                        $origH = imagesy($srcImage);
 
-/**
- * Konversi file gambar ke Base64 Data URL dengan kompresi GD
- * jika extension GD tersedia.
- *
- * Gambar disimpan 100% di database sehingga ketika database
- * di-export, gambar tetap ikut terbawa.
- */
-private function convertImageToBase64($file): string
-{
-    $realPath = $file->getRealPath();
-    $mime = $file->getMimeType() ?: 'image/jpeg';
+                        $maxW = 1600;
+                        if ($origW > $maxW) {
+                            $newW = $maxW;
+                            $newH = (int) round(($origH / $origW) * $newW);
+                            $dstImage = imagecreatetruecolor($newW, $newH);
 
-    // Gunakan GD jika tersedia
-    if (
-        extension_loaded('gd') &&
-        function_exists('imagecreatefromstring')
-    ) {
-        try {
-            $imageData = file_get_contents($realPath);
+                            if (in_array($mime, ['image/png', 'image/webp'])) {
+                                imagealphablending($dstImage, false);
+                                imagesavealpha($dstImage, true);
+                            }
 
-            if ($imageData !== false) {
-                $srcImage = @imagecreatefromstring($imageData);
-
-                if ($srcImage !== false) {
-                    $origW = imagesx($srcImage);
-                    $origH = imagesy($srcImage);
-
-                    // Batasi lebar maksimal 1600px
-                    $maxW = 1600;
-
-                    if ($origW > $maxW) {
-                        $newW = $maxW;
-                        $newH = (int) round(($origH / $origW) * $newW);
-
-                        $dstImage = imagecreatetruecolor(
-                            $newW,
-                            $newH
-                        );
-
-                        // Pertahankan transparansi PNG/WebP
-                        if (in_array($mime, ['image/png', 'image/webp'])) {
-                            imagealphablending($dstImage, false);
-                            imagesavealpha($dstImage, true);
+                            imagecopyresampled($dstImage, $srcImage, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
+                            imagedestroy($srcImage);
+                            $srcImage = $dstImage;
                         }
 
-                        imagecopyresampled(
-                            $dstImage,
-                            $srcImage,
-                            0,
-                            0,
-                            0,
-                            0,
-                            $newW,
-                            $newH,
-                            $origW,
-                            $origH
-                        );
-
+                        ob_start();
+                        if ($mime === 'image/png') {
+                            imagepng($srcImage, null, 7);
+                        } elseif ($mime === 'image/webp' && function_exists('imagewebp')) {
+                            imagewebp($srcImage, null, 80);
+                        } else {
+                            imagejpeg($srcImage, null, 82);
+                            $mime = 'image/jpeg';
+                        }
+                        $compressedData = ob_get_clean();
                         imagedestroy($srcImage);
 
-                        $srcImage = $dstImage;
-                    }
-
-                    ob_start();
-
-                    if ($mime === 'image/png') {
-                        imagepng($srcImage, null, 7);
-                    } elseif (
-                        $mime === 'image/webp' &&
-                        function_exists('imagewebp')
-                    ) {
-                        imagewebp($srcImage, null, 80);
-                    } else {
-                        imagejpeg($srcImage, null, 82);
-                        $mime = 'image/jpeg';
-                    }
-
-                    $compressedData = ob_get_clean();
-
-                    imagedestroy($srcImage);
-
-                    if ($compressedData !== false && $compressedData !== '') {
-                        return 'data:' .
-                            $mime .
-                            ';base64,' .
-                            base64_encode($compressedData);
+                        if ($compressedData !== false && $compressedData !== '') {
+                            return 'data:' . $mime . ';base64,' . base64_encode($compressedData);
+                        }
                     }
                 }
+            } catch (\Throwable $e) {
+                // Fallback jika GD bermasalah
             }
-        } catch (\Throwable $e) {
-            // Jika GD gagal, lanjut menggunakan file asli
         }
+
+        $fileData = file_get_contents($realPath);
+        return 'data:' . $mime . ';base64,' . base64_encode($fileData);
     }
-
-    // Fallback: langsung encode file asli ke Base64
-    $fileData = file_get_contents($realPath);
-
-    if ($fileData === false) {
-        throw new \RuntimeException(
-            'Gagal membaca file gambar.'
-        );
-    }
-
-    return 'data:' .
-        $mime .
-        ';base64,' .
-        base64_encode($fileData);
-}
 }
