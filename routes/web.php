@@ -257,6 +257,14 @@ Route::middleware(['auth', 'role:admin,cms', 'last.activity'])->prefix('cms')->n
     Route::put('/faq/{faq}',                [CmsController::class, 'updateFaq'])->name('faq.update');
     Route::delete('/faq/{faq}',             [CmsController::class, 'destroyFaq'])->name('faq.destroy');
 
+    // Akreditasi
+    Route::get('/akreditasi',                       [CmsController::class, 'akreditasi'])->name('akreditasi');
+    Route::get('/akreditasi/create',                [CmsController::class, 'createAkreditasi'])->name('akreditasi.create');
+    Route::post('/akreditasi',                      [CmsController::class, 'storeAkreditasi'])->name('akreditasi.store');
+    Route::get('/akreditasi/{akreditasi}/edit',     [CmsController::class, 'editAkreditasi'])->name('akreditasi.edit');
+    Route::put('/akreditasi/{akreditasi}',          [CmsController::class, 'updateAkreditasi'])->name('akreditasi.update');
+    Route::delete('/akreditasi/{akreditasi}',       [CmsController::class, 'destroyAkreditasi'])->name('akreditasi.destroy');
+
     // Profile & Password
     Route::get('/profile',                  [CmsController::class, 'profile'])->name('profile');
     Route::put('/profile',                  [CmsController::class, 'updateProfile'])->name('profile.update');

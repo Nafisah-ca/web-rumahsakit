@@ -596,12 +596,23 @@
 
     {{-- Akreditasi --}}
     <div class="border-t border-white/10">
-        <div class="max-w-screen-xl mx-auto px-4 py-4">
-            <div class="flex flex-wrap justify-center gap-3 items-center">
-                <span class="text-gray-500 text-xs font-semibold">Terakreditasi:</span>
+        <div class="max-w-screen-xl mx-auto px-4 py-10">
+            <div class="flex flex-wrap justify-center gap-4 items-center">
+                <span class="text-gray-500 text-xs font-semibold mr-1">Terakreditasi:</span>
+                @forelse($akreditasi_footer as $akr)
+                <div class="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors">
+                    @if($akr->logo)
+                    <img src="{{ Storage::url($akr->logo) }}"
+                         alt="{{ $akr->nama }}"
+                         style="height:14px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:.75;flex-shrink:0">
+                    @endif
+                    <span class="text-xs text-green-400 font-bold whitespace-nowrap">{{ $akr->nama }}</span>
+                </div>
+                @empty
                 @foreach(['KARS Paripurna','ISO 9001:2015','SNARS Edisi 1.1','BPJS Kesehatan','Kemenkes RI'] as $a)
                 <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-green-400 font-bold">{{ $a }}</span>
                 @endforeach
+                @endforelse
             </div>
         </div>
     </div>

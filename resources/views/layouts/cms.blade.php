@@ -209,6 +209,9 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
             <a href="{{ route('cms.faq') }}" class="sidebar-link {{ request()->routeIs('cms.faq*') ? 'active' : '' }}">
                 <i class="fas fa-circle-question icon"></i> FAQ
             </a>
+            <a href="{{ route('cms.akreditasi') }}" class="sidebar-link {{ request()->routeIs('cms.akreditasi*') ? 'active' : '' }}">
+                <i class="fas fa-certificate icon"></i> Akreditasi
+            </a>
 
             <div class="sidebar-group">Interaksi</div>
             <a href="{{ route('cms.guest-book') }}" class="sidebar-link {{ request()->routeIs('cms.guest-book*') ? 'active' : '' }}">

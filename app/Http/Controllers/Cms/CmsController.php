@@ -14,6 +14,7 @@ use App\Models\Informasi;
 use App\Models\GuestBook;
 use App\Models\Ulasan;
 use App\Models\Faq;
+use App\Models\Akreditasi;
 use App\Models\WebsiteSetting;
 use App\Models\PageBanner;
 use Illuminate\Http\Request;
@@ -940,6 +941,89 @@ class CmsController extends Controller
         $faq->update(['deleted_by' => Auth::id()]);
         $faq->delete();
         return back()->with('success', 'FAQ berhasil dihapus.');
+    }
+
+    // ─────────────────────────── AKREDITASI ──────────────────────────
+
+    public function akreditasi(Request $request)
+    {
+        $akreditasis = Akreditasi::when(
+                $request->search,
+                fn($q) => $q->where('nama', 'like', "%{$request->search}%")
+            )
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->orderBy('urutan')
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('cms.akreditasi.index', compact('akreditasis'));
+    }
+
+    public function createAkreditasi()
+    {
+        return view('cms.akreditasi.create');
+    }
+
+    public function storeAkreditasi(Request $request)
+    {
+        $request->validate([
+            'nama'   => 'required|string|max:100',
+            'urutan' => 'nullable|integer|min:0',
+            'status' => 'required|in:aktif,nonaktif',
+            'logo'   => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
+        ]);
+
+        $data               = $request->only(['nama', 'urutan', 'status']);
+        $data['urutan']     = $request->urutan ?? 0;
+        $data['created_by'] = Auth::id();
+
+        if ($request->hasFile('logo')) {
+            $data['logo'] = $request->file('logo')->store('akreditasi', 'public');
+        }
+
+        Akreditasi::create($data);
+        return redirect()->route('cms.akreditasi')->with('success', 'Akreditasi berhasil disimpan.');
+    }
+
+    public function editAkreditasi(Akreditasi $akreditasi)
+    {
+        return view('cms.akreditasi.edit', compact('akreditasi'));
+    }
+
+    public function updateAkreditasi(Request $request, Akreditasi $akreditasi)
+    {
+        $request->validate([
+            'nama'   => 'required|string|max:100',
+            'urutan' => 'nullable|integer|min:0',
+            'status' => 'required|in:aktif,nonaktif',
+            'logo'   => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
+        ]);
+
+        $data               = $request->only(['nama', 'urutan', 'status']);
+        $data['urutan']     = $request->urutan ?? $akreditasi->urutan;
+        $data['updated_by'] = Auth::id();
+
+        if ($request->hasFile('logo')) {
+            if ($akreditasi->logo) Storage::disk('public')->delete($akreditasi->logo);
+            $data['logo'] = $request->file('logo')->store('akreditasi', 'public');
+        }
+
+        // Hapus logo jika checkbox "hapus logo" dicentang
+        if ($request->hapus_logo && $akreditasi->logo) {
+            Storage::disk('public')->delete($akreditasi->logo);
+            $data['logo'] = null;
+        }
+
+        $akreditasi->update($data);
+        return redirect()->route('cms.akreditasi')->with('success', 'Akreditasi berhasil diperbarui.');
+    }
+
+    public function destroyAkreditasi(Akreditasi $akreditasi)
+    {
+        if ($akreditasi->logo) Storage::disk('public')->delete($akreditasi->logo);
+        $akreditasi->update(['deleted_by' => Auth::id()]);
+        $akreditasi->delete();
+        return back()->with('success', 'Akreditasi berhasil dihapus.');
     }
 
     // ─────────────────────────── PROFILE & PASSWORD ──────────────────

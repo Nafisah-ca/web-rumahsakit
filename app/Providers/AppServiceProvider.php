@@ -31,6 +31,21 @@ class AppServiceProvider extends ServiceProvider
         // Share setting global ke semua view
         View::share('setting_global', WebsiteSetting::getSetting());
 
+        // Share akreditasi aktif ke semua view (pakai composer agar query
+        // dieksekusi saat render view, bukan saat boot — aman saat migrate)
+        View::composer('*', function ($view) {
+            if (!$view->offsetExists('akreditasi_footer')) {
+                try {
+                    $data = \Illuminate\Support\Facades\Schema::hasTable('akreditasi')
+                        ? \App\Models\Akreditasi::aktif()->get()
+                        : collect();
+                } catch (\Exception $e) {
+                    $data = collect();
+                }
+                $view->with('akreditasi_footer', $data);
+            }
+        });
+
         // Share spesialisasi & kategori layanan ke layout public (navbar dinamis)
         View::composer('layouts.app', function ($view) {
             $view->with('nav_spesialisasi', Spesialisasi::orderBy('nama_spesialis')->get());
