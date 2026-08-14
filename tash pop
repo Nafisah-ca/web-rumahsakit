@@ -1,0 +1,13 @@
+ app/Http/Controllers/Cms/CmsController.php         | 126 [32m+++++++++++++++++++[m[31m--[m
+ app/Http/Controllers/HospitalController.php        |  14 [32m++[m[31m-[m
+ app/Models/KategoriLayanan.php                     |   2 [32m+[m[31m-[m
+ app/Models/PageBanner.php                          |  20 [32m++++[m
+ resources/views/_partials/page-hero.blade.php      |   5 [32m+[m[31m-[m
+ .../views/cms/kategori-layanan/index.blade.php     |  47 [32m+++++++[m[31m-[m
+ resources/views/cms/page-banner/edit.blade.php     |  46 [32m++++++[m[31m--[m
+ resources/views/cms/page-banner/index.blade.php    |   4 [32m+[m[31m-[m
+ resources/views/dokter.blade.php                   |   1 [32m+[m
+ resources/views/faq.blade.php                      |  31 [32m+[m[31m----[m
+ resources/views/layanan-kategori.blade.php         |  15 [32m++[m[31m-[m
+ resources/views/layanan.blade.php                  |   4 [32m+[m
+ 12 files changed, 252 insertions(+), 63 deletions(-)

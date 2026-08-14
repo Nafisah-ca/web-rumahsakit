@@ -90,33 +90,10 @@
 @section('content')
 
 {{-- ===== HERO BANNER ===== --}}
-<div style="background: linear-gradient(135deg, #00521f 0%, #00893a 60%, #00b04f 100%); position:relative; overflow:hidden;">
-    {{-- Decoration --}}
-    <span class="hero-dot" style="width:300px;height:300px;top:-100px;right:-80px"></span>
-    <span class="hero-dot" style="width:180px;height:180px;bottom:-60px;left:5%"></span>
-    <span class="hero-dot" style="width:80px;height:80px;top:30px;left:40%"></span>
-
-    <div class="max-w-screen-xl mx-auto px-4 py-20 text-center" style="position:relative;z-index:1">
-        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-             style="background:rgba(255,255,255,.12);backdrop-filter:blur(4px)">
-            <i class="fas fa-circle-question text-green-300 text-xs"></i>
-            <span class="text-green-200 text-xs font-bold uppercase tracking-widest">Pusat Bantuan</span>
-        </div>
-        <h1 class="text-white font-extrabold mb-3" style="font-size:clamp(28px,5vw,44px);line-height:1.15">
-            Pertanyaan yang Sering<br>
-            <span style="color:#86efac">Ditanyakan (FAQ)</span>
-        </h1>
-        <p class="text-green-100 max-w-xl mx-auto mb-6" style="font-size:14px;line-height:1.7">
-            Temukan jawaban atas pertanyaan seputar layanan, pendaftaran, dan fasilitas
-            {{ $setting_global->nama_rumahsakit ?? 'RS Sari Sehat' }}.
-        </p>
-        <nav class="flex items-center justify-center gap-2 text-sm text-green-300">
-            <a href="{{ route('home') }}" class="hover:text-white transition-colors">Beranda</a>
-            <i class="fas fa-chevron-right text-xs opacity-60"></i>
-            <span class="text-white font-semibold">FAQ</span>
-        </nav>
-    </div>
-</div>
+@include('_partials.page-hero', ['banner' => $banner ?? \App\Models\PageBanner::getForPage('faq'), 'breadcrumbs' => [
+    ['label' => 'Beranda', 'url' => route('home')],
+    ['label' => 'FAQ'],
+]])
 
 {{-- ===== FAQ SECTION ===== --}}
 <section style="background:#f8fafc;padding:64px 0 80px">

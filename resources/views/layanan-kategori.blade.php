@@ -36,9 +36,18 @@
     <div class="max-w-screen-xl mx-auto px-4">
 
         <div class="flex items-center justify-between mb-8">
-            <div>
-                <h2 class="text-gray-900 font-extrabold text-2xl">{{ $aktifKategori->nama_kategori }}</h2>
-                <p class="text-gray-500 text-sm mt-1">{{ $layanans->count() }} layanan tersedia</p>
+            <div class="flex items-center gap-4">
+                @if($aktifKategori->gambar)
+                <img src="{{ Storage::url($aktifKategori->gambar) }}" alt="{{ $aktifKategori->nama_kategori }}" class="w-16 h-16 rounded-2xl object-cover shadow-md flex-shrink-0 border-2 border-white">
+                @else
+                <div class="w-14 h-14 rounded-2xl bg-green-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                    <i class="fas {{ $aktifKategori->icon ?? 'fa-hospital' }} text-white text-2xl"></i>
+                </div>
+                @endif
+                <div>
+                    <h2 class="text-gray-900 font-extrabold text-2xl">{{ $aktifKategori->nama_kategori }}</h2>
+                    <p class="text-gray-500 text-sm mt-1">{{ $layanans->count() }} layanan tersedia</p>
+                </div>
             </div>
             <a href="{{ route('portal.booking.create') }}"
                class="hidden sm:flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-colors">

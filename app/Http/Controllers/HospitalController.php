@@ -274,24 +274,28 @@ class HospitalController extends Controller
             ->whereDate('tanggal_booking', today())
             ->whereIn('status', ['pending', 'approved'])
             ->orderBy('nomor_antrian')->get();
-        return view('live-antrian', compact('antrians'));
+        $banner = \App\Models\PageBanner::getForPage('live-antrian');
+        return view('live-antrian', compact('antrians', 'banner'));
     }
 
     public function kebijakanPrivasi()
     {
         $setting = \App\Models\WebsiteSetting::getSetting();
-        return view('kebijakan-privasi', compact('setting'));
+        $banner  = \App\Models\PageBanner::getForPage('kebijakan-privasi');
+        return view('kebijakan-privasi', compact('setting', 'banner'));
     }
 
     public function syaratKetentuan()
     {
         $setting = \App\Models\WebsiteSetting::getSetting();
-        return view('syarat-ketentuan', compact('setting'));
+        $banner  = \App\Models\PageBanner::getForPage('syarat-ketentuan');
+        return view('syarat-ketentuan', compact('setting', 'banner'));
     }
 
     public function faq()
     {
-        $faqs = \App\Models\Faq::aktif()->get();
-        return view('faq', compact('faqs'));
+        $faqs   = \App\Models\Faq::aktif()->get();
+        $banner = \App\Models\PageBanner::getForPage('faq');
+        return view('faq', compact('faqs', 'banner'));
     }
 }

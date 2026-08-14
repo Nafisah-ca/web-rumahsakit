@@ -36,9 +36,13 @@
                         </td>
                         <td>
                             <div style="display:flex;align-items:center;gap:10px">
+                                @if($k->gambar)
+                                <img src="{{ Storage::url($k->gambar) }}" alt="{{ $k->nama_kategori }}" style="width:36px;height:36px;border-radius:10px;object-fit:cover;flex-shrink:0;border:1px solid #e2e8f0">
+                                @else
                                 <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#dcfce7;color:#16a34a;flex-shrink:0">
                                     <i class="fas {{ $k->icon ?? 'fa-hospital' }}"></i>
                                 </div>
+                                @endif
                                 <div>
                                     <p style="font-weight:600;font-size:13px;color:#0f172a">{{ $k->nama_kategori }}</p>
                                     @if($k->deskripsi)
@@ -57,7 +61,7 @@
                             <div style="display:flex;gap:6px">
                                 {{-- Tombol Edit: buka modal dengan data kategori --}}
                                 <button
-                                    onclick="openEditModal({{ $k->id }}, '{{ addslashes($k->nama_kategori) }}', '{{ $k->icon ?? 'fa-hospital' }}', '{{ addslashes($k->deskripsi ?? '') }}', {{ $k->urutan }}, '{{ $k->status }}')"
+                                    onclick="openEditModal({{ $k->id }}, '{{ addslashes($k->nama_kategori) }}', '{{ $k->icon ?? 'fa-hospital' }}', '{{ addslashes($k->deskripsi ?? '') }}', {{ $k->urutan }}, '{{ $k->status }}', '{{ $k->gambar ? Storage::url($k->gambar) : '' }}')"
                                     class="btn btn-sm btn-secondary">
                                     <i class="fas fa-pen"></i> Edit
                                 </button>
@@ -85,7 +89,7 @@
         @if($errors->any())
         <div class="form-error"><ul>@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
         @endif
-        <form method="POST" action="{{ route('cms.kategori-layanan.store') }}">
+        <form method="POST" action="{{ route('cms.kategori-layanan.store') }}" enctype="multipart/form-data">
             @csrf
             <div class="form-group">
                 <label class="form-label">Nama Kategori <span style="color:#ef4444">*</span></label>
@@ -100,6 +104,11 @@
                     </div>
                 </div>
                 <p class="form-hint">cth: fa-bed, fa-heart-pulse, fa-scissors, fa-syringe</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Foto / Banner Kategori <span style="font-size:11px;color:#94a3b8">(opsional, max 2MB)</span></label>
+                <img id="add-gambar-preview" style="display:none;max-height:100px;border-radius:8px;margin-bottom:8px;border:1px solid #e2e8f0;object-fit:cover;width:100%">
+                <input type="file" name="gambar" class="form-input" accept="image/*" id="add-gambar-input">
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -125,7 +134,7 @@
             <p style="font-size:15px;font-weight:700;color:#0f172a"><i class="fas fa-pen" style="color:#2563eb;margin-right:8px"></i>Edit Kategori Layanan</p>
             <button onclick="closeEditModal()" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px"><i class="fas fa-xmark"></i></button>
         </div>
-        <form id="edit-form" method="POST">
+        <form id="edit-form" method="POST" enctype="multipart/form-data">
             @csrf @method('PUT')
             <div class="form-group">
                 <label class="form-label">Nama Kategori <span style="color:#ef4444">*</span></label>
@@ -139,6 +148,12 @@
                         <i id="edit-icon-el" class="fas fa-hospital"></i>
                     </div>
                 </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Foto / Banner Kategori <span style="font-size:11px;color:#94a3b8">(opsional, max 2MB)</span></label>
+                <img id="edit-gambar-preview" style="display:none;max-height:100px;border-radius:8px;margin-bottom:8px;border:1px solid #e2e8f0;object-fit:cover;width:100%">
+                <input type="file" name="gambar" class="form-input" accept="image/*" id="edit-gambar-input">
+                <p class="form-hint">Pilih foto baru jika ingin mengganti foto yang ada.</p>
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -174,13 +189,27 @@ document.getElementById('add-icon-input').addEventListener('input', function() {
     el.className = 'fas ' + (this.value || 'fa-hospital');
 });
 
+// Preview gambar saat dipilih (form tambah)
+document.getElementById('add-gambar-input').addEventListener('change', function() {
+    const f = this.files[0]; if (!f) return;
+    const p = document.getElementById('add-gambar-preview');
+    p.src = URL.createObjectURL(f); p.style.display = 'block';
+});
+
 // Preview icon saat mengetik (form edit)
 document.getElementById('edit-icon-input').addEventListener('input', function() {
     const el = document.getElementById('edit-icon-el');
     el.className = 'fas ' + (this.value || 'fa-hospital');
 });
 
-function openEditModal(id, nama, icon, deskripsi, urutan, status) {
+// Preview gambar saat dipilih (form edit)
+document.getElementById('edit-gambar-input').addEventListener('change', function() {
+    const f = this.files[0]; if (!f) return;
+    const p = document.getElementById('edit-gambar-preview');
+    p.src = URL.createObjectURL(f); p.style.display = 'block';
+});
+
+function openEditModal(id, nama, icon, deskripsi, urutan, status, gambarUrl) {
     const base = '{{ url("cms/kategori-layanan") }}';
     document.getElementById('edit-form').action = base + '/' + id;
     document.getElementById('edit-nama').value      = nama;
@@ -189,6 +218,16 @@ function openEditModal(id, nama, icon, deskripsi, urutan, status) {
     document.getElementById('edit-deskripsi').value  = deskripsi;
     document.getElementById('edit-urutan').value     = urutan;
     document.getElementById('edit-status').value     = status;
+
+    const imgPreview = document.getElementById('edit-gambar-preview');
+    if (gambarUrl) {
+        imgPreview.src = gambarUrl;
+        imgPreview.style.display = 'block';
+    } else {
+        imgPreview.style.display = 'none';
+        imgPreview.src = '';
+    }
+
     document.getElementById('edit-modal').style.display = 'flex';
 }
 

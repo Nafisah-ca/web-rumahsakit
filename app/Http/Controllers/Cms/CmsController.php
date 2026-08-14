@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class CmsController extends Controller
 {
@@ -474,13 +475,26 @@ class CmsController extends Controller
     public function storeKategoriLayanan(Request $request)
     {
         $rules = [
-            'nama_kategori' => 'required|string|max:100|unique:kategori_layanan,nama_kategori',
-            'icon'          => 'nullable|string|max:50',
+            'nama_kategori' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('kategori_layanan', 'nama_kategori')->whereNull('deleted_tm'),
+            ],
+            'icon'   => 'nullable|string|max:50',
+            'gambar' => 'nullable|image|max:2048',
         ];
         $hasUrutan = \Illuminate\Support\Facades\Schema::hasColumn('kategori_layanan', 'urutan');
         if ($hasUrutan) $rules['urutan'] = 'nullable|integer|min:0';
 
-        $request->validate($rules);
+        $messages = [
+            'nama_kategori.required' => 'Nama kategori wajib diisi.',
+            'nama_kategori.unique'   => 'Nama kategori sudah digunakan. Silakan gunakan nama lain.',
+            'gambar.image'           => 'Berkas foto harus berupa gambar.',
+            'gambar.max'             => 'Ukuran foto maksimal 2MB.',
+        ];
+
+        $request->validate($rules, $messages);
 
         $data = [
             'nama_kategori' => $request->nama_kategori,
@@ -492,6 +506,10 @@ class CmsController extends Controller
         if (\Illuminate\Support\Facades\Schema::hasColumn('kategori_layanan', 'deskripsi'))
                                                  $data['deskripsi'] = $request->deskripsi;
 
+        if ($request->hasFile('gambar')) {
+            $data['gambar'] = $request->file('gambar')->store('kategori-layanan', 'public');
+        }
+
         \App\Models\KategoriLayanan::create($data);
         return back()->with('success', 'Kategori layanan berhasil disimpan.');
     }
@@ -499,14 +517,27 @@ class CmsController extends Controller
     public function updateKategoriLayanan(Request $request, \App\Models\KategoriLayanan $kategoriLayanan)
     {
         $rules = [
-            'nama_kategori' => 'required|string|max:100|unique:kategori_layanan,nama_kategori,' . $kategoriLayanan->id,
-            'icon'          => 'nullable|string|max:50',
-            'status'        => 'required|in:aktif,nonaktif',
+            'nama_kategori' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('kategori_layanan', 'nama_kategori')->whereNull('deleted_tm')->ignore($kategoriLayanan->id),
+            ],
+            'icon'   => 'nullable|string|max:50',
+            'status' => 'required|in:aktif,nonaktif',
+            'gambar' => 'nullable|image|max:2048',
         ];
         $hasUrutan = \Illuminate\Support\Facades\Schema::hasColumn('kategori_layanan', 'urutan');
         if ($hasUrutan) $rules['urutan'] = 'nullable|integer|min:0';
 
-        $request->validate($rules);
+        $messages = [
+            'nama_kategori.required' => 'Nama kategori wajib diisi.',
+            'nama_kategori.unique'   => 'Nama kategori sudah digunakan. Silakan gunakan nama lain.',
+            'gambar.image'           => 'Berkas foto harus berupa gambar.',
+            'gambar.max'             => 'Ukuran foto maksimal 2MB.',
+        ];
+
+        $request->validate($rules, $messages);
 
         $data = [
             'nama_kategori' => $request->nama_kategori,
@@ -518,6 +549,13 @@ class CmsController extends Controller
         if (\Illuminate\Support\Facades\Schema::hasColumn('kategori_layanan', 'deskripsi'))
                                                  $data['deskripsi'] = $request->deskripsi;
 
+        if ($request->hasFile('gambar')) {
+            if ($kategoriLayanan->gambar) {
+                Storage::disk('public')->delete($kategoriLayanan->gambar);
+            }
+            $data['gambar'] = $request->file('gambar')->store('kategori-layanan', 'public');
+        }
+
         $kategoriLayanan->update($data);
         return back()->with('success', 'Kategori layanan berhasil diperbarui.');
     }
@@ -527,6 +565,10 @@ class CmsController extends Controller
         // Null-kan foreign key di layanan yang pakai kategori ini sebelum hapus
         Layanan::where('kategori_layanan_id', $kategoriLayanan->id)
             ->update(['kategori_layanan_id' => null]);
+
+        if ($kategoriLayanan->gambar) {
+            Storage::disk('public')->delete($kategoriLayanan->gambar);
+        }
 
         $kategoriLayanan->update(['deleted_by' => Auth::id()]);
         $kategoriLayanan->delete();
@@ -998,21 +1040,149 @@ class CmsController extends Controller
             'status' => 'required|in:aktif,nonaktif',
         ]);
 
-        $data = ['status' => $request->status, 'updated_by' => Auth::id()];
+        $data = $request->only(['judul','label_atas','subjudul','warna_awal','warna_akhir','status']);
+        $data['updated_by'] = Auth::id();
 
+        // Hapus gambar jika diminta
+        if ($request->hapus_gambar && $pageBanner->gambar) {
+            if ($pageBanner->gambar && !str_starts_with($pageBanner->gambar, 'data:')) {
+                Storage::disk('public')->delete($pageBanner->gambar);
+            }
+            $data['gambar'] = null;
+        }
+
+        // Upload & simpan gambar langsung ke Database dalam format Base64 Data URL
         if ($request->hasFile('gambar')) {
-            if ($pageBanner->gambar) Storage::disk('public')->delete($pageBanner->gambar);
-            $data['gambar'] = $request->file('gambar')->store('page-banner', 'public');
+            if ($pageBanner->gambar && !str_starts_with($pageBanner->gambar, 'data:')) {
+                Storage::disk('public')->delete($pageBanner->gambar);
+            }
+            $data['gambar'] = $this->convertImageToBase64($request->file('gambar'));
         }
 
         $pageBanner->update($data);
-        return redirect()->route('cms.page-banner')->with('success', 'Banner berhasil diperbarui.');
+        
+return redirect()
+    ->route('cms.page-banner')
+    ->with('success', 'Banner berhasil diperbarui.');
+}
+
+public function destroyPageBanner(PageBanner $pageBanner)
+{
+    if ($pageBanner->gambar) {
+        Storage::disk('public')->delete($pageBanner->gambar);
     }
 
-    public function destroyPageBanner(PageBanner $pageBanner)
-    {
-        if ($pageBanner->gambar) Storage::disk('public')->delete($pageBanner->gambar);
-        $pageBanner->delete();
-        return back()->with('success', 'Banner berhasil dihapus.');
+    $pageBanner->delete();
+
+    return back()->with('success', 'Banner berhasil dihapus.');
+}
+
+/**
+ * Konversi file gambar ke Base64 Data URL dengan kompresi GD
+ * jika extension GD tersedia.
+ *
+ * Gambar disimpan 100% di database sehingga ketika database
+ * di-export, gambar tetap ikut terbawa.
+ */
+private function convertImageToBase64($file): string
+{
+    $realPath = $file->getRealPath();
+    $mime = $file->getMimeType() ?: 'image/jpeg';
+
+    // Gunakan GD jika tersedia
+    if (
+        extension_loaded('gd') &&
+        function_exists('imagecreatefromstring')
+    ) {
+        try {
+            $imageData = file_get_contents($realPath);
+
+            if ($imageData !== false) {
+                $srcImage = @imagecreatefromstring($imageData);
+
+                if ($srcImage !== false) {
+                    $origW = imagesx($srcImage);
+                    $origH = imagesy($srcImage);
+
+                    // Batasi lebar maksimal 1600px
+                    $maxW = 1600;
+
+                    if ($origW > $maxW) {
+                        $newW = $maxW;
+                        $newH = (int) round(($origH / $origW) * $newW);
+
+                        $dstImage = imagecreatetruecolor(
+                            $newW,
+                            $newH
+                        );
+
+                        // Pertahankan transparansi PNG/WebP
+                        if (in_array($mime, ['image/png', 'image/webp'])) {
+                            imagealphablending($dstImage, false);
+                            imagesavealpha($dstImage, true);
+                        }
+
+                        imagecopyresampled(
+                            $dstImage,
+                            $srcImage,
+                            0,
+                            0,
+                            0,
+                            0,
+                            $newW,
+                            $newH,
+                            $origW,
+                            $origH
+                        );
+
+                        imagedestroy($srcImage);
+
+                        $srcImage = $dstImage;
+                    }
+
+                    ob_start();
+
+                    if ($mime === 'image/png') {
+                        imagepng($srcImage, null, 7);
+                    } elseif (
+                        $mime === 'image/webp' &&
+                        function_exists('imagewebp')
+                    ) {
+                        imagewebp($srcImage, null, 80);
+                    } else {
+                        imagejpeg($srcImage, null, 82);
+                        $mime = 'image/jpeg';
+                    }
+
+                    $compressedData = ob_get_clean();
+
+                    imagedestroy($srcImage);
+
+                    if ($compressedData !== false && $compressedData !== '') {
+                        return 'data:' .
+                            $mime .
+                            ';base64,' .
+                            base64_encode($compressedData);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Jika GD gagal, lanjut menggunakan file asli
+        }
     }
+
+    // Fallback: langsung encode file asli ke Base64
+    $fileData = file_get_contents($realPath);
+
+    if ($fileData === false) {
+        throw new \RuntimeException(
+            'Gagal membaca file gambar.'
+        );
+    }
+
+    return 'data:' .
+        $mime .
+        ';base64,' .
+        base64_encode($fileData);
+}
 }

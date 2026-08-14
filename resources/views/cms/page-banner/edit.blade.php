@@ -53,19 +53,19 @@
 
                 <div class="form-group" style="grid-column:1/-1">
                     <label class="form-label">Gambar Background <span style="font-size:11px;color:#94a3b8">(opsional, overlay gradient tetap tampil)</span></label>
-                    @if($banner->gambar)
+                    @if($banner->gambar_url)
                     <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px">
-                        <img src="{{ Storage::url($banner->gambar) }}" style="height:60px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0">
+                        <img src="{{ $banner->gambar_url }}" style="height:60px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0">
                         <div>
-                            <p style="font-size:12px;color:#475569;font-weight:600">Gambar saat ini</p>
+                            <p style="font-size:12px;color:#475569;font-weight:600">Gambar saat ini (Tersimpan di Database)</p>
                             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#dc2626;cursor:pointer;margin-top:4px">
-                                <input type="checkbox" name="hapus_gambar" value="1"> Hapus gambar ini
+                                <input type="checkbox" name="hapus_gambar" value="1" id="hapus-gambar-cb"> Hapus gambar ini
                             </label>
                         </div>
                     </div>
                     @endif
                     <input type="file" name="gambar" class="form-input" accept="image/*" id="gambar-input">
-                    <p class="form-hint">Format JPG/PNG/WebP, max 3MB. Gambar akan ditimpa gradient warna di atas.</p>
+                    <p class="form-hint">Format JPG/PNG/WebP, max 3MB. Gambar otomatis disimpan ke database (Base64) sehingga aman saat export/import database.</p>
                     <img id="gambar-preview" style="display:none;max-height:80px;border-radius:8px;margin-top:8px;border:1px solid #e2e8f0">
                 </div>
 
@@ -89,8 +89,15 @@
     <div style="position:sticky;top:24px">
         <div class="card" style="overflow:hidden">
             <div class="card-header"><h3 style="font-size:13px">Preview Banner</h3></div>
+            @php
+                $wAwal  = $banner->warna_awal ?? '#00521f';
+                $wAkhir = $banner->warna_akhir ?? '#00b04f';
+                $initialBg = $banner->gambar_url
+                    ? "background: linear-gradient(135deg, {$wAwal}cc, {$wAkhir}99), url('{$banner->gambar_url}') center/cover no-repeat;"
+                    : "background: linear-gradient(135deg, {$wAwal}, {$wAkhir});";
+            @endphp
             <div id="banner-preview"
-                 style="padding:32px 24px;text-align:center;background:linear-gradient(135deg,{{ $banner->warna_awal ?? '#00521f' }},{{ $banner->warna_akhir ?? '#00b04f' }});transition:background .3s">
+                 style="padding:32px 24px;text-align:center;{{ $initialBg }};transition:background .3s">
                 <p id="prev-label" style="color:#a7f3d0;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">{{ $banner->label_atas }}</p>
                 <h2 id="prev-judul" style="color:#fff;font-size:20px;font-weight:800;line-height:1.3;margin-bottom:6px">{{ $banner->judul }}</h2>
                 <p id="prev-sub" style="color:#d1fae5;font-size:11px;line-height:1.6">{{ $banner->subjudul }}</p>
@@ -104,6 +111,8 @@
 @endsection
 @push('scripts')
 <script>
+let currentImgUrl = @json($banner->gambar_url);
+
 // Sync color picker ↔ hex input
 const colorFields = [
     { picker: document.querySelector('[name="warna_awal"]'),  hex: document.getElementById('warna-awal-hex') },
@@ -120,20 +129,41 @@ colorFields.forEach(({ picker, hex }) => {
 function updatePreview() {
     const w1 = document.querySelector('[name="warna_awal"]').value;
     const w2 = document.querySelector('[name="warna_akhir"]').value;
-    document.getElementById('banner-preview').style.background = `linear-gradient(135deg,${w1},${w2})`;
+    const prev = document.getElementById('banner-preview');
+
+    if (currentImgUrl) {
+        prev.style.background = `linear-gradient(135deg, ${w1}cc, ${w2}99), url('${currentImgUrl}') center/cover no-repeat`;
+    } else {
+        prev.style.background = `linear-gradient(135deg, ${w1}, ${w2})`;
+    }
+
     document.getElementById('prev-label').textContent  = document.querySelector('[name="label_atas"]').value;
     document.getElementById('prev-judul').textContent  = document.querySelector('[name="judul"]').value;
     document.getElementById('prev-sub').textContent    = document.querySelector('[name="subjudul"]').value;
 }
+
 ['label_atas','judul','subjudul'].forEach(n => {
     document.querySelector(`[name="${n}"]`)?.addEventListener('input', updatePreview);
+});
+
+// Hapus gambar checkbox
+document.getElementById('hapus-gambar-cb')?.addEventListener('change', function() {
+    if (this.checked) {
+        currentImgUrl = null;
+    } else {
+        currentImgUrl = @json($banner->gambar_url);
+    }
+    updatePreview();
 });
 
 // Gambar preview
 document.getElementById('gambar-input')?.addEventListener('change', function() {
     const f = this.files[0]; if (!f) return;
     const p = document.getElementById('gambar-preview');
-    p.src = URL.createObjectURL(f); p.style.display = 'block';
+    currentImgUrl = URL.createObjectURL(f);
+    p.src = currentImgUrl;
+    p.style.display = 'block';
+    updatePreview();
 });
 </script>
 @endpush

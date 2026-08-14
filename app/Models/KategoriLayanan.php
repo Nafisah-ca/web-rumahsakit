@@ -20,7 +20,7 @@ class KategoriLayanan extends Model
     const DELETED_AT = 'deleted_tm';
 
     protected $fillable = [
-        'nama_kategori', 'icon', 'deskripsi', 'urutan', 'status',
+        'nama_kategori', 'icon', 'gambar', 'deskripsi', 'urutan', 'status',
         'created_by', 'updated_by', 'deleted_by',
     ];
 

@@ -96,9 +96,13 @@
         {{-- Header Kategori --}}
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
             <div class="flex items-center gap-4">
+                @if($kat->gambar)
+                <img src="{{ Storage::url($kat->gambar) }}" alt="{{ $kat->nama_kategori }}" class="w-16 h-16 rounded-2xl object-cover shadow-md flex-shrink-0 border-2 border-white">
+                @else
                 <div class="w-14 h-14 rounded-2xl bg-green-600 flex items-center justify-center shadow-lg flex-shrink-0">
                     <i class="fas {{ $kat->icon ?? 'fa-hospital' }} text-white text-2xl"></i>
                 </div>
+                @endif
                 <div>
                     <span class="text-green-600 text-xs font-black uppercase tracking-widest block mb-1">Kategori Layanan</span>
                     <h2 class="text-gray-900 font-extrabold text-2xl md:text-3xl leading-tight">{{ $kat->nama_kategori }}</h2>

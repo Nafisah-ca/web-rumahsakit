@@ -47,6 +47,7 @@
                      style="background: linear-gradient(135deg, #00521f, #00b04f)">
                     @if($d->foto)
                     <img src="{{ Storage::url($d->foto) }}" alt="{{ $d->nama_dokter }}"
+                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($d->nama_dokter) }}&background=00521f&color=fff&size=200';"
                          class="w-24 h-24 rounded-full object-cover border-4 border-white/40">
                     @else
                     <div class="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/40">

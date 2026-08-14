@@ -35,8 +35,8 @@
                     <td>
                         <div style="display:flex;align-items:center;gap:8px">
                             <div style="width:48px;height:28px;border-radius:6px;background:linear-gradient(135deg,{{ $b->warna_awal }},{{ $b->warna_akhir }});border:1px solid #e2e8f0;flex-shrink:0"></div>
-                            @if($b->gambar)
-                            <img src="{{ Storage::url($b->gambar) }}" style="width:48px;height:28px;border-radius:6px;object-fit:cover;border:1px solid #e2e8f0">
+                            @if($b->gambar_url)
+                            <img src="{{ $b->gambar_url }}" style="width:48px;height:28px;border-radius:6px;object-fit:cover;border:1px solid #e2e8f0">
                             @else
                             <span style="font-size:11px;color:#94a3b8">Warna saja</span>
                             @endif

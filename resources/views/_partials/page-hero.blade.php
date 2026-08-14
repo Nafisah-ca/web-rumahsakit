@@ -6,19 +6,23 @@
       $breadcrumbs — array [['label'=>'...','url'=>'...']] (opsional)
 --}}
 @php
-    $heroJudul = $pageTitle ?? $banner->judul ?? '';
+    $heroJudul = $pageTitle ?? $banner?->judul ?? '';
+
     $hasBanner = $banner && $banner->gambar;
 
     if ($hasBanner) {
-        $bgStyle = "background-image: url('".Storage::url($banner->gambar)."'); background-size: cover; background-position: center;";
+        $gambarUrl = $banner->gambar_url;
+
+        $bgStyle = "background-image: url('" . $gambarUrl . "');";
     } else {
-        $w1 = $banner->warna_awal  ?? '#00521f';
-        $w2 = $banner->warna_akhir ?? '#00b04f';
+        $w1 = $banner?->warna_awal ?? '#00521f';
+        $w2 = $banner?->warna_akhir ?? '#00b04f';
+
         $bgStyle = "background: linear-gradient(135deg, {$w1}, {$w2});";
     }
 @endphp
 
-<div class="py-16 relative overflow-hidden" style="{{ $bgStyle }}">
+<div class="py-16 relative overflow-hidden" style="{{ $bgStyle }}"></div>
     {{--
         Kalau ada gambar: overlay hitam tipis dari kiri (gelap) ke kanan (terang)
         persis seperti slider homepage — gambar tetap keliatan, teks tetap terbaca
