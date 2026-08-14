@@ -57,7 +57,8 @@
                         </li>
                         @endforeach
                     </ul>
-                    <a href="{{ route('portal.booking.create') }}" class="block w-full text-center py-2.5 rounded-xl font-bold text-sm transition-all
+                    <a href="{{ route('mcu.daftar', ['paket' => strtolower($p['nama'])]) }}"
+                       class="block w-full text-center py-2.5 rounded-xl font-bold text-sm transition-all
                         {{ $p['best'] ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                         Daftar Sekarang
                     </a>
@@ -75,8 +76,8 @@
             <h2 class="text-white font-extrabold text-2xl mb-3">Daftar MCU Sekarang</h2>
             <p class="text-blue-100 text-sm mb-6 max-w-lg mx-auto">Hubungi kami atau datang langsung ke RS Sari Sehat. Tersedia setiap hari Senin–Sabtu, pukul 07.00–14.00.</p>
             <div class="flex flex-wrap gap-3 justify-center">
-                <a href="{{ route('portal.booking.create') }}" class="flex items-center gap-2 bg-white text-blue-800 px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all shadow-lg">
-                    <i class="fas fa-calendar-check"></i> Buat Janji Temu
+                <a href="{{ route('mcu.daftar') }}" class="flex items-center gap-2 bg-white text-blue-800 px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all shadow-lg">
+                    <i class="fas fa-calendar-check"></i> Daftar MCU
                 </a>
                 <a href="tel:02150943838" class="flex items-center gap-2 border-2 border-white/60 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:border-white transition-all">
                     <i class="fas fa-phone-alt"></i> (021) 5094-3838

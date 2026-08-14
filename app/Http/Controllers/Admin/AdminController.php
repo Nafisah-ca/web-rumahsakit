@@ -599,10 +599,44 @@ class AdminController extends Controller
         ));
     }
 
+    // ─────────────────────────── MCU ─────────────────────────────────
+
+    public function mcu(Request $request)
+    {
+        $query = \App\Models\PendaftaranMcu::query();
+
+        if ($request->paket)  $query->where('paket', $request->paket);
+        if ($request->status) $query->where('status', $request->status);
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('nama_lengkap', 'like', "%{$request->search}%")
+                  ->orWhere('kode_pendaftaran', 'like', "%{$request->search}%")
+                  ->orWhere('no_hp', 'like', "%{$request->search}%");
+            });
+        }
+
+        $pendaftarans  = $query->orderByDesc('created_at')->paginate(20)->withQueryString();
+        $totalAll      = \App\Models\PendaftaranMcu::count();
+        $totalMenunggu = \App\Models\PendaftaranMcu::where('status', 'menunggu')->count();
+        $totalKonfirm  = \App\Models\PendaftaranMcu::where('status', 'dikonfirmasi')->count();
+        $totalSelesai  = \App\Models\PendaftaranMcu::where('status', 'selesai')->count();
+
+        return view('admin.mcu.index', compact(
+            'pendaftarans', 'totalAll', 'totalMenunggu', 'totalKonfirm', 'totalSelesai'
+        ));
+    }
+
+    public function updateStatusMcu(Request $request, int $id)
+    {
+        $request->validate(['status' => 'required|in:menunggu,dikonfirmasi,selesai,dibatalkan']);
+        $mcu = \App\Models\PendaftaranMcu::findOrFail($id);
+        $mcu->update(['status' => $request->status]);
+        return response()->json(['success' => true]);
+    }
+
     // ─────────────────────────── PENGUNJUNG ──────────────────────────
 
-    public function pengunjung(Request $request)
-    {
+    public function pengunjung(Request $request)    {
         $query = \App\Models\PageVisit::query();
 
         if ($request->tanggal) {

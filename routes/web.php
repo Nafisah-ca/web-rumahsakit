@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HospitalController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\McuController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Cms\CmsController;
 use App\Http\Controllers\Admin\SpesialisasiController;
@@ -32,7 +33,10 @@ Route::get('/informasi',          [HospitalController::class, 'informasiPublic']
 Route::get('/informasi/{informasi}', [HospitalController::class, 'informasiDetail'])->name('informasi.detail');
 Route::get('/artikel',         [HospitalController::class, 'artikel'])->name('artikel');
 Route::get('/artikel/{slug}',  [HospitalController::class, 'artikelDetail'])->name('artikel.detail');
-Route::get('/medical-checkup', [HospitalController::class, 'mcu'])->name('mcu');
+Route::get('/medical-checkup',        [HospitalController::class, 'mcu'])->name('mcu');
+Route::get('/medical-checkup/daftar', [McuController::class, 'create'])->name('mcu.daftar');
+Route::post('/medical-checkup/daftar',[McuController::class, 'store'])->name('mcu.store');
+Route::get('/medical-checkup/sukses', [McuController::class, 'sukses'])->name('mcu.sukses');
 Route::get('/live-antrian',    [HospitalController::class, 'liveAntrian'])->name('live.antrian');
 
 // Halaman Legal
@@ -137,6 +141,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Statistik Pengunjung
     Route::get('/pengunjung', [AdminController::class, 'pengunjung'])->name('pengunjung');
+
+    // Medical Check-Up
+    Route::get('/mcu',                    [AdminController::class, 'mcu'])->name('mcu');
+    Route::put('/mcu/{id}/status',        [AdminController::class, 'updateStatusMcu'])->name('mcu.status');
 
     // Penjamin
     Route::get('/penjamin',                       [PenjaminController::class, 'index'])->name('penjamin');
