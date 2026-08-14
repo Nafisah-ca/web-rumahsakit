@@ -263,6 +263,11 @@ class DatabaseSeeder extends Seeder
 
         $this->command->info('✅ Database seeder selesai!');
         $this->command->info('   Admin:  admin@sarisehat.test / password');
+
+        // ─────────────────────────────────────────────
+        // AKREDITASI
+        // ─────────────────────────────────────────────
+        $this->call(AkreditasiSeeder::class);
         $this->command->info('   CMS:    cms@sarisehat.test / password');
         $this->command->info('   Pasien: pasien@sarisehat.test / password');
     }

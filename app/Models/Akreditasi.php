@@ -38,6 +38,11 @@ class Akreditasi extends Model
 
     public function getLogoUrlAttribute(): ?string
     {
-        return $this->logo ? Storage::url($this->logo) : null;
+        if (!$this->logo) return null;
+        // Logo dari public/images/ pakai asset(), dari storage/ pakai Storage::url()
+        if (str_starts_with($this->logo, 'images/')) {
+            return asset($this->logo);
+        }
+        return \Illuminate\Support\Facades\Storage::url($this->logo);
     }
 }

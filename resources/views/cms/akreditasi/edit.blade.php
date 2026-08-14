@@ -24,7 +24,7 @@
                 <label class="form-label">Logo</label>
                 @if($akreditasi->logo)
                 <div style="margin-bottom:10px;display:flex;align-items:center;gap:12px">
-                    <img src="{{ Storage::url($akreditasi->logo) }}"
+                    <img src="{{ $akreditasi->logo_url }}"
                          alt="{{ $akreditasi->nama }}"
                          style="height:56px;width:auto;object-fit:contain;border:1px solid #e2e8f0;border-radius:8px;padding:6px;background:#f8fafc">
                     <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#ef4444;cursor:pointer">

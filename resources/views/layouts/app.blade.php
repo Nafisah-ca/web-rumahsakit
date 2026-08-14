@@ -602,7 +602,7 @@
                 @forelse($akreditasi_footer as $akr)
                 <div class="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors">
                     @if($akr->logo)
-                    <img src="{{ Storage::url($akr->logo) }}"
+                    <img src="{{ $akr->logo_url }}"
                          alt="{{ $akr->nama }}"
                          style="height:14px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:.75;flex-shrink:0">
                     @endif

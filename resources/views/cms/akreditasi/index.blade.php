@@ -43,7 +43,7 @@
                     <td style="text-align:center;color:#94a3b8;font-weight:700">{{ $a->urutan }}</td>
                     <td>
                         @if($a->logo)
-                        <img src="{{ Storage::url($a->logo) }}"
+                        <img src="{{ $a->logo_url }}"
                              alt="{{ $a->nama }}"
                              style="height:40px;width:auto;object-fit:contain;border-radius:6px;background:#f8fafc;padding:4px;border:1px solid #e2e8f0">
                         @else
