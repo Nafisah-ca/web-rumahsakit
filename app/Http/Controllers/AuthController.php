@@ -50,6 +50,15 @@ class AuthController extends Controller
         // Update last_login
         $user->update(['last_login' => now()]);
 
+        // Catat log login untuk admin & cms
+        if (in_array($user->role, ['admin', 'cms'])) {
+            \App\Models\LoginLog::create([
+                'user_id'    => $user->id,
+                'ip_address' => $request->ip(),
+                'login_at'   => now(),
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return $this->redirectByRole($user);
@@ -125,6 +134,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        // Set last_activity null saat logout → langsung offline
+        if (Auth::check() && in_array(Auth::user()->role, ['admin', 'cms'])) {
+            Auth::user()->update(['last_activity' => null]);
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

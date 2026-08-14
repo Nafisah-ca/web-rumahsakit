@@ -235,6 +235,11 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
             </a>
 
             <div class="sidebar-group">Lainnya</div>
+            @if(Auth::user()->role === 'admin')
+            <a href="{{ route('admin.dashboard') }}" class="sidebar-link">
+                <i class="fas fa-gauge-high icon"></i> Dashboard Admin
+            </a>
+            @endif
             <a href="{{ route('home') }}" target="_blank" class="sidebar-link">
                 <i class="fas fa-arrow-up-right-from-square icon"></i> Lihat Website
             </a>

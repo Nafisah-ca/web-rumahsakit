@@ -41,7 +41,23 @@ class CmsController extends Controller
         ];
         $recentArtikel = Artikel::with('kategori')->orderByDesc('created_tm')->limit(5)->get();
         $pesanBaru     = GuestBook::where('status', 'baru')->orderByDesc('created_tm')->limit(5)->get();
-        return view('cms.dashboard', compact('stats', 'recentArtikel', 'pesanBaru'));
+
+        // User CMS & admin yang pernah login (berdasarkan last_login)
+        $pengunjungCms = \App\Models\User::whereIn('role', ['cms', 'admin'])
+            ->where('status', 'aktif')
+            ->whereNotNull('last_login')
+            ->orderByDesc('last_activity')
+            ->orderByDesc('last_login')
+            ->limit(10)
+            ->get();
+
+        // Log login terbaru 20 entri
+        $loginLogs = \App\Models\LoginLog::with('user')
+            ->orderByDesc('login_at')
+            ->limit(20)
+            ->get();
+
+        return view('cms.dashboard', compact('stats', 'recentArtikel', 'pesanBaru', 'pengunjungCms', 'loginLogs'));
     }
 
     // ─────────────────────────── ARTIKEL ─────────────────────────────

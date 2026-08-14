@@ -152,7 +152,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
 // ─────────────────────────── CMS ──────────────────────────────────────────────
 // Admin juga bisa akses CMS (role:admin,cms)
-Route::middleware(['auth', 'role:admin,cms'])->prefix('cms')->name('cms.')->group(function () {
+Route::middleware(['auth', 'role:admin,cms', 'last.activity'])->prefix('cms')->name('cms.')->group(function () {
 
     Route::get('/dashboard', [CmsController::class, 'dashboard'])->name('dashboard');
 
