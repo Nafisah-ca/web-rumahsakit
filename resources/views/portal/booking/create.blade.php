@@ -126,7 +126,7 @@
             @endif
 
             <div class="flex items-center gap-4">
-                <button type="submit" {{ !$pasien ? 'disabled' : '' }}
+                <button type="submit" id="btn-submit" {{ !$pasien ? 'disabled' : '' }}
                     class="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-extrabold text-sm transition-all flex items-center justify-center gap-2">
                     <i class="fas fa-calendar-check"></i> Buat Janji Temu
                 </button>
@@ -148,69 +148,83 @@ const tglCont         = document.getElementById('tanggal-container');
 const jadwalHid       = document.getElementById('jadwal_dokter_id');
 
 function loadJadwal() {
-    const dokterId = dokterSel.value;
+    const dokterId  = dokterSel.value;
+    const btnSubmit = document.getElementById('btn-submit');
+
     if (!dokterId) {
         jadwalCont.innerHTML = '<p class="text-gray-400 text-sm italic">Pilih dokter terlebih dahulu.</p>';
-        tglCont.classList.add('hidden');
         jadwalHid.value = '';
+        if (btnSubmit) btnSubmit.disabled = true;
         return;
     }
 
     jadwalCont.innerHTML = '<p class="text-gray-400 text-sm"><i class="fas fa-spinner fa-spin mr-1"></i>Memuat jadwal...</p>';
+    if (btnSubmit) btnSubmit.disabled = true;
+    jadwalHid.value = '';
 
     const tglInput = document.getElementById('tanggal_kunjungan');
     const tanggal  = tglInput ? tglInput.value : '{{ date("Y-m-d") }}';
 
-    // Nama hari Indonesia dari tanggal
-    const hariId = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-    const tglDate  = new Date(tanggal);
-    const dayName  = hariId[tglDate.getDay()];
+    const hariId     = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const tglDate    = new Date(tanggal);
+    const dayName    = hariId[tglDate.getDay()];
     const tglDisplay = tglDate.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
 
     fetch(`{{ route('portal.booking.jadwal') }}?dokter_id=${dokterId}&tanggal_kunjungan=${tanggal}`)
         .then(r => r.json())
         .then(data => {
+            // Tidak ada jadwal di hari itu
             if (!data.length) {
-                jadwalCont.innerHTML = '<p class="text-amber-600 text-sm font-semibold"><i class="fas fa-info-circle mr-1"></i>Tidak ada jadwal tersedia untuk hari <strong>' + dayName + '</strong> (' + tglDisplay + '). Coba pilih tanggal lain.</p>';
+                jadwalCont.innerHTML = `<div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-700 text-sm">
+                    <i class="fas fa-calendar-xmark mr-1"></i>
+                    Dokter tidak memiliki jadwal pada hari <strong>${dayName}</strong> (${tglDisplay}). Silakan pilih tanggal lain.
+                </div>`;
                 return;
             }
 
             let html = '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">';
+            let adaYangBisa = false;
+
             data.forEach(j => {
-                const hariLabel    = j.hari;
                 const sudahSelesai = j.sudah_selesai === true;
+                const kuotaHabis  = j.sisa_kuota <= 0;
+                const disabled    = sudahSelesai || kuotaHabis;
+                if (!disabled) adaYangBisa = true;
 
                 let statusHtml;
                 if (sudahSelesai) {
-                    statusHtml = '<p class="text-xs text-gray-400 font-semibold mt-1">Jadwal selesai</p>';
-                } else if (j.sisa_kuota <= 0) {
-                    statusHtml = '<p class="text-xs text-red-500 font-semibold mt-1">Penuh</p>';
+                    statusHtml = '<p class="text-xs text-gray-400 font-semibold mt-1"><i class="fas fa-clock mr-0.5"></i>Jam praktek selesai</p>';
+                } else if (kuotaHabis) {
+                    statusHtml = '<p class="text-xs text-red-500 font-semibold mt-1"><i class="fas fa-users-slash mr-0.5"></i>Kuota penuh</p>';
                 } else {
-                    statusHtml = `<p class="text-xs text-green-600 font-semibold mt-1">Sisa: ${j.sisa_kuota} kuota</p>`;
+                    statusHtml = `<p class="text-xs text-green-600 font-semibold mt-1"><i class="fas fa-circle-check mr-0.5"></i>Sisa: ${j.sisa_kuota} kuota</p>`;
                 }
-
-                const disabled = sudahSelesai || j.sisa_kuota <= 0;
 
                 html += `
                 <label class="cursor-pointer ${disabled ? 'opacity-50 pointer-events-none' : ''}">
                     <input type="radio" name="_jadwal_pick" value="${j.id}" class="sr-only peer"
                         onchange="pickJadwal(${j.id})" ${disabled ? 'disabled' : ''}>
-                    <div class="p-3 rounded-xl border-2 border-gray-200 peer-checked:border-green-500 peer-checked:bg-green-50 hover:border-green-300 transition-all text-center">
-                        <p class="font-bold text-sm text-gray-800">${hariLabel}</p>
-                        <p class="text-xs text-gray-500">${j.jam_mulai} – ${j.jam_selesai}</p>
+                    <div class="p-3 rounded-xl border-2 ${disabled ? 'border-gray-100 bg-gray-50' : 'border-gray-200 hover:border-green-300'} peer-checked:border-green-500 peer-checked:bg-green-50 transition-all text-center">
+                        <p class="font-bold text-sm ${disabled ? 'text-gray-400' : 'text-gray-800'}">${j.hari}</p>
+                        <p class="text-xs ${disabled ? 'text-gray-400' : 'text-gray-500'}">${j.jam_mulai} – ${j.jam_selesai}</p>
                         ${statusHtml}
                     </div>
                 </label>`;
             });
             html += '</div>';
 
-            // Cek apakah semua jadwal sudah selesai/penuh
-            const adaYangBisa = data.some(j => !j.sudah_selesai && j.sisa_kuota > 0);
             if (!adaYangBisa) {
-                html += `<div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-amber-700 text-sm">
-                    <i class="fas fa-clock-rotate-left mt-0.5 flex-shrink-0"></i>
-                    <span>Semua jadwal pada hari ini sudah selesai atau penuh. Silakan pilih tanggal lain.</span>
-                </div>`;
+                const semuaSelesai = data.every(j => j.sudah_selesai);
+                const semuaPenuh   = !semuaSelesai && data.every(j => j.sisa_kuota <= 0);
+                let pesan;
+                if (semuaSelesai) {
+                    pesan = `<i class="fas fa-clock-rotate-left mr-1"></i>Jam praktik dokter untuk hari <strong>${dayName}</strong> sudah selesai. Silakan pilih tanggal lain.`;
+                } else if (semuaPenuh) {
+                    pesan = `<i class="fas fa-users-slash mr-1"></i>Semua kuota jadwal hari <strong>${dayName}</strong> sudah penuh. Silakan pilih tanggal lain.`;
+                } else {
+                    pesan = `<i class="fas fa-ban mr-1"></i>Tidak ada jadwal tersedia untuk hari <strong>${dayName}</strong>. Silakan pilih tanggal lain.`;
+                }
+                html += `<div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm">${pesan}</div>`;
             }
 
             jadwalCont.innerHTML = html;
@@ -222,6 +236,8 @@ function loadJadwal() {
 
 function pickJadwal(id) {
     jadwalHid.value = id;
+    const btnSubmit = document.getElementById('btn-submit');
+    if (btnSubmit) btnSubmit.disabled = false;
 }
 
 // Saat tanggal berubah, reload jadwal

@@ -29,8 +29,9 @@ class BookingController extends Controller
     {
         $tanggal = $request->tanggal_kunjungan ?: today()->toDateString();
 
-        // Dapatkan nama hari dari tanggal yang dipilih
-        $hariPilihan = \Carbon\Carbon::parse($tanggal)->locale('id')->isoFormat('dddd');
+        // Dapatkan nama hari dari tanggal yang dipilih — pakai mapping integer agar konsisten
+        $hariMap     = [0=>'Minggu',1=>'Senin',2=>'Selasa',3=>'Rabu',4=>'Kamis',5=>'Jumat',6=>'Sabtu'];
+        $hariPilihan = $hariMap[\Carbon\Carbon::parse($tanggal)->dayOfWeek];
 
         // Ambil jadwal aktif dokter yang harinya sesuai tanggal dipilih
         $jadwals = JadwalDokter::where('dokter_id', $request->dokter_id)
@@ -46,17 +47,15 @@ class BookingController extends Controller
                 // Cek apakah jadwal sudah lewat untuk tanggal yang dipilih
                 $today    = now()->toDateString();
                 $nowTime  = now()->format('H:i:s');
-                $praktek  = $j->tanggal_praktek?->toDateString();
 
                 $sudahSelesai = false;
-                // Jadwal habis jika: tanggal_praktek sudah lewat,
-                // atau tanggal_praktek = hari ini DAN jam_selesai sudah lewat,
-                // atau tanggal yang dipilih pasien sudah lewat dari hari ini
+                // Jadwal selesai hanya jika tanggal YANG DIPILIH pasien sudah lewat,
+                // atau tanggal yang dipilih = hari ini DAN jam_selesai sudah lewat.
+                // tanggal_praktek di DB tidak dipakai untuk cek ini karena satu jadwal
+                // bisa berlaku berulang di hari yang sama setiap minggu.
                 if ($tanggal < $today) {
                     $sudahSelesai = true;
                 } elseif ($tanggal === $today && $nowTime >= $j->jam_selesai) {
-                    $sudahSelesai = true;
-                } elseif ($praktek && $praktek < $today) {
                     $sudahSelesai = true;
                 }
 

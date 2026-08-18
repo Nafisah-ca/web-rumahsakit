@@ -25,18 +25,36 @@
             </thead>
             <tbody>
                 @forelse($jadwals as $i => $j)
-                <tr>
+                @php
+                    $today      = now()->toDateString();
+                    $nowTime    = now()->format('H:i:s');
+                    $praktek    = $j->tanggal_praktek?->toDateString();
+                    $kedaluarsa = $praktek && (
+                        $praktek < $today ||
+                        ($praktek === $today && $nowTime >= $j->jam_selesai)
+                    );
+                @endphp
+                <tr style="{{ $kedaluarsa ? 'opacity:0.6' : '' }}">
                     <td style="color:#94a3b8">{{ $jadwals->firstItem()+$i }}</td>
                     <td style="font-weight:600;font-size:13px">{{ $j->dokter?->nama_dokter ?? '-' }}</td>
                     <td style="font-size:12px;color:#64748b">{{ $j->spesialisasi?->nama_spesialis ?? '-' }}</td>
                     <td><span class="badge badge-blue">{{ $j->hari }}</span></td>
-                    <td style="font-size:12px;color:#64748b">{{ $j->tanggal_praktek?->format('d M Y') ?? '-' }}</td>
+                    <td style="font-size:12px;color:#64748b">
+                        {{ $j->tanggal_praktek?->format('d M Y') ?? '-' }}
+                        @if($kedaluarsa)
+                            <span class="badge badge-slate" style="font-size:10px;margin-left:4px">Kedaluarsa</span>
+                        @endif
+                    </td>
                     <td><span class="code-tag">{{ substr($j->jam_mulai,0,5) }} – {{ substr($j->jam_selesai,0,5) }}</span></td>
                     <td style="font-weight:600">{{ $j->kuota }} <span style="font-size:11px;color:#94a3b8;font-weight:400">pasien</span></td>
                     <td>
-                        <span class="badge {{ $j->status==='aktif' ? 'badge-green' : 'badge-slate' }}">
-                            {{ $j->status==='aktif' ? 'Aktif' : 'Nonaktif' }}
-                        </span>
+                        @if($kedaluarsa)
+                            <span class="badge badge-slate">Selesai</span>
+                        @else
+                            <span class="badge {{ $j->status==='aktif' ? 'badge-green' : 'badge-slate' }}">
+                                {{ $j->status==='aktif' ? 'Aktif' : 'Nonaktif' }}
+                            </span>
+                        @endif
                     </td>
                     <td>
                         <div style="display:flex;gap:6px;flex-wrap:wrap">
