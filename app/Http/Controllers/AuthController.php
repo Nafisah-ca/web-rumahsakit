@@ -169,16 +169,22 @@ class AuthController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'penjamin_id'   => 'nullable|exists:penjamin,id',
             'nomor_penjamin'=> 'nullable|string|max:100',
+            'foto'          => 'nullable|image|max:2048',
         ]);
 
-        $user = Auth::user();
+        $user   = Auth::user();
         $pasien = $user->pasien;
 
+        // Update foto profil jika ada
+        if ($request->hasFile('foto')) {
+            if ($user->foto) \Illuminate\Support\Facades\Storage::disk('public')->delete($user->foto);
+            $user->foto = $request->file('foto')->store('profile', 'public');
+        }
+
         // Update user data
-        $user->update([
-            'nama'  => $request->nama_lengkap,
-            'no_hp' => $request->telepon,
-        ]);
+        $user->nama  = $request->nama_lengkap;
+        $user->no_hp = $request->telepon;
+        $user->save();
 
         $pasienData = [
             'nik'            => $request->nik,

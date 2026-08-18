@@ -2,10 +2,19 @@
 @section('content')
 
 {{-- Hero --}}
-@include('_partials.page-hero', ['banner' => $banner ?? \App\Models\PageBanner::getForPage('dokter'), 'pageTitle' => isset($online) && $online ? 'Layanan Online' : ($activeSpesialisNama ?? 'Jadwal Dokter'), 'breadcrumbs' => [
-    ['label' => 'Beranda', 'url' => route('home')],
-    ['label' => 'Dokter'],
-]])
+@include('_partials.page-hero', [
+    'banner'      => $banner ?? \App\Models\PageBanner::getForPage('dokter'),
+    'pageTitle'   => isset($online) && $online
+                        ? 'Layanan Online'
+                        : (isset($modeDaftar) && $modeDaftar
+                            ? 'Daftar Poliklinik — ' . ($activeSpesialisNama ?? 'Semua')
+                            : 'Profil Dokter'),
+    'breadcrumbs' => [
+        ['label' => 'Beranda', 'url' => route('home')],
+        ['label' => 'Dokter'],
+    ],
+])
+
 {{-- Filter spesialisasi --}}
 <div class="bg-white border-b border-gray-100 sticky top-16 z-40 shadow-sm">
     <div class="max-w-screen-xl mx-auto px-4 py-3">
@@ -26,87 +35,67 @@
     </div>
 </div>
 
+{{-- Info mode: Daftar Poliklinik vs Profil Dokter --}}
+@if(isset($modeDaftar) && $modeDaftar && $activeSpesialisNama)
+<div class="bg-green-50 border-b border-green-100">
+    <div class="max-w-screen-xl mx-auto px-4 py-2.5 flex items-center gap-2">
+        <i class="fas fa-info-circle text-green-600 text-xs"></i>
+        <p class="text-xs text-green-700 font-semibold">
+            Menampilkan dokter spesialis <strong>{{ $activeSpesialisNama }}</strong>
+        </p>
+    </div>
+</div>
+@endif
+
 <section class="py-12 bg-gray-50">
     <div class="max-w-screen-xl mx-auto px-4">
+
         @if($dokterList->isEmpty())
         <div class="text-center py-20">
             <i class="fas fa-user-md text-gray-300 text-5xl mb-4 block"></i>
-            <p class="text-gray-500 font-semibold">Belum ada dokter untuk spesialisasi ini.</p>
+            <p class="text-gray-500 font-semibold">Belum ada dokter untuk kategori ini.</p>
         </div>
         @else
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            @foreach($dokterList as $d)
-            @php
-                $hariSekarang = now()->locale('id')->isoFormat('dddd');
-                $jadwals      = $d->jadwalAktif;
-                $available    = $jadwals->isNotEmpty() && $jadwals->contains('hari', $hariSekarang);
-            @endphp
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-1 transition-all group">
-                {{-- Header --}}
-                <div class="h-44 relative flex items-center justify-center overflow-hidden"
-                     style="background: linear-gradient(135deg, #00521f, #00b04f)">
-                    @if($d->foto)
-                    <img src="{{ Storage::url($d->foto) }}" alt="{{ $d->nama_dokter }}"
-                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($d->nama_dokter) }}&background=00521f&color=fff&size=200';"
-                         class="w-24 h-24 rounded-full object-cover border-4 border-white/40">
-                    @else
-                    <div class="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/40">
-                        <i class="fas fa-user-md text-white text-4xl"></i>
-                    </div>
-                    @endif
-                    {{-- Badge --}}
-                    <div class="absolute top-3 right-3">
-                        @if($jadwals->isEmpty())
-                            <span class="bg-gray-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Hubungi RS</span>
-                        @elseif($available)
-                            <span class="flex items-center gap-1 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> Tersedia Hari Ini
-                            </span>
-                        @else
-                            <span class="bg-yellow-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Jadwal Terjadwal</span>
-                        @endif
-                    </div>
-                </div>
-                {{-- Body --}}
-                <div class="p-4">
-                    <h3 class="font-extrabold text-gray-900 text-sm mb-0.5 leading-tight">{{ $d->nama_dokter }}</h3>
-                    <span class="inline-block bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full mb-3">
-                        {{ $d->spesialisasi?->nama_spesialis ?? '-' }}
-                    </span>
-                    <div class="space-y-1.5 mb-4 text-xs text-gray-500">
-                        <div class="flex items-start gap-2">
-                            <i class="fas fa-calendar-alt text-green-500 mt-0.5 w-3 flex-shrink-0"></i>
-                            <span>
-                                @if($jadwals->isEmpty())
-                                    Hubungi RS
-                                @else
-                                    @php
-                                        $hariList   = $jadwals->pluck('hari')->unique()->implode(', ');
-                                        $jam        = $jadwals->first();
-                                        $jamRange   = $jam ? substr($jam->jam_mulai,0,5).' – '.substr($jam->jam_selesai,0,5) : '';
-                                    @endphp
-                                    {{ $hariList }}<br>
-                                    <span class="text-green-600 font-semibold">{{ $jamRange }}</span>
-                                @endif
-                            </span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <i class="fas fa-id-card text-green-500 w-3 flex-shrink-0"></i>
-                            <span>SIP: {{ $d->sip }}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <i class="fas fa-phone text-green-500 w-3 flex-shrink-0"></i>
-                            <span>{{ $d->no_hp }}</span>
-                        </div>
-                    </div>
-                    <a href="{{ route('portal.booking.create', ['dokter_id' => $d->id]) }}"
-                       class="block w-full text-center bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl text-xs font-bold transition-colors">
-                        <i class="fas fa-calendar-check mr-1"></i>Buat Janji
-                    </a>
-                </div>
+
+        {{-- Grup: Dokter Spesialis --}}
+        @php
+            $spesialisList = $dokterList->where('tipe_dokter', 'spesialis');
+            $umumList      = $dokterList->whereIn('tipe_dokter', ['umum', 'lainnya']);
+        @endphp
+
+        @if($spesialisList->isNotEmpty())
+        <div class="mb-10">
+            @if($umumList->isNotEmpty())
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-1 h-6 bg-green-600 rounded-full"></div>
+                <h2 class="text-lg font-extrabold text-gray-900">Dokter Spesialis</h2>
+                <span class="text-xs bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full">{{ $spesialisList->count() }} dokter</span>
             </div>
-            @endforeach
+            @endif
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                @foreach($spesialisList as $d)
+                    @include('_partials.dokter-card', ['d' => $d])
+                @endforeach
+            </div>
         </div>
+        @endif
+
+        {{-- Grup: Dokter Umum --}}
+        @if($umumList->isNotEmpty())
+        <div>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-1 h-6 bg-blue-500 rounded-full"></div>
+                <h2 class="text-lg font-extrabold text-gray-900">Dokter Umum</h2>
+                <span class="text-xs bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full">{{ $umumList->count() }} dokter</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                @foreach($umumList as $d)
+                    @include('_partials.dokter-card', ['d' => $d])
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         @endif
     </div>
 </section>

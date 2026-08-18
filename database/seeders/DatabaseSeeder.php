@@ -8,8 +8,6 @@ use App\Models\Banner;
 use App\Models\KategoriArtikel;
 use App\Models\Layanan;
 use App\Models\Spesialisasi;
-use App\Models\Dokter;
-use App\Models\JadwalDokter;
 use App\Models\TipePenjamin;
 use App\Models\Penjamin;
 use App\Models\Promo;
@@ -165,49 +163,14 @@ class DatabaseSeeder extends Seeder
         }
 
         // ─────────────────────────────────────────────
-        // 8. DOKTER & JADWAL
+        // 8. DOKTER & JADWAL — dikelola oleh DokterSeeder
         // ─────────────────────────────────────────────
-        $hariOptions = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-        $tanggalAwal = now()->startOfWeek()->toDateString();
+        $this->call(DokterSeeder::class);
 
-        $doktersData = [
-            ['nama_dokter' => 'dr. Ahmad Fauzi Sp.JP',    'spesialis' => 'Jantung & Pembuluh', 'sip' => 'SIP-001-2025', 'email' => 'ahmad.fauzi@sarisehat.id',  'no_hp' => '081100000001'],
-            ['nama_dokter' => 'dr. Siti Rahayu Sp.OG',    'spesialis' => 'Kebidanan',           'sip' => 'SIP-002-2025', 'email' => 'siti.rahayu@sarisehat.id',  'no_hp' => '081100000002'],
-            ['nama_dokter' => 'dr. Bambang Wiranto Sp.BS', 'spesialis' => 'Syaraf',             'sip' => 'SIP-003-2025', 'email' => 'bambang.w@sarisehat.id',    'no_hp' => '081100000003'],
-            ['nama_dokter' => 'dr. Linda Susanti Sp.A',   'spesialis' => 'Anak',                'sip' => 'SIP-004-2025', 'email' => 'linda.susanti@sarisehat.id','no_hp' => '081100000004'],
-            ['nama_dokter' => 'dr. Dewi Kartika Sp.PD',   'spesialis' => 'Penyakit Dalam',      'sip' => 'SIP-005-2025', 'email' => 'dewi.kartika@sarisehat.id', 'no_hp' => '081100000005'],
-        ];
-
-        foreach ($doktersData as $idx => $d) {
-            $sp = Spesialisasi::where('nama_spesialis', $d['spesialis'])->first();
-            if (!$sp) continue;
-
-            $dokter = Dokter::updateOrCreate(['sip' => $d['sip']], [
-                'spesialis_id' => $sp->id,
-                'nama_dokter'  => $d['nama_dokter'],
-                'email'        => $d['email'],
-                'no_hp'        => $d['no_hp'],
-                'status'       => 'aktif',
-                'created_by'   => $admin->id,
-            ]);
-
-            // 3 hari jadwal per dokter
-            $hariDokter = array_slice($hariOptions, ($idx * 2) % 6, 3);
-            foreach ($hariDokter as $hari) {
-                JadwalDokter::updateOrCreate(
-                    ['dokter_id' => $dokter->id, 'hari' => $hari],
-                    [
-                        'spesialis_id'    => $sp->id,
-                        'tanggal_praktek' => $tanggalAwal,
-                        'jam_mulai'       => '09:00:00',
-                        'jam_selesai'     => '14:00:00',
-                        'kuota'           => 20,
-                        'status'          => 'aktif',
-                        'created_by'      => $admin->id,
-                    ]
-                );
-            }
-        }
+        // ─────────────────────────────────────────────
+        // KATEGORI ARTIKEL dengan relasi spesialisasi
+        // ─────────────────────────────────────────────
+        $this->call(KategoriArtikelSeeder::class);
 
         // ─────────────────────────────────────────────
         // 9. PROMO

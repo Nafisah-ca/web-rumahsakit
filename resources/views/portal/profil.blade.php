@@ -11,8 +11,20 @@
 
         {{-- Header --}}
         <div class="bg-gradient-to-br from-green-600 to-green-800 rounded-2xl p-6 flex items-center gap-5 mb-6">
-            <div class="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-white text-2xl font-black flex-shrink-0">
-                {{ strtoupper(substr(Auth::user()->nama ?? '?', 0, 1)) }}
+            <div class="flex-shrink-0">
+                @if(Auth::user()->foto)
+                    <img src="{{ Storage::url(Auth::user()->foto) }}"
+                         alt="{{ Auth::user()->nama }}"
+                         id="header-foto"
+                         class="w-16 h-16 rounded-2xl object-cover border-2 border-white/40">
+                @else
+                    <div id="header-initial"
+                         class="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-white text-2xl font-black">
+                        {{ strtoupper(substr(Auth::user()->nama ?? '?', 0, 1)) }}
+                    </div>
+                    <img id="header-foto" src="" alt=""
+                         class="w-16 h-16 rounded-2xl object-cover border-2 border-white/40 hidden">
+                @endif
             </div>
             <div>
                 <p class="text-white font-extrabold text-lg">{{ Auth::user()->nama }}</p>
@@ -58,8 +70,48 @@
              TAB: PROFIL
              ============================================================ --}}
         @if($activeTab === 'profil')
-        <form method="POST" action="{{ route('portal.profil.update') }}" class="space-y-5">
+        <form method="POST" action="{{ route('portal.profil.update') }}" class="space-y-5" enctype="multipart/form-data" id="form-profil">
             @csrf @method('PUT')
+
+            {{-- ===== EDIT PROFILE CARD (seperti referensi) ===== --}}
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                <h3 class="font-extrabold text-gray-900 flex items-center gap-2 text-base mb-5">
+                    <i class="fas fa-user-pen text-green-600"></i> Edit Profile
+                </h3>
+
+                {{-- Foto Profil — persis seperti referensi --}}
+                <div class="flex items-center gap-5 p-4 bg-gray-50 rounded-2xl mb-2">
+                    {{-- Preview foto --}}
+                    <div class="flex-shrink-0" id="foto-preview-wrap">
+                        @if(Auth::user()->foto)
+                            <img id="foto-preview-img"
+                                 src="{{ Storage::url(Auth::user()->foto) }}"
+                                 alt="{{ Auth::user()->nama }}"
+                                 class="w-20 h-20 rounded-full object-cover border-2 border-gray-200">
+                        @else
+                            <div id="foto-preview-initial"
+                                 class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center border-2 border-gray-200">
+                                <span class="text-green-700 font-black text-2xl">
+                                    {{ strtoupper(substr(Auth::user()->nama ?? '?', 0, 1)) }}
+                                </span>
+                            </div>
+                            <img id="foto-preview-img" src="" alt=""
+                                 class="w-20 h-20 rounded-full object-cover border-2 border-gray-200 hidden">
+                        @endif
+                    </div>
+
+                    {{-- Teks + tombol --}}
+                    <div>
+                        <p class="text-sm font-bold text-gray-800 mb-1">Foto Profil</p>
+                        <p class="text-xs text-gray-400 mb-3">JPG, PNG maksimal 2MB</p>
+                        <label for="foto-input"
+                               class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-600 cursor-pointer hover:border-green-500 hover:text-green-600 transition-all">
+                            <i class="fas fa-upload text-xs"></i> Pilih Foto
+                            <input type="file" name="foto" id="foto-input" accept="image/*" class="hidden">
+                        </label>
+                    </div>
+                </div>
+            </div>
 
             {{-- Data Pribadi --}}
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
@@ -299,3 +351,32 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+// Preview foto profil saat dipilih
+document.getElementById('foto-input')?.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+
+    // Update preview di card Edit Profile
+    const previewImg  = document.getElementById('foto-preview-img');
+    const previewInit = document.getElementById('foto-preview-initial');
+    if (previewImg) {
+        previewImg.src = url;
+        previewImg.classList.remove('hidden');
+    }
+    if (previewInit) previewInit.classList.add('hidden');
+
+    // Update juga foto di header atas
+    const headerFoto  = document.getElementById('header-foto');
+    const headerInit  = document.getElementById('header-initial');
+    if (headerFoto) {
+        headerFoto.src = url;
+        headerFoto.classList.remove('hidden');
+    }
+    if (headerInit) headerInit.classList.add('hidden');
+});
+</script>
+@endpush

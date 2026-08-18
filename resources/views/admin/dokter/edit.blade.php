@@ -23,6 +23,14 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label class="form-label">Tipe Dokter <span style="color:#ef4444">*</span></label>
+                    <select name="tipe_dokter" class="form-input" required>
+                        <option value="spesialis" {{ old('tipe_dokter',$dokter->tipe_dokter)=='spesialis'?'selected':'' }}>Dokter Spesialis</option>
+                        <option value="umum"      {{ old('tipe_dokter',$dokter->tipe_dokter)=='umum'?'selected':'' }}>Dokter Umum</option>
+                        <option value="lainnya"   {{ old('tipe_dokter',$dokter->tipe_dokter)=='lainnya'?'selected':'' }}>Dokter Lainnya</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label class="form-label">SIP <span style="color:#ef4444">*</span></label>
                     <input type="text" name="sip" value="{{ old('sip',$dokter->sip) }}" class="form-input" required>
                 </div>
@@ -35,11 +43,26 @@
                     <input type="text" name="no_hp" value="{{ old('no_hp',$dokter->no_hp) }}" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Foto Baru <span style="font-size:11px;color:#94a3b8">(kosongkan jika tidak diubah)</span></label>
+                    <label class="form-label">Foto Profil Dokter <span style="font-size:11px;color:#94a3b8">(kosongkan jika tidak diubah)</span></label>
                     @if($dokter->foto)
-                    <div style="margin-bottom:8px"><img src="{{ Storage::url($dokter->foto) }}" style="width:56px;height:56px;object-fit:cover;border-radius:10px"></div>
+                    <div style="margin-bottom:8px">
+                        @php $fotoPreview = str_starts_with($dokter->foto,'images/') ? asset($dokter->foto) : Storage::url($dokter->foto); @endphp
+                        <img src="{{ $fotoPreview }}" style="width:56px;height:56px;object-fit:cover;border-radius:50%;border:2px solid #e2e8f0">
+                    </div>
                     @endif
                     <input type="file" name="foto" accept="image/*" class="form-input">
+                    <p class="form-hint">Foto profil dokter (tampil di circle card)</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Foto Banner Card <span style="font-size:11px;color:#94a3b8">(opsional, max 3MB)</span></label>
+                    @if($dokter->foto_banner)
+                    <div style="margin-bottom:8px">
+                        <img src="{{ Storage::url($dokter->foto_banner) }}" style="width:120px;height:60px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0">
+                        <p style="font-size:10px;color:#94a3b8;margin-top:4px">Banner saat ini</p>
+                    </div>
+                    @endif
+                    <input type="file" name="foto_banner" accept="image/*" class="form-input">
+                    <p class="form-hint">Foto background banner di atas card dokter. Jika kosong, pakai gambar default RS.</p>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Status</label>

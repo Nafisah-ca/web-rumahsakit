@@ -19,7 +19,7 @@ class KategoriArtikel extends Model
     const DELETED_AT = 'deleted_tm';
 
     protected $fillable = [
-        'nama_kategori', 'deskripsi', 'status',
+        'nama_kategori', 'deskripsi', 'spesialis_id', 'status',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
@@ -33,6 +33,22 @@ class KategoriArtikel extends Model
     public function artikelPublished(): HasMany
     {
         return $this->artikels()->where('status', 'publish');
+    }
+
+    public function spesialisasi(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Spesialisasi::class, 'spesialis_id');
+    }
+
+    /** Ambil satu dokter spesialis aktif yang terkait kategori ini */
+    public function getDokterSpesialisAttribute(): ?Dokter
+    {
+        if (!$this->spesialis_id) return null;
+        return Dokter::where('status', 'aktif')
+            ->where('tipe_dokter', 'spesialis')
+            ->where('spesialis_id', $this->spesialis_id)
+            ->with(['spesialisasi', 'jadwalAktif'])
+            ->first();
     }
 
     public function createdBy(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }

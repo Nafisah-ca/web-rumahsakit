@@ -101,10 +101,56 @@
                 <div class="bg-gradient-to-br from-green-600 to-green-800 rounded-2xl p-5 text-white">
                     <i class="fas fa-calendar-check text-green-300 text-2xl mb-3 block"></i>
                     <h4 class="font-extrabold mb-2">Konsultasi Dokter</h4>
-                    <p class="text-green-200 text-sm mb-4">Buat janji temu dengan dokter spesialis kami.</p>
-                    <a href="{{ route('portal.booking.create') }}" class="block w-full bg-white text-green-700 font-bold text-sm py-2.5 rounded-xl text-center hover:bg-green-50 transition-colors">
-                        Buat Janji Temu
+
+                    @if(isset($dokterJanji) && $dokterJanji)
+                    @php $dok = $dokterJanji; @endphp
+                    {{-- Info dokter spesifik --}}
+                    <div class="flex items-center gap-3 mb-3 p-3 bg-white/10 rounded-xl">
+                        @php
+                            $fotoUrl = null;
+                            if ($dok->foto) {
+                                $fotoUrl = str_starts_with($dok->foto, 'images/')
+                                    ? asset($dok->foto)
+                                    : Storage::url($dok->foto);
+                            }
+                        @endphp
+                        @if($fotoUrl)
+                            <img src="{{ $fotoUrl }}" alt="{{ $dok->nama_dokter }}"
+                                 style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.4);flex-shrink:0"
+                                 onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'">
+                            <div style="display:none;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.2);align-items:center;justify-content:center;flex-shrink:0">
+                                <i class="fas fa-user-md" style="color:white;font-size:20px"></i>
+                            </div>
+                        @else
+                            <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                                <i class="fas fa-user-md" style="color:white;font-size:20px"></i>
+                            </div>
+                        @endif
+                        <div class="min-w-0 flex-1">
+                            <p class="text-white font-bold text-sm leading-tight">{{ $dok->nama_dokter }}</p>
+                            <p class="text-green-200 text-xs mt-0.5">{{ $dok->spesialisasi?->nama_spesialis ?? 'Spesialis' }}</p>
+                            @if($dok->jadwalAktif->isNotEmpty())
+                            <p class="text-green-100 text-[10px] mt-1">
+                                <i class="fas fa-clock mr-1 opacity-70"></i>
+                                {{ $dok->jadwalAktif->pluck('hari')->unique()->implode(', ') }}
+                            </p>
+                            @endif
+                        </div>
+                    </div>
+                    <p class="text-green-200 text-xs mb-4">Klik di bawah untuk langsung buat janji dengan dokter ini.</p>
+                    <a href="{{ route('portal.booking.create', ['dokter_id' => $dok->id]) }}"
+                       class="block w-full bg-white text-green-700 font-bold text-sm py-3 rounded-xl text-center hover:bg-green-50 transition-colors">
+                        <i class="fas fa-calendar-check mr-1"></i> Buat Janji Temu
                     </a>
+
+                    @else
+                    {{-- Tidak ada dokter terkait --}}
+                    <p class="text-green-200 text-sm mb-4">Konsultasikan keluhan Anda dengan dokter spesialis kami.</p>
+                    <a href="{{ route('dokter') }}"
+                       class="block w-full bg-white text-green-700 font-bold text-sm py-3 rounded-xl text-center hover:bg-green-50 transition-colors">
+                        <i class="fas fa-calendar-check mr-1"></i> Lihat Dokter Kami
+                    </a>
+                    @endif
                 </div>
             </div>
         </div>

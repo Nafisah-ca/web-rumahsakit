@@ -16,7 +16,8 @@ class Dokter extends Model
     const DELETED_AT = 'deleted_tm';
 
     protected $fillable = [
-        'spesialis_id', 'nama_dokter', 'sip', 'email', 'no_hp', 'foto', 'status',
+        'spesialis_id', 'nama_dokter', 'tipe_dokter', 'sip', 'email', 'no_hp',
+        'foto', 'foto_banner', 'status',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
@@ -70,7 +71,40 @@ class Dokter extends Model
         return $query->where('spesialis_id', $spesialisasiId);
     }
 
+    /** Hanya dokter spesialis */
+    public function scopeSpesialis(Builder $query): Builder
+    {
+        return $query->where('tipe_dokter', 'spesialis');
+    }
+
+    /** Dokter umum dan lainnya (bukan spesialis) */
+    public function scopeUmum(Builder $query): Builder
+    {
+        return $query->whereIn('tipe_dokter', ['umum', 'lainnya']);
+    }
+
     // ─── Accessors ────────────────────────────────────
+
+    /** Label tipe dokter */
+    public function getTipeLabelAttribute(): string
+    {
+        return match ($this->tipe_dokter) {
+            'spesialis' => 'Spesialis',
+            'umum'      => 'Dokter Umum',
+            'lainnya'   => 'Dokter Lainnya',
+            default     => 'Dokter',
+        };
+    }
+
+    /** Warna badge tipe */
+    public function getTipeBadgeColorAttribute(): string
+    {
+        return match ($this->tipe_dokter) {
+            'spesialis' => 'green',
+            'umum'      => 'blue',
+            default     => 'slate',
+        };
+    }
 
     /** Nama lengkap - backward compatibility (dulu ada gelar, sekarang tidak) */
     public function getNamaLengkapAttribute(): string

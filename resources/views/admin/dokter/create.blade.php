@@ -24,6 +24,14 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label class="form-label">Tipe Dokter <span style="color:#ef4444">*</span></label>
+                    <select name="tipe_dokter" class="form-input" required>
+                        <option value="spesialis" {{ old('tipe_dokter','spesialis')=='spesialis'?'selected':'' }}>Dokter Spesialis</option>
+                        <option value="umum"      {{ old('tipe_dokter')=='umum'?'selected':'' }}>Dokter Umum</option>
+                        <option value="lainnya"   {{ old('tipe_dokter')=='lainnya'?'selected':'' }}>Dokter Lainnya</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label class="form-label">SIP (No. Izin Praktik) <span style="color:#ef4444">*</span></label>
                     <input type="text" name="sip" value="{{ old('sip') }}" class="form-input" required placeholder="SIP-XXX-2025">
                 </div>
@@ -36,9 +44,16 @@
                     <input type="text" name="no_hp" value="{{ old('no_hp') }}" class="form-input" required placeholder="08xxxxxxxxxx">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Foto Dokter <span style="font-size:11px;color:#94a3b8">(opsional, max 2MB)</span></label>
+                    <label class="form-label">Foto Profil Dokter <span style="font-size:11px;color:#94a3b8">(opsional, max 2MB)</span></label>
                     <input type="file" name="foto" accept="image/*" class="form-input" id="foto-input">
-                    <img id="foto-preview" style="display:none;width:60px;height:60px;object-fit:cover;border-radius:10px;margin-top:8px">
+                    <img id="foto-preview" style="display:none;width:56px;height:56px;object-fit:cover;border-radius:50%;margin-top:8px;border:2px solid #e2e8f0">
+                    <p class="form-hint">Foto profil dokter (tampil di circle card)</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Foto Banner Card <span style="font-size:11px;color:#94a3b8">(opsional, max 3MB)</span></label>
+                    <input type="file" name="foto_banner" accept="image/*" class="form-input" id="banner-input">
+                    <img id="banner-preview" style="display:none;width:120px;height:60px;object-fit:cover;border-radius:8px;margin-top:8px">
+                    <p class="form-hint">Foto background banner card. Jika kosong, pakai gambar default RS.</p>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Status</label>

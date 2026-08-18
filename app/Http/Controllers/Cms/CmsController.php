@@ -94,6 +94,7 @@ class CmsController extends Controller
         $data = $request->except(['_token', 'gambar', 'thumbnail']);
         $data['slug']       = Str::slug($request->judul) . '-' . Str::random(4);
         $data['created_by'] = Auth::id();
+        $data['dokter_id']  = null; // otomatis dari kategori → spesialisasi
 
         if ($request->hasFile('gambar')) {
             $data['gambar'] = $request->file('gambar')->store('artikel', 'public');
@@ -121,6 +122,7 @@ class CmsController extends Controller
 
         $data = $request->except(['_token', '_method', 'gambar', 'thumbnail']);
         $data['updated_by'] = Auth::id();
+        // dokter_id tidak diubah — tetap pakai sistem otomatis dari kategori
 
         if ($request->hasFile('gambar')) {
             if ($artikel->gambar) Storage::disk('public')->delete($artikel->gambar);
@@ -680,11 +682,13 @@ class CmsController extends Controller
     {
         $request->validate([
             'nama_kategori' => 'required|string|max:100|unique:kategori_artikel,nama_kategori',
+            'spesialis_id'  => 'nullable|exists:spesialis,id',
         ]);
 
         KategoriArtikel::create([
-            'nama_kategori' => $request->nama_kategori,
+            'nama_kategori' => $request->nama_kategori ?? $request->nama,
             'deskripsi'     => $request->deskripsi,
+            'spesialis_id'  => $request->spesialis_id ?: null,
             'status'        => 'aktif',
             'created_by'    => Auth::id(),
         ]);

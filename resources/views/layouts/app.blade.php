@@ -110,9 +110,16 @@
                     <button id="user-dropdown-btn"
                         class="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-green-600 transition-colors focus:outline-none"
                         aria-expanded="false" aria-haspopup="true">
-                        <div class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-user text-white text-[10px]"></i>
-                        </div>
+                        {{-- Avatar: foto jika ada, icon jika belum --}}
+                        @if(Auth::user()->foto)
+                            <img src="{{ Storage::url(Auth::user()->foto) }}"
+                                 alt="{{ Auth::user()->nama }}"
+                                 class="w-6 h-6 rounded-full object-cover flex-shrink-0 border border-white/30">
+                        @else
+                            <div class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user text-white text-[10px]"></i>
+                            </div>
+                        @endif
                         <span>{{ Str::limit(Auth::user()->nama, 14) }}</span>
                         <i class="fas fa-chevron-down text-[9px] opacity-70 transition-transform duration-200" id="user-chevron"></i>
                     </button>
@@ -403,9 +410,15 @@
             <div class="pt-3 mt-3 border-t border-gray-100">
                 @auth
                 <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-50 border border-green-100">
-                    <div class="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-user text-white text-xs"></i>
-                    </div>
+                    @if(Auth::user()->foto)
+                        <img src="{{ Storage::url(Auth::user()->foto) }}"
+                             alt="{{ Auth::user()->nama }}"
+                             class="w-9 h-9 rounded-full object-cover flex-shrink-0 border-2 border-green-200">
+                    @else
+                        <div class="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-user text-white text-xs"></i>
+                        </div>
+                    @endif
                     <div class="min-w-0 flex-1">
                         <p class="text-gray-900 text-sm font-extrabold truncate">{{ Auth::user()->nama }}</p>
                         <p class="text-green-700 text-xs font-semibold">{{ Auth::user()->role_label }}</p>

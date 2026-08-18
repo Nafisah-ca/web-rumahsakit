@@ -18,7 +18,7 @@ class Artikel extends Model
     const DELETED_AT = 'deleted_tm';
 
     protected $fillable = [
-        'kategori_artikel_id', 'judul', 'slug', 'gambar', 'isi', 'status',
+        'kategori_artikel_id', 'dokter_id', 'judul', 'slug', 'gambar', 'isi', 'status',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
@@ -29,6 +29,11 @@ class Artikel extends Model
     public function kategori(): BelongsTo
     {
         return $this->belongsTo(KategoriArtikel::class, 'kategori_artikel_id');
+    }
+
+    public function dokter(): BelongsTo
+    {
+        return $this->belongsTo(Dokter::class, 'dokter_id');
     }
 
     public function penulis(): BelongsTo

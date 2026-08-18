@@ -431,19 +431,24 @@ class AdminController extends Controller
         $request->validate([
             'nama_dokter'  => 'required|string|max:100',
             'spesialis_id' => 'required|exists:spesialis,id',
+            'tipe_dokter'  => 'required|in:spesialis,umum,lainnya',
             'sip'          => 'required|string|max:100|unique:dokter,sip',
             'email'        => 'required|email|unique:dokter,email',
             'no_hp'        => 'required|string|max:20',
             'foto'         => 'nullable|image|max:2048',
+            'foto_banner'  => 'nullable|image|max:3072',
             'status'       => 'nullable|in:aktif,nonaktif',
         ]);
 
-        $data = $request->except(['_token', 'foto']);
+        $data = $request->except(['_token', 'foto', 'foto_banner']);
         $data['status']     = $request->status ?? 'aktif';
         $data['created_by'] = Auth::id();
 
         if ($request->hasFile('foto')) {
             $data['foto'] = $request->file('foto')->store('dokter', 'public');
+        }
+        if ($request->hasFile('foto_banner')) {
+            $data['foto_banner'] = $request->file('foto_banner')->store('dokter/banner', 'public');
         }
         Dokter::create($data);
         return redirect()->route('admin.dokter')->with('success', 'Dokter berhasil ditambahkan.');
@@ -460,17 +465,26 @@ class AdminController extends Controller
         $request->validate([
             'nama_dokter'  => 'required|string|max:100',
             'spesialis_id' => 'required|exists:spesialis,id',
+            'tipe_dokter'  => 'required|in:spesialis,umum,lainnya',
             'sip'          => 'required|string|max:100|unique:dokter,sip,' . $dokter->id,
             'email'        => 'required|email|unique:dokter,email,' . $dokter->id,
             'no_hp'        => 'required|string|max:20',
             'foto'         => 'nullable|image|max:2048',
+            'foto_banner'  => 'nullable|image|max:3072',
             'status'       => 'nullable|in:aktif,nonaktif',
         ]);
 
-        $data = $request->except(['_token', '_method', 'foto']);
+        $data = $request->except(['_token', '_method', 'foto', 'foto_banner']);
         $data['updated_by'] = Auth::id();
         if ($request->hasFile('foto')) {
+            if ($dokter->foto && !str_starts_with($dokter->foto, 'images/')) {
+                Storage::disk('public')->delete($dokter->foto);
+            }
             $data['foto'] = $request->file('foto')->store('dokter', 'public');
+        }
+        if ($request->hasFile('foto_banner')) {
+            if ($dokter->foto_banner) Storage::disk('public')->delete($dokter->foto_banner);
+            $data['foto_banner'] = $request->file('foto_banner')->store('dokter/banner', 'public');
         }
         $dokter->update($data);
         return redirect()->route('admin.dokter')->with('success', 'Data dokter berhasil diperbarui.');

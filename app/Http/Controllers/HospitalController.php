@@ -72,28 +72,34 @@ class HospitalController extends Controller
     public function dokter()
     {
         $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
-        $dokterList = $spesialisasis->pluck('id')
-            ->flatMap(fn($spId) => Dokter::with(['spesialisasi','jadwalAktif'])
-                ->where('status','aktif')->where('spesialis_id',$spId)
-                ->orderBy('nama_dokter')->limit(3)->get())
-            ->values();
+        // Profil Dokter: tampilkan SEMUA dokter aktif (spesialis + umum)
+        $dokterList = Dokter::with(['spesialisasi', 'jadwalAktif'])
+            ->where('status', 'aktif')
+            ->orderByRaw("FIELD(tipe_dokter,'spesialis','umum','lainnya')")
+            ->orderBy('nama_dokter')
+            ->get();
         $banner = \App\Models\PageBanner::getForPage('dokter');
-        return view('dokter', compact('dokterList','spesialisasis','banner') + [
+        return view('dokter', compact('dokterList', 'spesialisasis', 'banner') + [
             'activeSpesialisSlug' => null,
             'activeSpesialisNama' => null,
+            'modeDaftar'          => false,
         ]);
     }
 
     public function dokterOnline()
     {
         $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
-        $dokterList = $spesialisasis->pluck('id')
-            ->flatMap(fn($spId) => Dokter::with(['spesialisasi','jadwalAktif'])
-                ->where('status','aktif')->where('spesialis_id',$spId)
-                ->orderBy('nama_dokter')->limit(3)->get())
-            ->values();
+        $dokterList = Dokter::with(['spesialisasi', 'jadwalAktif'])
+            ->where('status', 'aktif')
+            ->orderBy('nama_dokter')
+            ->get();
         $banner = \App\Models\PageBanner::getForPage('dokter');
-        return view('dokter', compact('dokterList','spesialisasis','banner') + ['online' => true]);
+        return view('dokter', compact('dokterList', 'spesialisasis', 'banner') + [
+            'online'              => true,
+            'activeSpesialisSlug' => null,
+            'activeSpesialisNama' => null,
+            'modeDaftar'          => false,
+        ]);
     }
 
     public function dokterBySpesialis(string $spSlug)
@@ -101,13 +107,18 @@ class HospitalController extends Controller
         $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
         $sp = Spesialisasi::find($spSlug);
         abort_if(!$sp, 404);
-        $dokterList = Dokter::with(['spesialisasi','jadwalAktif'])
-            ->where('status','aktif')->where('spesialis_id',$sp->id)
-            ->orderBy('nama_dokter')->limit(3)->get();
+        // Daftar Poliklinik: HANYA dokter spesialis sesuai spesialisasi
+        $dokterList = Dokter::with(['spesialisasi', 'jadwalAktif'])
+            ->where('status', 'aktif')
+            ->where('tipe_dokter', 'spesialis')
+            ->where('spesialis_id', $sp->id)
+            ->orderBy('nama_dokter')
+            ->get();
         $banner = \App\Models\PageBanner::getForPage('dokter');
-        return view('dokter', compact('dokterList','spesialisasis','banner') + [
+        return view('dokter', compact('dokterList', 'spesialisasis', 'banner') + [
             'activeSpesialisSlug' => $sp->id,
             'activeSpesialisNama' => $sp->nama_spesialis,
+            'modeDaftar'          => true,
         ]);
     }
 
@@ -256,10 +267,35 @@ class HospitalController extends Controller
 
     public function artikelDetail(string $slug)
     {
-        $artikel = Artikel::where('slug', $slug)->where('status','publish')->firstOrFail();
-        $related = Artikel::where('status','publish')->where('kategori_artikel_id',$artikel->kategori_artikel_id)->where('id','!=',$artikel->id)->limit(3)->get();
-        $banner  = \App\Models\PageBanner::getForPage('artikel');
-        return view('artikel-detail', compact('artikel', 'related', 'banner'));
+        $artikel = Artikel::where('slug', $slug)
+                        ->where('status', 'publish')
+                        ->with([
+                            'kategori.spesialisasi',
+                            'dokter.spesialisasi',
+                            'dokter.jadwalAktif',
+                        ])
+                        ->firstOrFail();
+
+        // Cari dokter: prioritas 1 = dokter_id di artikel
+        // Prioritas 2 = dokter spesialis dari kategori artikel
+        $dokterJanji = $artikel->dokter;
+
+        if (!$dokterJanji && $artikel->kategori?->spesialis_id) {
+            $dokterJanji = \App\Models\Dokter::where('status', 'aktif')
+                ->where('tipe_dokter', 'spesialis')
+                ->where('spesialis_id', $artikel->kategori->spesialis_id)
+                ->with(['spesialisasi', 'jadwalAktif'])
+                ->first();
+        }
+
+        $related = Artikel::where('status', 'publish')
+                        ->where('kategori_artikel_id', $artikel->kategori_artikel_id)
+                        ->where('id', '!=', $artikel->id)
+                        ->limit(3)->get();
+
+        $banner = \App\Models\PageBanner::getForPage('artikel');
+
+        return view('artikel-detail', compact('artikel', 'related', 'banner', 'dokterJanji'));
     }
 
     public function mcu()

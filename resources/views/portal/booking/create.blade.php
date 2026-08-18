@@ -100,12 +100,19 @@
             {{-- Info Pasien --}}
             @if($pasien)
             <div class="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-4">
-                <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-user text-white text-sm"></i>
-                </div>
+                {{-- Avatar: foto jika ada, icon jika belum --}}
+                @if(Auth::user()->foto)
+                    <img src="{{ Storage::url(Auth::user()->foto) }}"
+                         alt="{{ Auth::user()->nama }}"
+                         class="w-10 h-10 rounded-full object-cover flex-shrink-0 border-2 border-green-300">
+                @else
+                    <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-user text-white text-sm"></i>
+                    </div>
+                @endif
                 <div class="flex-1 min-w-0">
                     <p class="font-bold text-green-900">{{ $pasien->nama_lengkap }}</p>
-                <p class="text-green-700 text-xs">No. RM: {{ $pasien->no_rm ?? '-' }} &nbsp;|&nbsp; {{ $pasien->jenis_kelamin_label }} &nbsp;|&nbsp; {{ $pasien->user?->no_hp ?? '-' }}</p>
+                    <p class="text-green-700 text-xs">No. RM: {{ $pasien->no_rm ?? '-' }} &nbsp;|&nbsp; {{ $pasien->jenis_kelamin_label }} &nbsp;|&nbsp; {{ $pasien->user?->no_hp ?? '-' }}</p>
                 </div>
                 <a href="{{ route('portal.profil') }}" class="text-green-600 hover:text-green-800 text-xs font-bold">Edit Profil</a>
             </div>

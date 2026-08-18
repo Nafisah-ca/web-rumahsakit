@@ -20,6 +20,16 @@
                 <input type="text" name="nama" value="{{ old('nama') }}" class="form-input" required placeholder="contoh: Kesehatan Jantung">
             </div>
             <div class="form-group">
+                <label class="form-label">Spesialisasi Terkait</label>
+                <select name="spesialis_id" class="form-input">
+                    <option value="">— Tidak ada —</option>
+                    @foreach(\App\Models\Spesialisasi::orderBy('nama_spesialis')->get() as $sp)
+                    <option value="{{ $sp->id }}" {{ old('spesialis_id')==$sp->id?'selected':'' }}>{{ $sp->nama_spesialis }}</option>
+                    @endforeach
+                </select>
+                <p class="form-hint">Pilih spesialisasi agar tombol "Buat Janji Temu" di artikel mengarah ke dokter yang tepat.</p>
+            </div>
+            <div class="form-group">
                 <label class="form-label">Warna Badge</label>
                 <input type="color" name="warna" value="{{ old('warna','#3b82f6') }}" class="form-input">
             </div>
@@ -38,12 +48,19 @@
         <div class="table-wrap">
             <table>
                 <thead>
-                    <tr><th>Nama Kategori</th><th>Warna</th><th>Jumlah Artikel</th><th>Aksi</th></tr>
+                    <tr><th>Nama Kategori</th><th>Spesialisasi</th><th>Warna</th><th>Jumlah Artikel</th><th>Aksi</th></tr>
                 </thead>
                 <tbody>
                     @forelse($kategoris as $k)
                     <tr>
                         <td style="font-weight:600;color:#0f172a">{{ $k->nama }}</td>
+                        <td>
+                            @if($k->spesialisasi)
+                                <span class="badge badge-green">{{ $k->spesialisasi->nama_spesialis }}</span>
+                            @else
+                                <span style="font-size:12px;color:#94a3b8">—</span>
+                            @endif
+                        </td>
                         <td>
                             <div style="display:flex;align-items:center;gap:8px">
                                 <div style="width:20px;height:20px;border-radius:50%;border:2px solid #e2e8f0;background:{{ $k->warna }}"></div>
