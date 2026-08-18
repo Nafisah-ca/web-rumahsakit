@@ -80,14 +80,14 @@
                     <i class="fas fa-calendar-check"></i> Daftar MCU
                 </a>
                 @php
-                    $mcuTel  = $setting_global->telepon ?? '089501895170';
+                    $mcuTel  = $setting_global->telepon ?? '+62 895-0189-5170';
                     $mcuWa   = preg_replace('/[^0-9]/', '', $mcuTel);
                     if (str_starts_with($mcuWa, '0')) $mcuWa = '62' . substr($mcuWa, 1);
                     if (empty($mcuWa)) $mcuWa = '6289501895170';
                 @endphp
                 <a href="https://wa.me/{{ $mcuWa }}" target="_blank" rel="noopener"
                    class="flex items-center gap-2 border-2 border-white/60 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:border-white transition-all">
-                    <i class="fab fa-whatsapp"></i> {{ $mcuTel }}
+                    <i class="fab fa-whatsapp"></i> +62 895-0189-5170
                 </a>
             </div>
         </div>

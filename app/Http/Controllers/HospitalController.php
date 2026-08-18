@@ -304,38 +304,47 @@ class HospitalController extends Controller
         return view('mcu', compact('banner'));
     }
 
-    public function liveAntrian()
+    public function liveAntrian(Request $request)
     {
         $setting     = \App\Models\WebsiteSetting::getSetting();
         $estimasi    = json_decode($setting->estimasi_antrian ?? '{}', true) ?? [];
         $interval    = (int) ($estimasi['interval_refresh'] ?? 30);
         $pesanTunggu = $estimasi['pesan_tunggu'] ?? 'Harap menunggu, nomor Anda akan segera dipanggil.';
 
+        // Tanggal yang dipilih (default hari ini)
+        $tanggalInput = $request->get('tanggal');
+        try {
+            $tanggal = $tanggalInput ? \Carbon\Carbon::parse($tanggalInput)->startOfDay() : now()->startOfDay();
+        } catch (\Throwable) {
+            $tanggal = now()->startOfDay();
+        }
+        $tanggalStr = $tanggal->toDateString();
+
         // Nama hari sesuai enum DB
         $hariMap  = [1=>'Senin',2=>'Selasa',3=>'Rabu',4=>'Kamis',5=>'Jumat',6=>'Sabtu',7=>'Minggu'];
-        $namaHari = $hariMap[now()->dayOfWeekIso] ?? 'Senin';
+        $namaHari = $hariMap[$tanggal->dayOfWeekIso] ?? 'Senin';
 
-        // Spesialisasi dengan jadwal aktif hari ini
+        // Semua spesialisasi dengan jadwal aktif pada hari tersebut
         $spesialisasis = Spesialisasi::with([
-            'jadwalDokters' => fn($q) => $q->where('status','aktif')->where('hari', $namaHari),
+            'jadwalDokters' => fn($q) => $q->where('status', 'aktif')->where('hari', $namaHari),
         ])->orderBy('nama_spesialis')->get();
 
-        // Semua janji temu hari ini (tanggal_booking = hari ini)
+        // Semua janji temu pada tanggal yang dipilih
         $antriansHariIni = JanjiTemu::with(['jadwalDokter'])
-            ->whereDate('tanggal_booking', today())
+            ->whereDate('tanggal_booking', $tanggalStr)
             ->whereIn('status', ['pending', 'approved', 'completed'])
             ->orderBy('nomor_antrian')
             ->get();
 
-        // Kelompokkan per spesialis_id langsung dari jadwal_dokter
+        // Kelompokkan per spesialis_id
         $antrianPerPoli = $antriansHariIni->groupBy(
             fn($jt) => $jt->jadwalDokter?->spesialis_id
         );
 
-        // Bangun data poli
+        // Bangun data poli — tampilkan SEMUA poli, bukan hanya yang buka
         $poliData = $spesialisasis->map(function ($sp) use ($antrianPerPoli) {
             $antrians       = $antrianPerPoli->get($sp->id, collect());
-            $totalAntrian   = $antrians->whereIn('status', ['pending','approved'])->count();
+            $totalAntrian   = $antrians->whereIn('status', ['pending', 'approved'])->count();
             $nomorDipanggil = $antrians->where('status', 'completed')->max('nomor_antrian') ?? 0;
             $estimasiMenit  = $sp->estimasi_menit ?? 15;
             $estimasiTunggu = $totalAntrian > 0 ? "±{$estimasiMenit} menit" : '-';
@@ -347,16 +356,18 @@ class HospitalController extends Controller
                 'icon'            => $sp->icon ?? 'fa-stethoscope',
                 'warna'           => $sp->warna ?? 'blue',
                 'status'          => $buka ? 'Buka' : 'Tutup',
-                'total_antrian'   => $buka ? $totalAntrian : 0,
-                'nomor_dipanggil' => $buka ? $nomorDipanggil : 0,
+                'total_antrian'   => $totalAntrian,
+                'nomor_dipanggil' => $nomorDipanggil,
                 'estimasi'        => $buka ? $estimasiTunggu : '-',
             ];
         });
 
-        $banner = \App\Models\PageBanner::getForPage('live-antrian');
+        $banner     = \App\Models\PageBanner::getForPage('live-antrian');
+        $tanggalObj = $tanggal;
 
         return view('live-antrian', compact(
-            'poliData', 'banner', 'interval', 'pesanTunggu', 'setting'
+            'poliData', 'banner', 'interval', 'pesanTunggu', 'setting',
+            'tanggalObj', 'tanggalStr'
         ));
     }
 
