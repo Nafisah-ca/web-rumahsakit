@@ -22,9 +22,16 @@
         {{-- Info Pasien --}}
         @if($pasien)
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6 flex items-center gap-4">
-            <div class="w-14 h-14 bg-green-600 rounded-2xl flex items-center justify-center text-white text-xl font-black flex-shrink-0">
-                {{ strtoupper(substr($pasien->user?->nama ?? $pasien->nama_lengkap ?? '?', 0, 1)) }}
-            </div>
+            @php $fotoUser = Auth::user()->foto; @endphp
+            @if($fotoUser)
+                <img src="{{ Storage::url($fotoUser) }}"
+                     alt="{{ Auth::user()->nama }}"
+                     class="w-14 h-14 rounded-2xl object-cover flex-shrink-0 border-2 border-green-100">
+            @else
+                <div class="w-14 h-14 bg-green-600 rounded-2xl flex items-center justify-center text-white text-xl font-black flex-shrink-0">
+                    {{ strtoupper(substr($pasien->user?->nama ?? $pasien->nama_lengkap ?? '?', 0, 1)) }}
+                </div>
+            @endif
             <div class="flex-1 min-w-0">
                 <p class="font-extrabold text-gray-900">{{ $pasien->user?->nama ?? $pasien->nama_lengkap }}</p>
                 <p class="text-gray-500 text-sm">
