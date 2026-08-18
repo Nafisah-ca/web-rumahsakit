@@ -139,6 +139,16 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Laporan
     Route::get('/laporan', [AdminController::class, 'laporan'])->name('laporan');
 
+    // Portal CMS (halaman perantara)
+    Route::get('/cms-portal', function () {
+        return view('admin.cms-portal');
+    })->name('cms-portal');
+
+    // CMS Auth — login verifikasi dari dalam admin
+    Route::get('/cms-login',  [\App\Http\Controllers\Admin\CmsAuthController::class, 'showLogin'])->name('cms-login');
+    Route::post('/cms-login', [\App\Http\Controllers\Admin\CmsAuthController::class, 'login'])->name('cms-login.post');
+    Route::post('/cms-logout',[\App\Http\Controllers\Admin\CmsAuthController::class, 'logout'])->name('cms-logout');
+
     // Statistik Pengunjung
     Route::get('/pengunjung', [AdminController::class, 'pengunjung'])->name('pengunjung');
 
@@ -160,7 +170,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
 // ─────────────────────────── CMS ──────────────────────────────────────────────
 // Admin juga bisa akses CMS (role:admin,cms)
-Route::middleware(['auth', 'role:admin,cms', 'last.activity'])->prefix('cms')->name('cms.')->group(function () {
+Route::middleware(['auth', 'cms.verified', 'last.activity'])->prefix('cms')->name('cms.')->group(function () {
 
     Route::get('/dashboard', [CmsController::class, 'dashboard'])->name('dashboard');
 

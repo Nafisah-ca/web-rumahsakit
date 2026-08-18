@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\TrackPageVisit;
 use App\Http\Middleware\UpdateLastActivity;
+use App\Http\Middleware\CmsVerified;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'          => RoleMiddleware::class,
             'last.activity' => UpdateLastActivity::class,
+            'cms.verified'  => CmsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

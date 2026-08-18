@@ -243,8 +243,8 @@ nav[role="navigation"] a:hover { background: #f1f5f9; border-color: #cbd5e1; }
             </a>
 
             <div class="sidebar-group">Lainnya</div>
-            <a href="{{ route('cms.dashboard') }}" class="sidebar-link {{ request()->routeIs('cms.*') ? 'active' : '' }}">
-                <i class="fas fa-pen-nib icon"></i> Dashboard CMS
+            <a href="{{ route('admin.cms-login') }}" class="sidebar-link {{ request()->routeIs('admin.cms-login*') || request()->routeIs('cms.*') ? 'active' : '' }}">
+                <i class="fas fa-pen-nib icon"></i> Akses CMS
             </a>
             <a href="{{ route('home') }}" target="_blank" class="sidebar-link">
                 <i class="fas fa-arrow-up-right-from-square icon"></i> Lihat Website

@@ -294,6 +294,9 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
                             <div style="min-width:0">
                                 <p>{{ Auth::user()->nama }}</p>
                                 <span>{{ Auth::user()->email }}</span>
+                                @if(session('cms_verified') && Auth::user()->role === 'admin')
+                                <span style="display:block;margin-top:2px;font-size:10px;background:#fee2e2;color:#dc2626;padding:1px 6px;border-radius:20px;display:inline-block">Administrator</span>
+                                @endif
                             </div>
                         </div>
 
@@ -304,6 +307,16 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
                             <i class="fas fa-lock"></i> Ganti Password
                         </a>
                         <hr class="profile-menu-divider">
+                        {{-- Jika admin masuk CMS via verifikasi, tampil tombol keluar CMS --}}
+                        @if(session('cms_verified') && Auth::user()->role === 'admin')
+                        <form method="POST" action="{{ route('admin.cms-logout') }}">
+                            @csrf
+                            <button type="submit" class="profile-menu-item" style="color:#d97706">
+                                <i class="fas fa-right-from-bracket" style="color:#d97706"></i> Keluar dari CMS
+                            </button>
+                        </form>
+                        <hr class="profile-menu-divider">
+                        @endif
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="profile-menu-item danger">
