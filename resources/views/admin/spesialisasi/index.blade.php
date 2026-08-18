@@ -13,13 +13,23 @@
         </div>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>#</th><th>Nama Spesialisasi</th><th>Deskripsi</th><th>Jumlah Dokter</th><th>Aksi</th></tr></thead>
+                <thead><tr><th>#</th><th>Nama Spesialisasi</th><th>Icon / Warna</th><th>Estimasi Tunggu</th><th>Jumlah Dokter</th><th>Aksi</th></tr></thead>
                 <tbody>
                     @forelse($spesialisasis as $i => $sp)
+                    @php $w = $sp->warna ?? 'blue'; @endphp
                     <tr>
                         <td style="color:#94a3b8">{{ $spesialisasis->firstItem()+$i }}</td>
                         <td style="font-weight:700;font-size:13px">{{ $sp->nama_spesialis }}</td>
-                        <td style="font-size:12px;color:#64748b">{{ Str::limit($sp->deskripsi,50) ?? '-' }}</td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span style="width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;background:var(--icon-bg);color:var(--icon-clr)"
+                                      class="sp-icon-badge" data-warna="{{ $w }}">
+                                    <i class="fas {{ $sp->icon ?? 'fa-stethoscope' }}"></i>
+                                </span>
+                                <span style="font-size:12px;color:#64748b">{{ \App\Models\Spesialisasi::WARNA_OPTIONS[$w] ?? $w }}</span>
+                            </div>
+                        </td>
+                        <td style="font-size:12px;color:#64748b">± {{ $sp->estimasi_menit ?? 15 }} menit</td>
                         <td style="font-size:13px;font-weight:600">{{ $sp->dokters()->count() }}</td>
                         <td>
                             <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -49,3 +59,21 @@
     </div>
 </div>
 @endsection
+@push('scripts')
+<script>
+// Warnai icon badge sesuai warna poli
+const warnaMap = {
+    blue:   ['#dbeafe','#1d4ed8'], green:  ['#dcfce7','#15803d'],
+    red:    ['#fee2e2','#b91c1c'], indigo: ['#e0e7ff','#4338ca'],
+    purple: ['#f3e8ff','#7e22ce'], orange: ['#ffedd5','#c2410c'],
+    pink:   ['#fce7f3','#be185d'], teal:   ['#ccfbf1','#0f766e'],
+    yellow: ['#fef9c3','#a16207'], gray:   ['#f1f5f9','#475569'],
+};
+document.querySelectorAll('.sp-icon-badge').forEach(function(el) {
+    const w = el.dataset.warna || 'blue';
+    const [bg, clr] = warnaMap[w] || warnaMap.blue;
+    el.style.background = bg;
+    el.style.color       = clr;
+});
+</script>
+@endpush

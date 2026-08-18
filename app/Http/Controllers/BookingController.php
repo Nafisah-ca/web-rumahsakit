@@ -31,9 +31,8 @@ class BookingController extends Controller
 
         // Dapatkan nama hari dari tanggal yang dipilih
         $hariPilihan = \Carbon\Carbon::parse($tanggal)->locale('id')->isoFormat('dddd');
-        // isoFormat dddd = Senin, Selasa, Rabu, Kamis, Jumat, Sabtu, Minggu
 
-        // Ambil jadwal aktif dokter yang harinya sesuai dengan tanggal dipilih
+        // Ambil jadwal aktif dokter yang harinya sesuai tanggal dipilih
         $jadwals = JadwalDokter::where('dokter_id', $request->dokter_id)
             ->where('status', 'aktif')
             ->where('hari', $hariPilihan)
@@ -44,18 +43,35 @@ class BookingController extends Controller
                     ->whereNotIn('status', ['cancelled'])
                     ->count();
 
+                // Cek apakah jadwal sudah lewat untuk tanggal yang dipilih
+                $today    = now()->toDateString();
+                $nowTime  = now()->format('H:i:s');
+                $praktek  = $j->tanggal_praktek?->toDateString();
+
+                $sudahSelesai = false;
+                // Jadwal habis jika: tanggal_praktek sudah lewat,
+                // atau tanggal_praktek = hari ini DAN jam_selesai sudah lewat,
+                // atau tanggal yang dipilih pasien sudah lewat dari hari ini
+                if ($tanggal < $today) {
+                    $sudahSelesai = true;
+                } elseif ($tanggal === $today && $nowTime >= $j->jam_selesai) {
+                    $sudahSelesai = true;
+                } elseif ($praktek && $praktek < $today) {
+                    $sudahSelesai = true;
+                }
+
                 return [
-                    'id'          => $j->id,
-                    'hari'        => $j->hari,
-                    'hari_label'  => $j->hari,
-                    'jam_mulai'   => substr($j->jam_mulai, 0, 5),
-                    'jam_selesai' => substr($j->jam_selesai, 0, 5),
-                    'kuota'       => $j->kuota,
-                    'sisa_kuota'  => max(0, $j->kuota - $terisi),
+                    'id'            => $j->id,
+                    'hari'          => $j->hari,
+                    'hari_label'    => $j->hari,
+                    'jam_mulai'     => substr($j->jam_mulai, 0, 5),
+                    'jam_selesai'   => substr($j->jam_selesai, 0, 5),
+                    'kuota'         => $j->kuota,
+                    'sisa_kuota'    => max(0, $j->kuota - $terisi),
+                    'sudah_selesai' => $sudahSelesai,
                 ];
             });
 
-        // Jika tidak ada jadwal di hari itu, kembalikan array kosong
         return response()->json($jadwals);
     }
 
@@ -81,14 +97,46 @@ class BookingController extends Controller
             return back()->with('error', 'Lengkapi profil pasien Anda terlebih dahulu.');
         }
 
-        $nomor = JanjiTemu::where('jadwal_dokter_id', $request->jadwal_dokter_id)
-                    ->whereDate('tanggal_booking', $request->tanggal_kunjungan)
-                    ->count() + 1;
+        // Cek jadwal masih aktif
+        $jadwal = JadwalDokter::where('id', $request->jadwal_dokter_id)
+            ->where('status', 'aktif')
+            ->first();
+
+        if (!$jadwal) {
+            return back()->withInput()->with('error', 'Jadwal dokter tidak ditemukan atau sudah tidak aktif.');
+        }
+
+        // Cek apakah jam praktek hari ini sudah selesai
+        $tanggal = $request->tanggal_kunjungan;
+        $today   = now()->toDateString();
+        $nowTime = now()->format('H:i:s');
+
+        if ($tanggal === $today && $nowTime >= $jadwal->jam_selesai) {
+            return back()->withInput()->with('error',
+                'Pendaftaran tidak dapat dilakukan. Jam praktik dr. ' .
+                $jadwal->dokter?->nama_dokter .
+                ' (' . substr($jadwal->jam_mulai, 0, 5) . '–' . substr($jadwal->jam_selesai, 0, 5) . ') sudah selesai hari ini.'
+            );
+        }
+
+        // Cek kuota
+        $terisi = JanjiTemu::where('jadwal_dokter_id', $jadwal->id)
+            ->whereDate('tanggal_booking', $tanggal)
+            ->whereNotIn('status', ['cancelled'])
+            ->count();
+
+        if ($terisi >= $jadwal->kuota) {
+            return back()->withInput()->with('error',
+                'Kuota jadwal dr. ' . $jadwal->dokter?->nama_dokter . ' untuk tanggal ini sudah penuh.'
+            );
+        }
+
+        $nomor = $terisi + 1;
 
         JanjiTemu::create([
             'pasien_id'         => $pasien->id,
-            'jadwal_dokter_id'  => $request->jadwal_dokter_id,
-            'tanggal_booking'   => $request->tanggal_kunjungan,
+            'jadwal_dokter_id'  => $jadwal->id,
+            'tanggal_booking'   => $tanggal,
             'nomor_antrian'     => $nomor,
             'keluhan'           => $request->keluhan ?? '-',
             'status'            => 'pending',

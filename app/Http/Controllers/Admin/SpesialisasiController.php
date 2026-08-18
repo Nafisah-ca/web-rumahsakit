@@ -30,13 +30,19 @@ class SpesialisasiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_spesialis' => 'required|string|max:100',
-            'deskripsi'      => 'nullable|string',
+            'nama_spesialis'  => 'required|string|max:100',
+            'deskripsi'       => 'nullable|string',
+            'icon'            => 'nullable|string|max:60',
+            'warna'           => 'nullable|string|max:30',
+            'estimasi_menit'  => 'nullable|integer|min:1|max:300',
         ]);
 
         Spesialisasi::create([
             'nama_spesialis' => $request->nama_spesialis,
             'deskripsi'      => $request->deskripsi,
+            'icon'           => $request->icon           ?? 'fa-stethoscope',
+            'warna'          => $request->warna          ?? 'blue',
+            'estimasi_menit' => $request->estimasi_menit ?? 15,
             'created_by'     => Auth::id(),
         ]);
 
@@ -51,13 +57,19 @@ class SpesialisasiController extends Controller
     public function update(Request $request, Spesialisasi $spesialisasi)
     {
         $request->validate([
-            'nama_spesialis' => 'required|string|max:100',
-            'deskripsi'      => 'nullable|string',
+            'nama_spesialis'  => 'required|string|max:100',
+            'deskripsi'       => 'nullable|string',
+            'icon'            => 'nullable|string|max:60',
+            'warna'           => 'nullable|string|max:30',
+            'estimasi_menit'  => 'nullable|integer|min:1|max:300',
         ]);
 
         $spesialisasi->update([
             'nama_spesialis' => $request->nama_spesialis,
             'deskripsi'      => $request->deskripsi,
+            'icon'           => $request->icon           ?? 'fa-stethoscope',
+            'warna'          => $request->warna          ?? 'blue',
+            'estimasi_menit' => $request->estimasi_menit ?? 15,
             'updated_by'     => Auth::id(),
         ]);
 

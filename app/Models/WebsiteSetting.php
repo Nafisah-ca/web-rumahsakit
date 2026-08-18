@@ -20,6 +20,7 @@ class WebsiteSetting extends Model
         'nama_rumahsakit', 'logo', 'favicon', 'tentang_kami', 'visi', 'misi', 'sejarah',
         'motto', 'sambutan_direktur', 'alamat', 'telepon', 'email', 'google_maps',
         'facebook', 'instagram', 'youtube', 'jam_operasional', 'jadwal_sholat',
+        'estimasi_antrian',
         'jumlah_spesialisasi', 'jumlah_mitra_asuransi',
         'footer', 'copyright', 'whatsapp', 'privacy_policy', 'syarat_ketentuan',
         'created_by', 'updated_by', 'deleted_by',

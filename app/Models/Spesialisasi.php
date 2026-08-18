@@ -15,11 +15,34 @@ class Spesialisasi extends Model
     const DELETED_AT = 'deleted_tm';
 
     protected $fillable = [
-        'nama_spesialis', 'deskripsi',
+        'nama_spesialis', 'deskripsi', 'icon', 'warna', 'estimasi_menit',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
-    protected $casts = [];
+    protected $casts = [
+        'estimasi_menit' => 'integer',
+    ];
+
+    /** Pilihan warna Tailwind yang tersedia untuk live antrian */
+    public const WARNA_OPTIONS = [
+        'blue'   => 'Biru',
+        'green'  => 'Hijau',
+        'red'    => 'Merah',
+        'indigo' => 'Indigo',
+        'purple' => 'Ungu',
+        'orange' => 'Oranye',
+        'pink'   => 'Pink',
+        'teal'   => 'Teal',
+        'yellow' => 'Kuning',
+        'gray'   => 'Abu-abu',
+    ];
+
+    /** Accessor: label estimasi tunggu siap pakai */
+    public function getEstimasiLabelAttribute(): string
+    {
+        $menit = $this->estimasi_menit ?? 15;
+        return "±{$menit} menit";
+    }
 
     // ─── Relasi ───────────────────────────────────────
 

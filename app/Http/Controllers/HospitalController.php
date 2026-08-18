@@ -306,12 +306,58 @@ class HospitalController extends Controller
 
     public function liveAntrian()
     {
-        $antrians = JanjiTemu::with(['jadwalDokter.dokter.spesialisasi', 'pasien.user'])
+        $setting     = \App\Models\WebsiteSetting::getSetting();
+        $estimasi    = json_decode($setting->estimasi_antrian ?? '{}', true) ?? [];
+        $interval    = (int) ($estimasi['interval_refresh'] ?? 30);
+        $pesanTunggu = $estimasi['pesan_tunggu'] ?? 'Harap menunggu, nomor Anda akan segera dipanggil.';
+
+        // Nama hari sesuai enum DB
+        $hariMap  = [1=>'Senin',2=>'Selasa',3=>'Rabu',4=>'Kamis',5=>'Jumat',6=>'Sabtu',7=>'Minggu'];
+        $namaHari = $hariMap[now()->dayOfWeekIso] ?? 'Senin';
+
+        // Spesialisasi dengan jadwal aktif hari ini
+        $spesialisasis = Spesialisasi::with([
+            'jadwalDokters' => fn($q) => $q->where('status','aktif')->where('hari', $namaHari),
+        ])->orderBy('nama_spesialis')->get();
+
+        // Semua janji temu hari ini (tanggal_booking = hari ini)
+        $antriansHariIni = JanjiTemu::with(['jadwalDokter'])
             ->whereDate('tanggal_booking', today())
-            ->whereIn('status', ['pending', 'approved'])
-            ->orderBy('nomor_antrian')->get();
+            ->whereIn('status', ['pending', 'approved', 'completed'])
+            ->orderBy('nomor_antrian')
+            ->get();
+
+        // Kelompokkan per spesialis_id langsung dari jadwal_dokter
+        $antrianPerPoli = $antriansHariIni->groupBy(
+            fn($jt) => $jt->jadwalDokter?->spesialis_id
+        );
+
+        // Bangun data poli
+        $poliData = $spesialisasis->map(function ($sp) use ($antrianPerPoli) {
+            $antrians       = $antrianPerPoli->get($sp->id, collect());
+            $totalAntrian   = $antrians->whereIn('status', ['pending','approved'])->count();
+            $nomorDipanggil = $antrians->where('status', 'completed')->max('nomor_antrian') ?? 0;
+            $estimasiMenit  = $sp->estimasi_menit ?? 15;
+            $estimasiTunggu = $totalAntrian > 0 ? "±{$estimasiMenit} menit" : '-';
+            $buka           = $sp->jadwalDokters->isNotEmpty();
+
+            return [
+                'id'              => $sp->id,
+                'nama'            => 'Poli ' . $sp->nama_spesialis,
+                'icon'            => $sp->icon ?? 'fa-stethoscope',
+                'warna'           => $sp->warna ?? 'blue',
+                'status'          => $buka ? 'Buka' : 'Tutup',
+                'total_antrian'   => $buka ? $totalAntrian : 0,
+                'nomor_dipanggil' => $buka ? $nomorDipanggil : 0,
+                'estimasi'        => $buka ? $estimasiTunggu : '-',
+            ];
+        });
+
         $banner = \App\Models\PageBanner::getForPage('live-antrian');
-        return view('live-antrian', compact('antrians', 'banner'));
+
+        return view('live-antrian', compact(
+            'poliData', 'banner', 'interval', 'pesanTunggu', 'setting'
+        ));
     }
 
     public function kebijakanPrivasi()

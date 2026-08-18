@@ -27,6 +27,13 @@
         </div>
         @endif
 
+        @if(session('error'))
+        <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3 text-red-700 text-sm">
+            <i class="fas fa-circle-exclamation mt-0.5 flex-shrink-0"></i>
+            <span>{{ session('error') }}</span>
+        </div>
+        @endif
+
         <form method="POST" action="{{ route('portal.booking.store') }}" class="space-y-6">
             @csrf
 
@@ -170,24 +177,42 @@ function loadJadwal() {
 
             let html = '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">';
             data.forEach(j => {
-                // DB baru: j.hari sudah string langsung ("Senin", "Selasa", dll)
-                const hariLabel = j.hari;
-                const isFullStr = j.sisa_kuota <= 0
-                    ? '<p class="text-xs text-red-500 font-semibold mt-1">Penuh</p>'
-                    : `<p class="text-xs text-green-600 font-semibold mt-1">Sisa: ${j.sisa_kuota} kuota</p>`;
+                const hariLabel    = j.hari;
+                const sudahSelesai = j.sudah_selesai === true;
+
+                let statusHtml;
+                if (sudahSelesai) {
+                    statusHtml = '<p class="text-xs text-gray-400 font-semibold mt-1">Jadwal selesai</p>';
+                } else if (j.sisa_kuota <= 0) {
+                    statusHtml = '<p class="text-xs text-red-500 font-semibold mt-1">Penuh</p>';
+                } else {
+                    statusHtml = `<p class="text-xs text-green-600 font-semibold mt-1">Sisa: ${j.sisa_kuota} kuota</p>`;
+                }
+
+                const disabled = sudahSelesai || j.sisa_kuota <= 0;
 
                 html += `
-                <label class="cursor-pointer ${j.sisa_kuota <= 0 ? 'opacity-50 pointer-events-none' : ''}">
+                <label class="cursor-pointer ${disabled ? 'opacity-50 pointer-events-none' : ''}">
                     <input type="radio" name="_jadwal_pick" value="${j.id}" class="sr-only peer"
-                        onchange="pickJadwal(${j.id})" ${j.sisa_kuota <= 0 ? 'disabled' : ''}>
+                        onchange="pickJadwal(${j.id})" ${disabled ? 'disabled' : ''}>
                     <div class="p-3 rounded-xl border-2 border-gray-200 peer-checked:border-green-500 peer-checked:bg-green-50 hover:border-green-300 transition-all text-center">
                         <p class="font-bold text-sm text-gray-800">${hariLabel}</p>
                         <p class="text-xs text-gray-500">${j.jam_mulai} – ${j.jam_selesai}</p>
-                        ${isFullStr}
+                        ${statusHtml}
                     </div>
                 </label>`;
             });
             html += '</div>';
+
+            // Cek apakah semua jadwal sudah selesai/penuh
+            const adaYangBisa = data.some(j => !j.sudah_selesai && j.sisa_kuota > 0);
+            if (!adaYangBisa) {
+                html += `<div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-amber-700 text-sm">
+                    <i class="fas fa-clock-rotate-left mt-0.5 flex-shrink-0"></i>
+                    <span>Semua jadwal pada hari ini sudah selesai atau penuh. Silakan pilih tanggal lain.</span>
+                </div>`;
+            }
+
             jadwalCont.innerHTML = html;
         })
         .catch(() => {

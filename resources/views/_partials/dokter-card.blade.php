@@ -1,7 +1,24 @@
 @php
-    $hariSekarang = now()->locale('id')->isoFormat('dddd');
-    $jadwals      = $d->jadwalAktif;
-    $available    = $jadwals->isNotEmpty() && $jadwals->contains('hari', $hariSekarang);
+    // Gunakan mapping integer yang pasti konsisten — tidak bergantung locale
+    $hariMap       = [1=>'Senin',2=>'Selasa',3=>'Rabu',4=>'Kamis',5=>'Jumat',6=>'Sabtu',7=>'Minggu'];
+    $hariSekarang  = $hariMap[now()->dayOfWeekIso];
+    $menitSekarang = (int) now()->format('H') * 60 + (int) now()->format('i');
+    $jadwals       = $d->jadwalAktif;
+
+    // (debug dihapus)
+
+    $available = $jadwals->isNotEmpty() && $jadwals->contains(function ($j) use ($hariSekarang, $menitSekarang) {
+        if ($j->hari !== $hariSekarang) return false;
+        $jamSelesaiStr = (string) $j->jam_selesai;
+        // Jika format Carbon object, konversi dulu
+        if ($j->jam_selesai instanceof \Carbon\Carbon) {
+            $selesai = $j->jam_selesai->hour * 60 + $j->jam_selesai->minute;
+        } else {
+            $parts   = explode(':', $jamSelesaiStr);
+            $selesai = (int)($parts[0] ?? 0) * 60 + (int)($parts[1] ?? 0);
+        }
+        return $menitSekarang < $selesai;
+    });
 
     // Overlay hijau sesuai tipe dokter
     $overlayColor = match($d->tipe_dokter ?? 'spesialis') {

@@ -1198,3 +1198,6 @@ class CmsController extends Controller
         return 'data:' . $mime . ';base64,' . base64_encode($fileData);
     }
 }
+
+// NOTE: Method antrianPoli dan updateAntrianPoli ditambahkan sebagai extension
+// karena file sudah lengkap. Gunakan trait atau pisahkan controller jika diperlukan.

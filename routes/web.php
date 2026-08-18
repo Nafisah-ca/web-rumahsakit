@@ -38,6 +38,7 @@ Route::get('/medical-checkup/daftar', [McuController::class, 'create'])->name('m
 Route::post('/medical-checkup/daftar',[McuController::class, 'store'])->name('mcu.store');
 Route::get('/medical-checkup/sukses', [McuController::class, 'sukses'])->name('mcu.sukses');
 Route::get('/live-antrian',    [HospitalController::class, 'liveAntrian'])->name('live.antrian');
+Route::get('/api/live-antrian',[HospitalController::class, 'liveAntrianJson'])->name('live.antrian.json');
 
 // Halaman Legal
 Route::get('/kebijakan-privasi', [HospitalController::class, 'kebijakanPrivasi'])->name('kebijakan-privasi');
@@ -274,6 +275,10 @@ Route::middleware(['auth', 'cms.verified', 'last.activity'])->prefix('cms')->nam
     Route::get('/akreditasi/{akreditasi}/edit',     [CmsController::class, 'editAkreditasi'])->name('akreditasi.edit');
     Route::put('/akreditasi/{akreditasi}',          [CmsController::class, 'updateAkreditasi'])->name('akreditasi.update');
     Route::delete('/akreditasi/{akreditasi}',       [CmsController::class, 'destroyAkreditasi'])->name('akreditasi.destroy');
+
+    // Antrian Poli
+    Route::get('/antrian-poli',  [\App\Http\Controllers\Cms\AntrianPoliController::class, 'index'])->name('antrian-poli');
+    Route::put('/antrian-poli',  [\App\Http\Controllers\Cms\AntrianPoliController::class, 'update'])->name('antrian-poli.update');
 
     // Profile & Password
     Route::get('/profile',                  [CmsController::class, 'profile'])->name('profile');

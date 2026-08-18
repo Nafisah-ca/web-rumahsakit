@@ -75,23 +75,7 @@
             </form>
         </div>
 
-        {{-- Tombol Buat / Lihat Transaksi --}}
-        @if(in_array($janjiTemu->status, ['approved','completed']))
-        @php $sudahAdaTrx = \App\Models\Transaksi::where('janji_temu_id',$janjiTemu->id)->exists(); @endphp
-        @if(!$sudahAdaTrx)
-        <a href="{{ route('admin.transaksi.create') }}?janji_temu_id={{ $janjiTemu->id }}"
-           style="display:flex;align-items:center;justify-content:center;gap:8px;background:#7c3aed;color:#fff;font-weight:700;font-size:13px;padding:12px;border-radius:10px;text-decoration:none;transition:background .2s"
-           onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#7c3aed'">
-            <i class="fas fa-receipt"></i> Buat Transaksi
-        </a>
-        @else
-        @php $trx = \App\Models\Transaksi::where('janji_temu_id',$janjiTemu->id)->first(); @endphp
-        <a href="{{ route('admin.transaksi.show', $trx) }}"
-           style="display:flex;align-items:center;justify-content:center;gap:8px;background:#16a34a;color:#fff;font-weight:700;font-size:13px;padding:12px;border-radius:10px;text-decoration:none">
-            <i class="fas fa-receipt"></i> Lihat Transaksi
-        </a>
-        @endif
-        @endif
+        {{-- Tombol Transaksi dinonaktifkan (fitur belum tersedia) --}}
 
         <a href="{{ route('admin.booking') }}" class="btn btn-secondary" style="justify-content:center">
             <i class="fas fa-arrow-left"></i> Kembali ke Daftar

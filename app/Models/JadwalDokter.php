@@ -81,6 +81,26 @@ class JadwalDokter extends Model
         return $query->where('hari', $hari);
     }
 
+    /**
+     * Scope: jadwal yang belum selesai hari ini.
+     * Jadwal dianggap masih bisa didaftari jika:
+     *   - tanggal_praktek > hari ini, ATAU
+     *   - tanggal_praktek = hari ini DAN jam_selesai > sekarang
+     */
+    public function scopeBelumSelesai(Builder $query): Builder
+    {
+        $today    = now()->toDateString();
+        $nowTime  = now()->format('H:i:s');
+
+        return $query->where(function (Builder $q) use ($today, $nowTime) {
+            $q->whereDate('tanggal_praktek', '>', $today)
+              ->orWhere(function (Builder $q2) use ($today, $nowTime) {
+                  $q2->whereDate('tanggal_praktek', $today)
+                     ->where('jam_selesai', '>', $nowTime);
+              });
+        });
+    }
+
     // ─── Accessors ────────────────────────────────────
 
     public function getNamaHariAttribute(): string
@@ -99,5 +119,21 @@ class JadwalDokter extends Model
     public function getIsAktifAttribute(): bool
     {
         return $this->status === 'aktif';
+    }
+
+    /**
+     * Apakah jadwal ini sudah lewat (tidak bisa didaftari lagi)?
+     * True jika tanggal_praktek sudah lewat, atau hari ini tapi jam_selesai sudah lewat.
+     */
+    public function getSudahSelesaiAttribute(): bool
+    {
+        $today   = now()->toDateString();
+        $praktek = $this->tanggal_praktek?->toDateString();
+
+        if (!$praktek) return false;
+        if ($praktek < $today) return true;
+        if ($praktek === $today && now()->format('H:i:s') >= $this->jam_selesai) return true;
+
+        return false;
     }
 }
