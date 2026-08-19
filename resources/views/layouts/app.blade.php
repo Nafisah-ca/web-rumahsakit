@@ -696,7 +696,6 @@
 {{-- Spacer bawah agar konten tidak tertutup bottom nav --}}
 <div id="bottom-nav-spacer" style="display:none;height:60px"></div>
 
-@stack('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // Navbar scroll
