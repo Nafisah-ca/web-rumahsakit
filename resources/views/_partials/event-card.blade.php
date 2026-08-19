@@ -25,7 +25,8 @@
         </div>
 
         {{-- Tanggal --}}
-        <div class="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-xl">
+        <div class="absolute top-3 right-3 flex items-center gap-1.5 bg-white text-gray-800 text-xs font-black px-2.5 py-1.5 rounded-lg shadow-md">
+            <i class="fas fa-calendar-alt text-purple-600 text-[11px]"></i>
             {{ $ev->tanggal_event?->format('d M Y') }}
         </div>
     </div>

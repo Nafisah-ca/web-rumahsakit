@@ -1,4 +1,126 @@
 @extends('layouts.app')
+
+@push('styles')
+<style>
+/* ── CURSOR GLOW ─────────────────────────────────────── */
+#cursor-glow {
+    position: fixed;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(circle, rgba(0,176,79,.07) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: opacity .4s;
+}
+
+/* ── HERO TEKS ANIMASI ───────────────────────────────── */
+.hero-word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .5s ease, transform .5s ease;
+}
+.hero-word.in { opacity: 1; transform: translateY(0); }
+
+/* ── COUNTER ANIMATED ────────────────────────────────── */
+.stat-number { transition: color .3s; }
+
+/* ── CARD TILT ───────────────────────────────────────── */
+.tilt-card {
+    transition: transform .2s ease, box-shadow .2s ease;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* ── SPESIALISASI PILL WAVE ──────────────────────────── */
+.spesialis-pill {
+    animation: pill-in .4s both;
+}
+@keyframes pill-in {
+    from { opacity:0; transform:scale(.85) translateY(8px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+}
+
+/* ── SECTION LABEL TYPEWRITER ────────────────────────── */
+.label-typed::after {
+    content: '|';
+    animation: blink-cur .7s step-end infinite;
+    margin-left: 1px;
+    font-weight: 300;
+    opacity: .6;
+}
+@keyframes blink-cur { 0%,100%{opacity:.6;} 50%{opacity:0;} }
+
+/* ── SCROLL PROGRESS BAR ─────────────────────────────── */
+#scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00b04f, #00d46a);
+    z-index: 9999;
+    width: 0%;
+    transition: width .1s linear;
+    border-radius: 0 2px 2px 0;
+}
+
+/* ── QUICK MENU RIPPLE ───────────────────────────────── */
+.quick-menu-item { position: relative; overflow: hidden; }
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(0,176,79,.18);
+    transform: scale(0);
+    animation: ripple-anim .55s linear;
+    pointer-events: none;
+}
+@keyframes ripple-anim {
+    to { transform: scale(3.5); opacity: 0; }
+}
+
+/* ── ULASAN CARD ENTER ───────────────────────────────── */
+.ulasan-card-home {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .5s ease, transform .5s ease, box-shadow .2s ease;
+}
+.ulasan-card-home.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+.ulasan-card-home:hover {
+    box-shadow: 0 12px 32px rgba(0,176,79,.1);
+    transform: translateY(-4px) !important;
+}
+
+/* ── STAT NUMBER PULSE ───────────────────────────────── */
+@keyframes num-pop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.12); }
+    100% { transform: scale(1); }
+}
+.stat-pop { animation: num-pop .4s ease; }
+
+/* ── PROMO & CARD SHINE ──────────────────────────────── */
+.shine-card { position: relative; overflow: hidden; }
+.shine-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -75%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.18) 50%, transparent 60%);
+    transform: skewX(-15deg);
+    transition: left .6s ease;
+    pointer-events: none;
+}
+.shine-card:hover::after { left: 125%; }
+</style>
+@endpush
+
 @section('content')
 
 {{-- ===== HERO SLIDER ===== --}}
@@ -194,7 +316,7 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 fade-up">
             @forelse($promos as $promo)
-            <a href="{{ route('promo.detail', $promo) }}" class="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all">
+            <a href="{{ route('promo.detail', $promo) }}" class="shine-card tilt-card group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all">
                 <div class="relative flex-shrink-0" style="height:160px; background: linear-gradient(135deg, #00521f, #00b04f)">
                     @if($promo->gambar)
                     <img src="{{ Storage::url($promo->gambar) }}" alt="{{ $promo->judul }}"
@@ -254,7 +376,7 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 fade-up">
             @forelse($events as $ev)
-            <a href="{{ route('event.detail', $ev) }}" class="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all">
+            <a href="{{ route('event.detail', $ev) }}" class="shine-card tilt-card group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all">
                 <div class="relative flex-shrink-0" style="height:160px; background: linear-gradient(135deg,#4c1d95,#7c3aed)">
                     @if($ev->gambar)
                     <img src="{{ Storage::url($ev->gambar) }}" alt="{{ $ev->judul }}" class="absolute inset-0 w-full h-full object-cover">
@@ -266,7 +388,8 @@
                     <div class="absolute top-3 left-3">
                         <span class="bg-purple-600 text-white text-[10px] font-black px-2 py-1 rounded-full">EVENT</span>
                     </div>
-                    <div class="absolute bottom-3 right-3 bg-black/50 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+                    <div class="absolute top-3 right-3 flex items-center gap-1.5 bg-white text-gray-800 text-xs font-black px-2.5 py-1.5 rounded-lg shadow-md">
+                        <i class="fas fa-calendar-alt text-green-600 text-[11px]"></i>
                         {{ $ev->tanggal_event?->format('d M Y') }}
                     </div>
                 </div>
@@ -313,7 +436,7 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 fade-up">
             @forelse($informasis as $info)
-            <a href="{{ route('informasi.detail', $info) }}" class="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all">
+            <a href="{{ route('informasi.detail', $info) }}" class="shine-card tilt-card group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all">
                 <div class="relative flex-shrink-0" style="height:160px; background:linear-gradient(135deg,#1e3a5f,#0284c7)">
                     @if($info->gambar)
                     <img src="{{ Storage::url($info->gambar) }}" alt="{{ $info->judul }}" class="absolute inset-0 w-full h-full object-cover">
@@ -403,7 +526,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 fade-up">
             @foreach($ulasanHome as $u)
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all flex flex-col">
+            <div class="ulasan-card-home bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col">
                 <div class="flex items-start justify-between mb-3">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -438,3 +561,181 @@
 @endif
 
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── 1. SCROLL PROGRESS BAR ──────────────────────────────────────
+    const bar = document.createElement('div');
+    bar.id = 'scroll-progress';
+    document.body.prepend(bar);
+    window.addEventListener('scroll', function () {
+        const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+        bar.style.width = Math.min(pct, 100) + '%';
+    }, { passive: true });
+
+
+    // ── 2. CURSOR GLOW (desktop only) ──────────────────────────────
+    if (window.innerWidth > 1024) {
+        const glow = document.createElement('div');
+        glow.id = 'cursor-glow';
+        document.body.appendChild(glow);
+        let mx = -999, my = -999;
+        document.addEventListener('mousemove', function (e) {
+            mx = e.clientX; my = e.clientY;
+            glow.style.left = mx + 'px';
+            glow.style.top  = my  + window.scrollY + 'px';
+        }, { passive: true });
+    }
+
+
+    // ── 3. QUICK MENU RIPPLE ────────────────────────────────────────
+    document.querySelectorAll('.quick-menu-item').forEach(function (item) {
+        item.addEventListener('click', function (e) {
+            const r  = document.createElement('span');
+            const sz = Math.max(item.offsetWidth, item.offsetHeight);
+            const rc = item.getBoundingClientRect();
+            r.className = 'ripple';
+            r.style.cssText = `width:${sz}px;height:${sz}px;left:${e.clientX - rc.left - sz/2}px;top:${e.clientY - rc.top - sz/2}px`;
+            item.appendChild(r);
+            r.addEventListener('animationend', () => r.remove());
+        });
+    });
+
+
+    // ── 4. HERO TEKS ANIMASI KATA PER KATA ─────────────────────────
+    function animateHeroText() {
+        const active = document.querySelector('.slide.active h1');
+        if (!active) return;
+        const raw   = active.textContent.trim();
+        const words = raw.split(/\s+/);
+        active.innerHTML = words.map(w =>
+            `<span class="hero-word">${w}</span>`
+        ).join(' ');
+        active.querySelectorAll('.hero-word').forEach(function (el, i) {
+            setTimeout(() => el.classList.add('in'), 80 + i * 80);
+        });
+    }
+    setTimeout(animateHeroText, 200);
+
+    // Re-run setelah slide berganti
+    const origGoTo = window.goTo;
+    if (typeof origGoTo === 'function') {
+        window.goTo = function (n) {
+            origGoTo(n);
+            setTimeout(animateHeroText, 300);
+        };
+    }
+
+
+    // ── 5. CARD 3D TILT ─────────────────────────────────────────────
+    document.querySelectorAll('.tilt-card').forEach(function (card) {
+        card.addEventListener('mousemove', function (e) {
+            const r  = card.getBoundingClientRect();
+            const cx = (e.clientX - r.left)  / r.width  - 0.5;
+            const cy = (e.clientY - r.top)   / r.height - 0.5;
+            card.style.transform = `perspective(600px) rotateY(${cx * 6}deg) rotateX(${-cy * 6}deg) translateY(-4px)`;
+        });
+        card.addEventListener('mouseleave', function () {
+            card.style.transform = '';
+        });
+    });
+
+
+    // ── 6. ULASAN CARD STAGGERED ENTRANCE ──────────────────────────
+    const ulasanCards = document.querySelectorAll('.ulasan-card-home');
+    if (ulasanCards.length) {
+        const obs = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    const cards = entry.target.querySelectorAll('.ulasan-card-home');
+                    cards.forEach(function (c, i) {
+                        setTimeout(() => c.classList.add('visible'), i * 120);
+                    });
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        const grid = ulasanCards[0]?.closest('.grid');
+        if (grid) obs.observe(grid);
+    }
+
+
+    // ── 7. RATING BAR ANIMASI LEBAR ────────────────────────────────
+    const ratingBars = document.querySelectorAll('.rating-bar-fill');
+    if (ratingBars.length) {
+        const obs2 = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    entry.target.querySelectorAll('.rating-bar-fill').forEach(function (bar) {
+                        const target = bar.dataset.width || '0';
+                        bar.style.width = '0%';
+                        setTimeout(() => { bar.style.transition = 'width 1s ease'; bar.style.width = target + '%'; }, 100);
+                    });
+                    obs2.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+        ratingBars.forEach(b => {
+            const container = b.closest('.fade-up');
+            if (container) obs2.observe(container);
+        });
+    }
+
+
+    // ── 8. SPESIALISASI PILL STAGGER ────────────────────────────────
+    document.querySelectorAll('.spesialis-pill').forEach(function (pill, i) {
+        pill.style.animationDelay = (i * 50) + 'ms';
+    });
+
+
+    // ── 9. SECTION LABEL SUBTLE ENTRANCE ────────────────────────────
+    const labelObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.style.transition = 'opacity .5s ease, letter-spacing .5s ease';
+                entry.target.style.opacity    = '1';
+                entry.target.style.letterSpacing = '.12em';
+                labelObs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.section-label').forEach(function (lbl) {
+        lbl.style.opacity       = '0';
+        lbl.style.letterSpacing = '.04em';
+        labelObs.observe(lbl);
+    });
+
+
+    // ── 10. SMOOTH NUMBER COUNT UNTUK STATS ─────────────────────────
+    const statObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.querySelectorAll('.stat-number').forEach(function (el) {
+                const raw    = el.textContent.replace(/[^0-9]/g, '');
+                const target = parseInt(raw) || 0;
+                const suffix = el.textContent.replace(/[0-9]/g, '').trim();
+                if (!target) return;
+                let curr = 0;
+                const step = Math.ceil(target / 40);
+                const timer = setInterval(function () {
+                    curr = Math.min(curr + step, target);
+                    el.textContent = curr.toLocaleString('id-ID') + suffix;
+                    if (curr >= target) {
+                        clearInterval(timer);
+                        el.classList.add('stat-pop');
+                        el.addEventListener('animationend', () => el.classList.remove('stat-pop'), { once: true });
+                    }
+                }, 30);
+            });
+            statObs.unobserve(entry.target);
+        });
+    }, { threshold: 0.4 });
+    const statsSection = document.getElementById('stats-section');
+    if (statsSection) statObs.observe(statsSection);
+
+});
+</script>
+@endpush

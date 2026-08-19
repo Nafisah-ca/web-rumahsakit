@@ -329,14 +329,29 @@
     border-bottom-color: #16a34a !important;
     color: #15803d !important;
 }
-/* Grid layanan — paksa 3 kolom di desktop */
+/* Grid layanan — paksa 3 kolom di desktop, tinggi card konsisten */
 .layanan-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.25rem;
+    align-items: stretch;
 }
 @media (max-width: 1023px) { .layanan-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 639px)  { .layanan-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+
+/* Paksa semua card layanan tinggi sama */
+.layanan-grid > div {
+    display: flex;
+    flex-direction: column;
+}
+.layanan-grid > div .p-5 {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.layanan-grid > div .p-5 p.text-gray-500 {
+    flex: 1;
+}
 </style>
 @endpush
 
