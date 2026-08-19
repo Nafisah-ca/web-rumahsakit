@@ -110,3 +110,160 @@
 </section>
 
 @endsection
+
+@push('styles')
+<style>
+/* Reading progress bar */
+#read-progress { position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#16a34a,#22d3ee);z-index:9999;width:0%;transition:width .1s linear;border-radius:0 2px 2px 0; }
+
+/* TOC */
+#toc-sidebar { position:sticky;top:100px;max-height:calc(100vh - 130px);overflow-y:auto; }
+#toc-sidebar a { display:block;font-size:12px;color:#64748b;padding:5px 12px;border-left:2px solid #e2e8f0;margin-bottom:2px;transition:all .2s;text-decoration:none;line-height:1.4; }
+#toc-sidebar a:hover, #toc-sidebar a.active { color:#16a34a;border-left-color:#16a34a;background:#f0fdf4;border-radius:0 6px 6px 0; }
+
+/* Section headings animate */
+.prose h2 { transition:color .3s; }
+.prose h2.in-view { color:#15803d !important; }
+
+/* Fade in items */
+.fade-item { opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease; }
+.fade-item.visible { opacity:1;transform:translateY(0); }
+
+/* Smooth highlight on hover */
+.prose li { transition:background .2s;border-radius:6px;padding:2px 4px;margin-left:-4px; }
+.prose li:hover { background:#f0fdf4; }
+
+/* Back to top button */
+#back-top { position:fixed;bottom:100px;left:24px;width:40px;height:40px;background:#15803d;color:#fff;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(21,128,61,.35);opacity:0;transform:translateY(10px);transition:all .3s;z-index:50; }
+#back-top.show { opacity:1;transform:translateY(0); }
+#back-top:hover { background:#166534;transform:translateY(-2px); }
+</style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ── 1. READING PROGRESS BAR ──────────────────────────────────────
+    const bar = document.createElement('div');
+    bar.id = 'read-progress';
+    document.body.prepend(bar);
+    window.addEventListener('scroll', () => {
+        const total   = document.documentElement.scrollHeight - window.innerHeight;
+        const current = window.scrollY;
+        bar.style.width = (total > 0 ? (current / total) * 100 : 0) + '%';
+    }, { passive: true });
+
+    // ── 2. TABLE OF CONTENTS ─────────────────────────────────────────
+    const prose     = document.querySelector('.prose');
+    const headings  = prose ? prose.querySelectorAll('h2') : [];
+    if (headings.length > 3) {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'display:flex;gap:32px;align-items:flex-start;max-width:900px;margin:0 auto';
+
+        // Bungkus konten existing
+        const contentWrap = document.createElement('div');
+        contentWrap.style.flex = '1';
+        prose.parentNode.insertBefore(wrap, prose);
+        wrap.appendChild(contentWrap);
+        contentWrap.appendChild(prose);
+
+        // TOC sidebar
+        const toc = document.createElement('aside');
+        toc.id    = 'toc-sidebar';
+        toc.style.cssText = 'width:200px;flex-shrink:0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;font-size:12px;';
+        toc.innerHTML = '<p style="font-weight:700;color:#0f172a;font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding-left:12px">Daftar Isi</p>';
+
+        headings.forEach((h, i) => {
+            if (!h.id) h.id = 'section-' + i;
+            const a = document.createElement('a');
+            a.href        = '#' + h.id;
+            a.textContent = h.textContent;
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+            toc.appendChild(a);
+        });
+        wrap.appendChild(toc);
+
+        // Highlight active TOC item on scroll
+        const tocLinks = toc.querySelectorAll('a');
+        const headingObs = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                const id = entry.target.id;
+                const link = toc.querySelector(`a[href="#${id}"]`);
+                if (entry.isIntersecting) {
+                    tocLinks.forEach(l => l.classList.remove('active'));
+                    if (link) link.classList.add('active');
+                    entry.target.classList.add('in-view');
+                } else {
+                    entry.target.classList.remove('in-view');
+                }
+            });
+        }, { rootMargin: '-20% 0px -70% 0px' });
+        headings.forEach(h => headingObs.observe(h));
+    }
+
+    // ── 3. SCROLL REVEAL FADE ────────────────────────────────────────
+    const fadeObs = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                fadeObs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.prose h2, .prose p, .prose ul, .prose li').forEach((el, i) => {
+        el.classList.add('fade-item');
+        el.style.transitionDelay = Math.min(i * 30, 300) + 'ms';
+        fadeObs.observe(el);
+    });
+
+    // ── 4. BACK TO TOP BUTTON ────────────────────────────────────────
+    const backBtn = document.createElement('button');
+    backBtn.id    = 'back-top';
+    backBtn.innerHTML = '<i class="fas fa-arrow-up text-sm"></i>';
+    backBtn.title = 'Kembali ke atas';
+    document.body.appendChild(backBtn);
+    window.addEventListener('scroll', () => {
+        backBtn.classList.toggle('show', window.scrollY > 400);
+    }, { passive: true });
+    backBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // ── 5. CONTACT CARD HIGHLIGHT ────────────────────────────────────
+    const contactBox = document.querySelector('.bg-green-50.border-green-200');
+    if (contactBox) {
+        contactBox.style.transition = 'transform .3s, box-shadow .3s';
+        contactBox.addEventListener('mouseenter', () => {
+            contactBox.style.transform  = 'translateY(-3px)';
+            contactBox.style.boxShadow  = '0 8px 24px rgba(21,128,61,.15)';
+        });
+        contactBox.addEventListener('mouseleave', () => {
+            contactBox.style.transform  = '';
+            contactBox.style.boxShadow  = '';
+        });
+    }
+
+    // ── 6. BOTTOM BUTTONS RIPPLE ─────────────────────────────────────
+    document.querySelectorAll('.mt-8 a').forEach(btn => {
+        btn.style.position = 'relative';
+        btn.style.overflow = 'hidden';
+        btn.addEventListener('click', function(e) {
+            const r    = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            r.style.cssText = `position:absolute;width:${size}px;height:${size}px;background:rgba(255,255,255,.3);border-radius:50%;transform:scale(0);animation:ripple .5s linear;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px;pointer-events:none`;
+            this.appendChild(r);
+            setTimeout(() => r.remove(), 600);
+        });
+    });
+
+});
+</script>
+<style>
+@keyframes ripple { to { transform: scale(4); opacity: 0; } }
+@media(max-width:768px) { #toc-sidebar { display:none; } }
+</style>
+@endpush

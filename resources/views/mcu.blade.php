@@ -94,3 +94,136 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ── 1. SCROLL REVEAL ─────────────────────────────────────────────
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity    = '1';
+                    entry.target.style.transform  = 'translateY(0) scale(1)';
+                }, entry.target.dataset.delay || 0);
+                revealObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.card-base').forEach((el, i) => {
+        el.style.cssText += 'opacity:0;transform:translateY(40px) scale(0.97);transition:all 0.55s cubic-bezier(.25,.8,.25,1);';
+        el.dataset.delay  = i * 120;
+        revealObserver.observe(el);
+    });
+
+    // ── 2. HARGA COUNTER ANIMATION ───────────────────────────────────
+    document.querySelectorAll('.price-counter').forEach(el => {
+        const target = parseInt(el.dataset.target.replace(/\D/g, '')) || 0;
+        if (target === 0) return;
+        const duration = 1200;
+        const step     = 16;
+        let   current  = 0;
+        const obs = new IntersectionObserver(entries => {
+            if (!entries[0].isIntersecting) return;
+            obs.disconnect();
+            const timer = setInterval(() => {
+                current += Math.ceil(target / (duration / step));
+                if (current >= target) { current = target; clearInterval(timer); }
+                el.textContent = 'Rp ' + current.toLocaleString('id-ID');
+            }, step);
+        }, { threshold: 0.5 });
+        obs.observe(el);
+    });
+
+    // ── 3. CARD 3D TILT ──────────────────────────────────────────────
+    document.querySelectorAll('.card-base').forEach(card => {
+        card.addEventListener('mousemove', e => {
+            const rect = card.getBoundingClientRect();
+            const x    = ((e.clientX - rect.left) / rect.width  - 0.5) * 14;
+            const y    = ((e.clientY - rect.top)  / rect.height - 0.5) * -14;
+            card.style.transform = `perspective(800px) rotateY(${x}deg) rotateX(${y}deg) translateY(-6px) scale(1.025)`;
+            card.style.boxShadow = `${-x * 1.5}px ${y * 1.5 + 20}px 50px rgba(0,0,0,.13)`;
+            card.style.transition = 'none';
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform  = 'perspective(800px) rotateY(0) rotateX(0) translateY(0) scale(1)';
+            card.style.boxShadow  = '';
+            card.style.transition = 'all 0.4s cubic-bezier(.25,.8,.25,1)';
+        });
+    });
+
+    // ── 4. PAKET HIGHLIGHT PULSE ─────────────────────────────────────
+    const popular = document.querySelector('.ring-2.ring-purple-500');
+    if (popular) {
+        let pulse = 0;
+        setInterval(() => {
+            pulse = !pulse;
+            popular.style.boxShadow = pulse
+                ? '0 0 0 4px rgba(168,85,247,.25), 0 20px 60px rgba(168,85,247,.2)'
+                : '0 0 0 2px rgba(168,85,247,.4)';
+        }, 1800);
+    }
+
+    // ── 5. DAFTAR BUTTON RIPPLE ──────────────────────────────────────
+    document.querySelectorAll('a[href*="daftar"]').forEach(btn => {
+        btn.style.position = 'relative';
+        btn.style.overflow = 'hidden';
+        btn.addEventListener('click', function(e) {
+            const ripple  = document.createElement('span');
+            const rect    = this.getBoundingClientRect();
+            const size    = Math.max(rect.width, rect.height);
+            ripple.style.cssText = `
+                position:absolute;width:${size}px;height:${size}px;
+                background:rgba(255,255,255,.35);border-radius:50%;
+                transform:scale(0);animation:ripple .55s linear;
+                left:${e.clientX - rect.left - size/2}px;
+                top:${e.clientY - rect.top - size/2}px;
+                pointer-events:none;
+            `;
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        });
+    });
+
+    // ── 6. CHECKLIST ITEMS STAGGER ───────────────────────────────────
+    const checkObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            entry.target.querySelectorAll('li').forEach((li, i) => {
+                li.style.cssText = `opacity:0;transform:translateX(-16px);transition:all .35s ease ${i * 60}ms`;
+                requestAnimationFrame(() => {
+                    li.style.opacity   = '1';
+                    li.style.transform = 'translateX(0)';
+                });
+            });
+            checkObserver.unobserve(entry.target);
+        });
+    }, { threshold: 0.2 });
+
+    document.querySelectorAll('ul.space-y-2').forEach(ul => {
+        checkObserver.observe(ul);
+    });
+
+    // ── 7. SECTION FADE IN ───────────────────────────────────────────
+    const sectionObs = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            entry.target.style.opacity   = '1';
+            entry.target.style.transform = 'translateY(0)';
+            sectionObs.unobserve(entry.target);
+        });
+    }, { threshold: 0.05 });
+
+    document.querySelectorAll('section').forEach(s => {
+        s.style.cssText += 'opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;';
+        sectionObs.observe(s);
+    });
+
+});
+</script>
+<style>
+@keyframes ripple { to { transform: scale(4); opacity: 0; } }
+</style>
+@endpush
