@@ -1,4 +1,58 @@
 @extends('layouts.app')
+
+@push('styles')
+<style>
+/* ── BASE STATE: elemen sebelum animasi ────────────────────── */
+.ao-fade-up {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.ao-fade-left {
+    opacity: 0;
+    transform: translateX(-28px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.ao-fade-right {
+    opacity: 0;
+    transform: translateX(28px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.ao-scale {
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+/* ── VISIBLE STATE ─────────────────────────────────────────── */
+.ao-fade-up.ao-in,
+.ao-fade-left.ao-in,
+.ao-fade-right.ao-in,
+.ao-scale.ao-in {
+    opacity: 1;
+    transform: none;
+}
+/* ── Stagger delays ────────────────────────────────────────── */
+.ao-delay-1 { transition-delay: 0.08s; }
+.ao-delay-2 { transition-delay: 0.18s; }
+.ao-delay-3 { transition-delay: 0.28s; }
+.ao-delay-4 { transition-delay: 0.38s; }
+.ao-delay-5 { transition-delay: 0.48s; }
+.ao-delay-6 { transition-delay: 0.58s; }
+.ao-delay-7 { transition-delay: 0.68s; }
+.ao-delay-8 { transition-delay: 0.78s; }
+
+/* ── Penghargaan card hover lift ───────────────────────────── */
+.award-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.award-card:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+    border-color: #86efac;
+}
+</style>
+@endpush
+
 @section('content')
 
 {{-- Hero --}}
@@ -11,7 +65,7 @@
 <section class="py-16 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div class="fade-up">
+            <div class="ao-fade-left">
                 <span class="section-label">Siapa Kami</span>
 
                 {{-- Teks 1: Judul Utama (field: nama_rumahsakit) --}}
@@ -41,7 +95,7 @@
                         ['50','Mitra Asuransi','fa-handshake'],
                         ['1993','Tahun Berdiri','fa-calendar'],
                     ] as [$val,$lbl,$ico])
-                    <div class="flex items-center gap-3 bg-green-50 rounded-xl p-4 border border-green-100">
+                    <div class="ao-scale ao-delay-{{ $loop->index + 1 }} flex items-center gap-3 bg-green-50 rounded-xl p-4 border border-green-100">
                         <div class="w-10 h-10 rounded-lg bg-green-600 flex items-center justify-center flex-shrink-0">
                             <i class="fas {{ $ico }} text-white text-sm"></i>
                         </div>
@@ -53,7 +107,7 @@
                     @endforeach
                 </div>
             </div>
-            <div class="fade-up">
+            <div class="ao-fade-right">
                 <div class="relative rounded-2xl overflow-hidden shadow-2xl" style="background: linear-gradient(135deg, #00521f, #00b04f); min-height: 380px;">
                     <div class="absolute inset-0 flex items-center justify-center opacity-10">
                         <i class="fas fa-hospital text-white" style="font-size: 18rem;"></i>
@@ -85,11 +139,11 @@
 @if($setting->sambutan_direktur ?? null)
 <section class="py-16 bg-gray-50">
     <div class="max-w-screen-xl mx-auto px-4">
-        <div class="text-center mb-10 fade-up">
+        <div class="text-center mb-10 ao-fade-up">
             <span class="section-label">Dari Pimpinan Kami</span>
             <h2 class="section-title">Sambutan <span>Direktur</span></h2>
         </div>
-        <div class="max-w-4xl mx-auto fade-up">
+        <div class="max-w-4xl mx-auto ao-fade-up ao-delay-2">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="grid grid-cols-1 md:grid-cols-3">
                     {{-- Foto / Ikon Direktur --}}
@@ -119,12 +173,12 @@
 {{-- Visi Misi --}}
 <section class="py-14 bg-gray-50">
     <div class="max-w-screen-xl mx-auto px-4">
-        <div class="text-center mb-10 fade-up">
+        <div class="text-center mb-10 ao-fade-up">
             <span class="section-label">Arah & Tujuan</span>
             <h2 class="section-title">Visi, Misi & <span>Nilai</span></h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white rounded-2xl p-7 shadow-sm border-t-4 border-green-500 fade-up" style="transition-delay:.1s">
+            <div class="bg-white rounded-2xl p-7 shadow-sm border-t-4 border-green-500 ao-fade-up ao-delay-1">
                 <div class="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center mb-5">
                     <i class="fas fa-eye text-green-600 text-2xl"></i>
                 </div>
@@ -137,7 +191,7 @@
                     @endif
                 </p>
             </div>
-            <div class="bg-white rounded-2xl p-7 shadow-sm border-t-4 border-blue-500 fade-up" style="transition-delay:.2s">
+            <div class="bg-white rounded-2xl p-7 shadow-sm border-t-4 border-blue-500 ao-fade-up ao-delay-2">
                 <div class="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center mb-5">
                     <i class="fas fa-bullseye text-blue-600 text-2xl"></i>
                 </div>
@@ -163,7 +217,7 @@
                 </ul>
                 @endif
             </div>
-            <div class="bg-white rounded-2xl p-7 shadow-sm border-t-4 border-purple-500 fade-up" style="transition-delay:.3s">
+            <div class="bg-white rounded-2xl p-7 shadow-sm border-t-4 border-purple-500 ao-fade-up ao-delay-3">
                 <div class="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center mb-5">
                     <i class="fas fa-heart text-purple-600 text-2xl"></i>
                 </div>
@@ -194,11 +248,11 @@
 @if($setting->sejarah ?? null)
 <section class="py-16 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
-        <div class="text-center mb-10 fade-up">
+        <div class="text-center mb-10 ao-fade-up">
             <span class="section-label">Perjalanan Kami</span>
             <h2 class="section-title">Sejarah <span>Rumah Sakit</span></h2>
         </div>
-        <div class="max-w-4xl mx-auto fade-up">
+        <div class="max-w-4xl mx-auto ao-fade-up ao-delay-2">
             <div class="relative pl-8 border-l-4 border-green-500">
                 <div class="absolute -left-3 top-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
                     <i class="fas fa-landmark text-white text-xs"></i>
@@ -217,11 +271,11 @@
 {{-- Penghargaan --}}
 <section class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
-        <div class="text-center mb-10 fade-up">
+        <div class="text-center mb-10 ao-fade-up">
             <span class="section-label">Pengakuan & Sertifikasi</span>
             <h2 class="section-title">Penghargaan <span>Kami</span></h2>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 fade-up">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             @foreach([
                 ['fa-certificate','KARS Paripurna','2024','yellow'],
                 ['fa-shield-alt','ISO 9001:2015','2023','blue'],
@@ -232,7 +286,7 @@
                 ['fa-users','HR Excellence','2023','indigo'],
                 ['fa-laptop-medical','Digital Health Award','2024','purple'],
             ] as [$ico,$title,$year,$color])
-            <div class="bg-gray-50 rounded-2xl p-5 text-center border border-gray-100 hover:border-green-300 hover:shadow-md transition-all group">
+            <div class="award-card ao-scale ao-delay-{{ $loop->index + 1 }} bg-gray-50 rounded-2xl p-5 text-center border border-gray-100 group">
                 <div class="w-12 h-12 rounded-xl bg-{{ $color }}-100 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <i class="fas {{ $ico }} text-{{ $color }}-600 text-lg"></i>
                 </div>
@@ -244,3 +298,35 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    'use strict';
+
+    /* ── Collect all animatable elements ──────────────────────────── */
+    var animClasses = ['ao-fade-up', 'ao-fade-left', 'ao-fade-right', 'ao-scale'];
+    var selector    = animClasses.map(function (c) { return '.' + c; }).join(',');
+    var elements    = document.querySelectorAll(selector);
+
+    if (!elements.length) return;
+
+    /* ── Intersection Observer ─────────────────────────────────────── */
+    var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('ao-in');
+                observer.unobserve(entry.target); /* fire only once */
+            }
+        });
+    }, {
+        threshold:  0.12,
+        rootMargin: '0px 0px -40px 0px'
+    });
+
+    elements.forEach(function (el) {
+        observer.observe(el);
+    });
+})();
+</script>
+@endpush

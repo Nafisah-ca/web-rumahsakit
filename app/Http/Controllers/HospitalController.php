@@ -56,7 +56,15 @@ class HospitalController extends Controller
         $layananTanpaKategori = Layanan::aktif()->whereNull('kategori_layanan_id')->get();
         $totalLayanan = Layanan::aktif()->count();
         $banner = \App\Models\PageBanner::getForPage('pelayanan');
-        return view('layanan', compact('kategoriList', 'layananTanpaKategori', 'totalLayanan', 'banner'));
+
+        // Dokter spesialis untuk panel "50+ Dokter Spesialis"
+        $dokterSpesialis = Dokter::with(['spesialisasi', 'jadwalAktif'])
+            ->where('status', 'aktif')
+            ->where('tipe_dokter', 'spesialis')
+            ->orderBy('nama_dokter')
+            ->get();
+
+        return view('layanan', compact('kategoriList', 'layananTanpaKategori', 'totalLayanan', 'banner', 'dokterSpesialis'));
     }
 
     public function layananByKategori(int $id)
