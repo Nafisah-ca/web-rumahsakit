@@ -876,5 +876,6 @@ function toggleMobileAcc(id) {
     if (icon) icon.style.transform = open ? '' : 'rotate(180deg)';
 }
 </script>
+@stack('scripts')
 </body>
 </html>

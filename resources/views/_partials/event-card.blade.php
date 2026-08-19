@@ -1,31 +1,35 @@
 <a href="{{ route('event.detail', $ev) }}"
-   class="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all {{ $lewat ? 'opacity-70 hover:opacity-100' : '' }}">
+   class="event-card group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm {{ $lewat ? 'opacity-70 hover:opacity-100' : '' }}"
+   data-index="{{ $index ?? 0 }}">
 
     {{-- Gambar --}}
-    <div class="relative flex-shrink-0" style="height:180px; background: linear-gradient(135deg,#4c1d95,#7c3aed)">
+    <div class="relative flex-shrink-0 overflow-hidden" style="height:180px; background: linear-gradient(135deg,#4c1d95,#7c3aed)">
         @if($ev->gambar)
         <img src="{{ Storage::url($ev->gambar) }}" alt="{{ $ev->judul }}"
-             class="absolute inset-0 w-full h-full object-cover {{ $lewat ? 'grayscale' : '' }}">
+             class="event-img absolute inset-0 w-full h-full object-cover {{ $lewat ? 'grayscale' : '' }}">
         @elseif($ev->thumbnail)
         <img src="{{ Storage::url($ev->thumbnail) }}" alt="{{ $ev->judul }}"
-             class="absolute inset-0 w-full h-full object-cover {{ $lewat ? 'grayscale' : '' }}">
+             class="event-img absolute inset-0 w-full h-full object-cover {{ $lewat ? 'grayscale' : '' }}">
         @else
         <div class="absolute inset-0 flex items-center justify-center">
             <i class="fas fa-calendar-star text-5xl text-white opacity-20"></i>
         </div>
         @endif
 
+        {{-- Efek Shine / Kilap saat hover --}}
+        <div class="event-shine"></div>
+
         {{-- Badge status --}}
-        <div class="absolute top-3 left-3">
+        <div class="absolute top-3 left-3 z-10">
             @if($lewat)
-            <span class="bg-gray-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full">SELESAI</span>
+            <span class="bg-gray-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-sm">SELESAI</span>
             @else
-            <span class="bg-purple-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full">EVENT</span>
+            <span class="bg-purple-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-sm">EVENT</span>
             @endif
         </div>
 
         {{-- Tanggal --}}
-        <div class="absolute top-3 right-3 flex items-center gap-1.5 bg-white text-gray-800 text-xs font-black px-2.5 py-1.5 rounded-lg shadow-md">
+        <div class="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-white text-gray-800 text-xs font-black px-2.5 py-1.5 rounded-lg shadow-md">
             <i class="fas fa-calendar-alt text-purple-600 text-[11px]"></i>
             {{ $ev->tanggal_event?->format('d M Y') }}
         </div>
@@ -62,8 +66,8 @@
                 <i class="fas fa-clock mr-1"></i>{{ $ev->tanggal_event->diffForHumans() }}
             </span>
             @endif
-            <span class="inline-flex items-center gap-1 text-xs font-bold text-purple-700">
-                Lihat Detail <i class="fas fa-arrow-right text-[10px]"></i>
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold text-purple-700">
+                Lihat Detail <i class="fas fa-arrow-right text-[10px] event-arrow"></i>
             </span>
         </div>
     </div>
