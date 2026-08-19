@@ -120,9 +120,6 @@
                     {{-- Overlay gradient bawah --}}
                     <div class="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
                          style="background: linear-gradient(to top, rgba(0,0,0,0.45), transparent)">
-                        <div class="absolute bottom-3 left-4 text-white text-xs font-bold flex items-center gap-1.5">
-                            Selengkapnya <i class="fas fa-arrow-right text-[10px] promo-arrow"></i>
-                        </div>
                     </div>
                 </div>
 

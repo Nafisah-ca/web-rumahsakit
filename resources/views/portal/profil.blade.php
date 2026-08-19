@@ -1,382 +1,932 @@
 @extends('layouts.app')
-@section('content')
 
 @php
     $penjamins = \App\Models\Penjamin::where('status','aktif')->with('tipePenjamin')->get();
     $activeTab = request('tab', 'profil');
 @endphp
 
-<div class="min-h-screen bg-gray-50 py-10 px-4">
-    <div class="max-w-3xl mx-auto">
+@push('styles')
+<style>
+/* ── IMPORT FONT ─────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@600;700&display=swap');
 
-        {{-- Header --}}
-        <div class="bg-gradient-to-br from-green-600 to-green-800 rounded-2xl p-6 flex items-center gap-5 mb-6">
-            <div class="flex-shrink-0">
+/* ── BASE ────────────────────────────────────────────── */
+.profil-page { background: #f5f7f5; min-height: 100vh; padding: 32px 16px 80px; }
+.profil-wrap { max-width: 720px; margin: 0 auto; }
+
+/* ── HERO CARD ───────────────────────────────────────── */
+.hero-card {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    background: #00521f;
+    box-shadow: 0 8px 32px rgba(0,82,31,.22);
+}
+.hero-card-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 80% -10%, rgba(0,176,79,.45) 0%, transparent 60%),
+        radial-gradient(ellipse at -10% 110%, rgba(0,176,79,.3) 0%, transparent 55%);
+}
+.hero-card-dots {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+.hero-card-body {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 28px 28px 24px;
+    flex-wrap: wrap;
+}
+/* Avatar upload area */
+.avatar-upload {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+.avatar-upload img,
+.avatar-upload .avatar-init {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    object-fit: cover;
+    border: 3px solid rgba(255,255,255,.35);
+    display: block;
+}
+.avatar-upload .avatar-init {
+    background: rgba(255,255,255,.18);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 900;
+    color: #fff;
+    font-family: 'Lora', serif;
+    letter-spacing: -1px;
+}
+.avatar-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: rgba(0,0,0,.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity .2s;
+}
+.avatar-upload:hover .avatar-overlay { opacity: 1; }
+.avatar-overlay i { color: #fff; font-size: 20px; }
+.avatar-upload input[type=file] { display: none; }
+
+.hero-info { flex: 1; min-width: 0; }
+.hero-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    font-family: 'Lora', serif;
+    letter-spacing: -.3px;
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+.hero-email { font-size: 13px; color: rgba(255,255,255,.65); margin-bottom: 6px; }
+.hero-rm {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: rgba(255,255,255,.9);
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    letter-spacing: .05em;
+}
+.hero-rm i { font-size: 10px; color: #7ee8a2; }
+
+/* Hero tabs — terintegrasi di dalam hero card */
+.hero-tabs {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    border-top: 1px solid rgba(255,255,255,.12);
+}
+.hero-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 13px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,.55);
+    text-decoration: none;
+    transition: color .2s, background .2s;
+    border-top: 2px solid transparent;
+    letter-spacing: .02em;
+}
+.hero-tab:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.05); }
+.hero-tab.active {
+    color: #fff;
+    border-top-color: #7ee8a2;
+    background: rgba(255,255,255,.07);
+}
+.hero-tab i { font-size: 12px; }
+
+/* ── FLASH MESSAGES ──────────────────────────────────── */
+.flash-success {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #22c55e;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #166534;
+    margin-bottom: 18px;
+    animation: flash-in .35s ease;
+}
+.flash-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-left: 4px solid #ef4444;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #991b1b;
+    margin-bottom: 18px;
+}
+@keyframes flash-in {
+    from { opacity:0; transform:translateY(-8px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── SECTION CARD ────────────────────────────────────── */
+.section-card {
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid #e8ede9;
+    box-shadow: 0 1px 8px rgba(0,0,0,.04);
+    padding: 22px 22px 20px;
+    margin-bottom: 14px;
+    transition: box-shadow .2s;
+}
+.section-card:focus-within {
+    box-shadow: 0 0 0 3px rgba(0,176,79,.08), 0 4px 16px rgba(0,0,0,.06);
+    border-color: #b2d8bf;
+}
+.section-card-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    letter-spacing: -.1px;
+}
+.section-card-title i { color: #00521f; font-size: 13px; }
+
+/* ── FORM FIELDS ─────────────────────────────────────── */
+.field-wrap { display: flex; flex-direction: column; gap: 5px; }
+.field-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #6b7280;
+}
+.field-label span.req { color: #ef4444; margin-left: 2px; }
+.field-input {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1.5px solid #e5e7eb;
+    font-size: 13px;
+    color: #111827;
+    background: #fff;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    font-family: inherit;
+}
+.field-input:focus {
+    border-color: #00b04f;
+    box-shadow: 0 0 0 3px rgba(0,176,79,.1);
+}
+.field-input::placeholder { color: #d1d5db; }
+.field-hint { font-size: 11px; color: #9ca3af; }
+
+/* Grid form */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
+
+/* ── FOTO CARD ───────────────────────────────────────── */
+.foto-card-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #f9fbf9;
+    border-radius: 14px;
+    padding: 16px;
+    border: 1.5px dashed #d1fae5;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+}
+.foto-card-inner:hover { border-color: #00b04f; background: #f0fdf4; }
+.foto-thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #e4ede7;
+    background: #e8f5ec;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.foto-thumb img { width:100%; height:100%; object-fit:cover; }
+.foto-thumb .foto-init { font-size:22px; font-weight:900; color:#00521f; font-family:'Lora',serif; }
+.foto-upload-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1.5px solid #d1d5db;
+    border-radius: 9px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #374151;
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+}
+.foto-upload-label:hover { border-color: #00b04f; color: #00521f; }
+.foto-file-name { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+
+/* ── SAVE BUTTON ─────────────────────────────────────── */
+.btn-save {
+    width: 100%;
+    background: #00521f;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    letter-spacing: -.1px;
+    box-shadow: 0 4px 16px rgba(0,82,31,.22);
+    transition: background .15s, transform .1s, box-shadow .15s;
+    position: relative;
+    overflow: hidden;
+}
+.btn-save:hover { background: #003d17; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,82,31,.3); }
+.btn-save:active { transform: translateY(0); }
+.btn-save .btn-save-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,.25);
+    transform: scale(0);
+    animation: ripple-btn .5s linear;
+    pointer-events: none;
+}
+@keyframes ripple-btn { to { transform: scale(3); opacity: 0; } }
+
+/* Loading state tombol */
+.btn-save.loading { pointer-events: none; opacity: .75; }
+.btn-save .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+    display: none;
+}
+.btn-save.loading .spinner { display: block; }
+.btn-save.loading .btn-txt { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── PENJAMIN AKTIF BADGE ────────────────────────────── */
+.penjamin-active-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+.penjamin-active-icon {
+    width: 32px; height: 32px;
+    background: #00521f;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.penjamin-active-icon i { color: #fff; font-size: 13px; }
+
+/* ── TOAST ───────────────────────────────────────────── */
+#profil-toast {
+    position: fixed;
+    bottom: 88px;
+    right: 20px;
+    z-index: 9999;
+    background: #1a2e22;
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.2);
+    transform: translateY(16px);
+    opacity: 0;
+    transition: opacity .3s ease, transform .3s ease;
+    pointer-events: none;
+    max-width: 300px;
+}
+#profil-toast.show { opacity: 1; transform: translateY(0); }
+#profil-toast .t-icon {
+    width: 26px; height: 26px;
+    background: #00b04f;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 12px;
+}
+
+/* ── SECTION ENTRANCE ANIMATION ─────────────────────── */
+.fade-section {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .4s ease, transform .4s ease;
+}
+.fade-section.visible { opacity: 1; transform: translateY(0); }
+
+/* ── FIELD FOCUS GLOW ────────────────────────────────── */
+.field-input:focus + .field-hint { color: #00521f; }
+</style>
+@endpush
+
+@section('content')
+<div class="profil-page">
+<div class="profil-wrap">
+
+    {{-- ── HERO CARD ─────────────────────────────────── --}}
+    <div class="hero-card">
+        <div class="hero-card-bg"></div>
+        <div class="hero-card-dots"></div>
+        <div class="hero-card-body">
+
+            {{-- Avatar — klik untuk upload foto (hanya di tab profil) --}}
+            @if($activeTab === 'profil')
+            <label class="avatar-upload" for="foto-input-hero" title="Klik untuk ganti foto">
                 @if(Auth::user()->foto)
-                    <img src="{{ Storage::url(Auth::user()->foto) }}"
-                         alt="{{ Auth::user()->nama }}"
-                         id="header-foto"
-                         class="w-16 h-16 rounded-2xl object-cover border-2 border-white/40">
+                    <img id="hero-foto-img" src="{{ Storage::url(Auth::user()->foto) }}" alt="">
                 @else
-                    <div id="header-initial"
-                         class="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-white text-2xl font-black">
+                    <div class="avatar-init" id="hero-init">{{ strtoupper(substr(Auth::user()->nama ?? '?', 0, 1)) }}</div>
+                    <img id="hero-foto-img" src="" alt="" style="display:none;width:80px;height:80px;border-radius:20px;object-fit:cover;border:3px solid rgba(255,255,255,.35)">
+                @endif
+                <div class="avatar-overlay"><i class="fas fa-camera"></i></div>
+                <input type="file" id="foto-input-hero" accept="image/*">
+            </label>
+            @else
+            <div style="width:80px;height:80px;border-radius:20px;overflow:hidden;border:3px solid rgba(255,255,255,.35);flex-shrink:0">
+                @if(Auth::user()->foto)
+                    <img src="{{ Storage::url(Auth::user()->foto) }}" alt="" style="width:100%;height:100%;object-fit:cover">
+                @else
+                    <div style="width:100%;height:100%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff;font-family:'Lora',serif">
                         {{ strtoupper(substr(Auth::user()->nama ?? '?', 0, 1)) }}
                     </div>
-                    <img id="header-foto" src="" alt=""
-                         class="w-16 h-16 rounded-2xl object-cover border-2 border-white/40 hidden">
                 @endif
             </div>
-            <div>
-                <p class="text-white font-extrabold text-lg">{{ Auth::user()->nama }}</p>
-                <p class="text-green-200 text-sm">{{ Auth::user()->email }}</p>
+            @endif
+
+            <div class="hero-info">
+                <p class="hero-name" id="hero-name-display">{{ Auth::user()->nama }}</p>
+                <p class="hero-email">{{ Auth::user()->email }}</p>
                 @if($pasien?->no_rekam_medis)
-                <p class="text-green-100 text-xs font-semibold mt-1">No. RM: {{ $pasien->no_rekam_medis }}</p>
+                <span class="hero-rm"><i class="fas fa-id-card"></i> {{ $pasien->no_rekam_medis }}</span>
                 @endif
             </div>
         </div>
 
-        {{-- TAB NAVBAR --}}
-        <div class="flex gap-2 mb-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-1.5">
+        {{-- Tabs --}}
+        <div class="hero-tabs">
             <a href="{{ route('portal.profil') }}?tab=profil"
-               class="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold transition-all
-                      {{ $activeTab === 'profil' ? 'bg-green-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50' }}">
-                <i class="fas fa-user text-xs"></i> Profil Saya
+               class="hero-tab {{ $activeTab === 'profil' ? 'active' : '' }}">
+                <i class="fas fa-user-pen"></i> Profil Saya
             </a>
             <a href="{{ route('portal.profil') }}?tab=riwayat"
-               class="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold transition-all
-                      {{ $activeTab === 'riwayat' ? 'bg-green-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50' }}">
-                <i class="fas fa-calendar-check text-xs"></i> Riwayat Poliklinik
+               class="hero-tab {{ $activeTab === 'riwayat' ? 'active' : '' }}">
+                <i class="fas fa-calendar-check"></i> Riwayat Poliklinik
             </a>
             <a href="{{ route('portal.profil') }}?tab=penjamin"
-               class="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold transition-all
-                      {{ $activeTab === 'penjamin' ? 'bg-green-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50' }}">
-                <i class="fas fa-shield-halved text-xs"></i> Penjamin & Asuransi
+               class="hero-tab {{ $activeTab === 'penjamin' ? 'active' : '' }}">
+                <i class="fas fa-shield-halved"></i> Penjamin
             </a>
         </div>
+    </div>
 
-        {{-- Flash --}}
-        @if(session('success'))
-        <div class="mb-5 p-4 bg-green-50 border border-green-200 rounded-2xl flex items-center gap-3 text-green-700 text-sm font-semibold">
-            <i class="fas fa-check-circle text-green-500 flex-shrink-0"></i> {{ session('success') }}
-        </div>
-        @endif
-        @if($errors->any())
-        <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm">
-            <ul class="list-disc list-inside space-y-1">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-        @endif
+    {{-- ── FLASH ───────────────────────────────────────── --}}
+    @if(session('success'))
+    <div class="flash-success" id="flash-success">
+        <i class="fas fa-circle-check" style="font-size:16px;flex-shrink:0"></i>
+        {{ session('success') }}
+    </div>
+    <span id="flash-msg" data-msg="{{ session('success') }}" style="display:none"></span>
+    @endif
+    @if($errors->any())
+    <div class="flash-error">
+        <ul style="list-style:disc;padding-left:16px;space-y:4px">
+            @foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach
+        </ul>
+    </div>
+    @endif
 
-        {{-- ============================================================
-             TAB: PROFIL
-             ============================================================ --}}
-        @if($activeTab === 'profil')
-        <form method="POST" action="{{ route('portal.profil.update') }}" class="space-y-5" enctype="multipart/form-data" id="form-profil">
-            @csrf @method('PUT')
+    {{-- ══════════════════════════════════════════════════
+         TAB: PROFIL
+    ══════════════════════════════════════════════════ --}}
+    @if($activeTab === 'profil')
+    <form method="POST" action="{{ route('portal.profil.update') }}"
+          enctype="multipart/form-data"
+          id="form-profil">
+        @csrf @method('PUT')
+        {{-- Input foto hidden — diisi saat klik avatar hero --}}
+        <input type="file" name="foto" id="foto-input-form" accept="image/*" style="display:none">
 
-            {{-- ===== EDIT PROFILE CARD (seperti referensi) ===== --}}
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                <h3 class="font-extrabold text-gray-900 flex items-center gap-2 text-base mb-5">
-                    <i class="fas fa-user-pen text-green-600"></i> Edit Profile
-                </h3>
-
-                {{-- Foto Profil — persis seperti referensi --}}
-                <div class="flex items-center gap-5 p-4 bg-gray-50 rounded-2xl mb-2">
-                    {{-- Preview foto --}}
-                    <div class="flex-shrink-0" id="foto-preview-wrap">
-                        @if(Auth::user()->foto)
-                            <img id="foto-preview-img"
-                                 src="{{ Storage::url(Auth::user()->foto) }}"
-                                 alt="{{ Auth::user()->nama }}"
-                                 class="w-20 h-20 rounded-full object-cover border-2 border-gray-200">
-                        @else
-                            <div id="foto-preview-initial"
-                                 class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center border-2 border-gray-200">
-                                <span class="text-green-700 font-black text-2xl">
-                                    {{ strtoupper(substr(Auth::user()->nama ?? '?', 0, 1)) }}
-                                </span>
-                            </div>
-                            <img id="foto-preview-img" src="" alt=""
-                                 class="w-20 h-20 rounded-full object-cover border-2 border-gray-200 hidden">
-                        @endif
-                    </div>
-
-                    {{-- Teks + tombol --}}
-                    <div>
-                        <p class="text-sm font-bold text-gray-800 mb-1">Foto Profil</p>
-                        <p class="text-xs text-gray-400 mb-3">JPG, PNG maksimal 2MB</p>
-                        <label for="foto-input"
-                               class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-600 cursor-pointer hover:border-green-500 hover:text-green-600 transition-all">
-                            <i class="fas fa-upload text-xs"></i> Pilih Foto
-                            <input type="file" name="foto" id="foto-input" accept="image/*" class="hidden">
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Data Pribadi --}}
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-                <h3 class="font-extrabold text-gray-900 flex items-center gap-2 text-base">
-                    <i class="fas fa-user text-green-600"></i> Data Pribadi
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Nama Lengkap <span class="text-red-500">*</span></label>
-                        <input type="text" name="nama_lengkap" value="{{ old('nama_lengkap', Auth::user()->nama) }}" required
-                            class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none transition-all">
-                        <p class="text-xs text-gray-400 mt-1">Akan mengubah nama akun Anda.</p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">No. HP / WhatsApp</label>
-                        <input type="text" name="telepon" value="{{ old('telepon', Auth::user()->no_hp) }}" maxlength="20"
-                            placeholder="08xxxxxxxxxx"
-                            class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">NIK (16 digit) <span class="text-red-500">*</span></label>
-                        <input type="text" name="nik" value="{{ old('nik', $pasien?->nik) }}" maxlength="16" required
-                            placeholder="16 digit NIK KTP"
-                            class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Jenis Kelamin <span class="text-red-500">*</span></label>
-                        <select name="jenis_kelamin" required class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 outline-none bg-white">
-                            <option value="">— Pilih —</option>
-                            <option value="L" {{ old('jenis_kelamin',$pasien?->jenis_kelamin)=='L'?'selected':'' }}>Laki-laki</option>
-                            <option value="P" {{ old('jenis_kelamin',$pasien?->jenis_kelamin)=='P'?'selected':'' }}>Perempuan</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Tempat Lahir <span class="text-red-500">*</span></label>
-                        <input type="text" name="tempat_lahir" value="{{ old('tempat_lahir', $pasien?->tempat_lahir) }}" required
-                            class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Tanggal Lahir <span class="text-red-500">*</span></label>
-                        <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $pasien?->tanggal_lahir?->format('Y-m-d')) }}" required
-                            class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Golongan Darah</label>
-                        <select name="golongan_darah" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 outline-none bg-white">
-                            <option value="">— Pilih —</option>
-                            @foreach(['A','B','AB','O'] as $gb)
-                            <option value="{{ $gb }}" {{ old('golongan_darah',$pasien?->golongan_darah)==$gb?'selected':'' }}>{{ $gb }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Agama</label>
-                        <select name="agama" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 outline-none bg-white">
-                            <option value="">— Pilih —</option>
-                            @foreach(['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu','Lainnya'] as $ag)
-                            <option value="{{ $ag }}" {{ old('agama',$pasien?->agama)==$ag?'selected':'' }}>{{ $ag }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Pekerjaan</label>
-                        <input type="text" name="pekerjaan" value="{{ old('pekerjaan', $pasien?->pekerjaan) }}"
-                            placeholder="Contoh: Pegawai Swasta"
-                            class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1.5">Alamat Lengkap <span class="text-red-500">*</span></label>
-                    <textarea name="alamat" rows="2" required
-                        class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 outline-none transition-all resize-none"
-                        placeholder="Jalan, No. Rumah, RT/RW, Kelurahan, Kecamatan, Kota">{{ old('alamat', $pasien?->alamat) }}</textarea>
-                </div>
-            </div>
-
-            <button type="submit"
-                class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-sm">
-                <i class="fas fa-save"></i> Simpan Profil
-            </button>
-        </form>
-
-        {{-- ============================================================
-             TAB: RIWAYAT POLIKLINIK
-             ============================================================ --}}
-        @elseif($activeTab === 'riwayat')
-        @php
-            $bookings = \App\Models\JanjiTemu::with(['jadwalDokter.dokter.spesialisasi'])
-                ->where('pasien_id', $pasien?->id ?? 0)
-                ->orderByDesc('tanggal_booking')
-                ->paginate(10);
-        @endphp
-
-        <div class="flex items-center justify-between mb-4">
-            <p class="text-sm text-gray-500">Riwayat semua janji temu Anda</p>
-            <a href="{{ route('portal.booking.create') }}"
-               class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm">
-                <i class="fas fa-plus text-xs"></i> Buat Janji Baru
-            </a>
-        </div>
-
-        @forelse($bookings as $b)
-        @php
-            $statusConf = [
-                'pending'   => ['Menunggu',     'bg-amber-100 text-amber-700 border-amber-200'],
-                'approved'  => ['Dikonfirmasi', 'bg-blue-100 text-blue-700 border-blue-200'],
-                'completed' => ['Selesai',      'bg-green-100 text-green-700 border-green-200'],
-                'cancelled' => ['Dibatalkan',   'bg-red-100 text-red-700 border-red-200'],
-            ];
-            [$statusLabel, $statusClass] = $statusConf[$b->status] ?? [$b->status, 'bg-slate-100 text-slate-600 border-slate-200'];
-        @endphp
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-4 hover:shadow-md transition-shadow">
-            <div class="flex items-start justify-between gap-4">
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-3 mb-3 flex-wrap">
-                        <span class="font-mono text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-lg font-semibold">{{ $b->kode_booking }}</span>
-                        <span class="badge border {{ $statusClass }} text-xs font-bold px-2.5 py-0.5 rounded-full">{{ $statusLabel }}</span>
-                    </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-                        <div>
-                            <p class="text-gray-400 text-xs font-semibold">Dokter</p>
-                            <p class="font-semibold text-gray-800">{{ $b->jadwalDokter?->dokter?->nama_dokter ?? '-' }}</p>
-                            <p class="text-xs text-gray-400">{{ $b->jadwalDokter?->dokter?->spesialisasi?->nama_spesialis ?? '-' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-gray-400 text-xs font-semibold">Tanggal</p>
-                            <p class="font-semibold text-gray-800">{{ $b->tanggal_booking?->format('d M Y') }}</p>
-                            <p class="text-xs text-gray-400">{{ $b->jadwalDokter ? substr($b->jadwalDokter->jam_mulai,0,5).' WIB' : '' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-gray-400 text-xs font-semibold">No. Antrian</p>
-                            <p class="font-black text-green-700 text-xl">{{ $b->nomor_antrian ?? '-' }}</p>
-                        </div>
-                    </div>
-                    @if($b->keluhan)
-                    <div class="mt-3 p-2.5 bg-gray-50 rounded-xl">
-                        <p class="text-xs text-gray-400 font-semibold">Keluhan:</p>
-                        <p class="text-sm text-gray-700">{{ $b->keluhan }}</p>
-                    </div>
+        {{-- ── SECTION: FOTO ───────────────────────────── --}}
+        <div class="section-card fade-section" style="transition-delay:.05s">
+            <p class="section-card-title"><i class="fas fa-image"></i> Foto Profil</p>
+            <label class="foto-card-inner" for="foto-input-secondary">
+                <div class="foto-thumb">
+                    @if(Auth::user()->foto)
+                        <img id="foto-thumb-img" src="{{ Storage::url(Auth::user()->foto) }}" alt="">
+                    @else
+                        <div class="foto-init" id="foto-thumb-init">{{ strtoupper(substr(Auth::user()->nama ?? '?', 0, 1)) }}</div>
+                        <img id="foto-thumb-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover">
                     @endif
                 </div>
-                @if(in_array($b->status, ['pending','approved']))
-                <form method="POST" action="{{ route('portal.booking.cancel', $b) }}" onsubmit="return confirm('Batalkan janji temu ini?')">
-                    @csrf
-                    <button class="flex-shrink-0 text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 border border-red-200 px-3 py-2 rounded-xl transition-all">
-                        <i class="fas fa-times mr-1"></i>Batalkan
-                    </button>
-                </form>
-                @endif
-            </div>
-        </div>
-        @empty
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-14 text-center">
-            <i class="fas fa-calendar-times text-4xl text-gray-200 mb-4 block"></i>
-            <p class="text-gray-500 font-semibold">Belum ada riwayat janji temu</p>
-            <a href="{{ route('portal.booking.create') }}" class="inline-flex items-center gap-2 mt-4 bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-green-700 transition-all">
-                <i class="fas fa-plus"></i> Buat Janji Temu
-            </a>
-        </div>
-        @endforelse
-        @if($bookings->hasPages())
-        <div class="mt-4">{{ $bookings->appends(['tab' => 'riwayat'])->links() }}</div>
-        @endif
-
-        {{-- ============================================================
-             TAB: PENJAMIN & ASURANSI
-             ============================================================ --}}
-        @elseif($activeTab === 'penjamin')
-        <form method="POST" action="{{ route('portal.profil.update') }}" class="space-y-5">
-            @csrf @method('PUT')
-
-            {{-- Pass data profil wajib (hidden) agar validasi tidak gagal --}}
-            <input type="hidden" name="nama_lengkap" value="{{ Auth::user()->nama }}">
-            <input type="hidden" name="telepon" value="{{ Auth::user()->no_hp }}">
-            <input type="hidden" name="nik" value="{{ $pasien?->nik ?? '0000000000000000' }}">
-            <input type="hidden" name="jenis_kelamin" value="{{ $pasien?->jenis_kelamin ?? 'L' }}">
-            <input type="hidden" name="tempat_lahir" value="{{ $pasien?->tempat_lahir ?? '-' }}">
-            <input type="hidden" name="tanggal_lahir" value="{{ $pasien?->tanggal_lahir?->format('Y-m-d') ?? now()->subYears(20)->format('Y-m-d') }}">
-            <input type="hidden" name="alamat" value="{{ $pasien?->alamat ?? '-' }}">
-
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-                <h3 class="font-extrabold text-gray-900 flex items-center gap-2 text-base">
-                    <i class="fas fa-shield-halved text-green-600"></i> Penjamin / Asuransi
-                </h3>
-                <p class="text-xs text-gray-500">
-                    Isi jika Anda menggunakan BPJS Kesehatan atau asuransi. Data ini akan digunakan saat proses pembayaran.
-                </p>
-
-                @if($pasien?->penjamin)
-                <div class="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl mb-2">
-                    <i class="fas fa-circle-check text-green-600"></i>
-                    <div>
-                        <p class="text-xs font-bold text-green-800">Penjamin Aktif: {{ $pasien->penjamin->nama_penjamin }}</p>
-                        @if($pasien->nomor_penjamin)
-                        <p class="text-xs text-green-700">No. Kartu: {{ $pasien->nomor_penjamin }}</p>
-                        @endif
-                    </div>
+                <div>
+                    <p style="font-size:13px;font-weight:700;color:#111;margin-bottom:6px">Ganti foto profil</p>
+                    <span class="foto-upload-label">
+                        <i class="fas fa-arrow-up-from-bracket" style="font-size:11px"></i> Pilih Foto
+                    </span>
+                    <p class="foto-file-name" id="foto-file-name">JPG atau PNG, maks. 2MB</p>
+                    <input type="file" id="foto-input-secondary" accept="image/*" style="display:none">
                 </div>
-                @endif
+            </label>
+        </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Penjamin</label>
-                        <select name="penjamin_id" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 outline-none bg-white">
-                            <option value="">— Umum / Bayar Sendiri —</option>
-                            @foreach($penjamins->groupBy('tipePenjamin.nama_tipe') as $tipe => $list)
-                            <optgroup label="{{ $tipe }}">
-                                @foreach($list as $p)
-                                <option value="{{ $p->id }}"
-                                    {{ old('penjamin_id', $pasien?->penjamin_id) == $p->id ? 'selected' : '' }}>
-                                    {{ $p->nama_penjamin }}
-                                </option>
-                                @endforeach
-                            </optgroup>
-                            @endforeach
-                        </select>
-                        <p class="text-xs text-gray-400 mt-1">Pilih BPJS Kesehatan, Prudential, Allianz, dll.</p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Nomor Kartu Penjamin</label>
-                        <input type="text" name="nomor_penjamin"
-                            value="{{ old('nomor_penjamin', $pasien?->nomor_penjamin) }}"
-                            placeholder="Contoh: 0001234567890 (No. BPJS)"
-                            class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 outline-none transition-all">
-                        <p class="text-xs text-gray-400 mt-1">Nomor kartu BPJS / nomor polis asuransi.</p>
-                    </div>
+        {{-- ── SECTION: IDENTITAS AKUN ─────────────────── --}}
+        <div class="section-card fade-section" style="transition-delay:.1s">
+            <p class="section-card-title"><i class="fas fa-id-badge"></i> Identitas Akun</p>
+            <div class="form-grid">
+                <div class="field-wrap" style="grid-column:span 2">
+                    <label class="field-label">Nama Lengkap <span class="req">*</span></label>
+                    <input class="field-input" type="text" name="nama_lengkap"
+                           value="{{ old('nama_lengkap', Auth::user()->nama) }}" required
+                           id="input-nama"
+                           placeholder="Nama sesuai KTP">
+                    <p class="field-hint">Nama ini yang tampil di semua halaman portal.</p>
+                </div>
+                <div class="field-wrap">
+                    <label class="field-label">No. HP / WhatsApp</label>
+                    <input class="field-input" type="text" name="telepon"
+                           value="{{ old('telepon', Auth::user()->no_hp) }}"
+                           placeholder="08xxxxxxxxxx" maxlength="20">
+                </div>
+                <div class="field-wrap">
+                    <label class="field-label">NIK <span class="req">*</span></label>
+                    <input class="field-input" type="text" name="nik"
+                           value="{{ old('nik', $pasien?->nik) }}"
+                           placeholder="16 digit NIK KTP" maxlength="16" required>
                 </div>
             </div>
+        </div>
 
-            <button type="submit"
-                class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-sm">
-                <i class="fas fa-save"></i> Simpan Data Penjamin
-            </button>
-        </form>
-        @endif
+        {{-- ── SECTION: DATA MEDIS ──────────────────────── --}}
+        <div class="section-card fade-section" style="transition-delay:.15s">
+            <p class="section-card-title"><i class="fas fa-notes-medical"></i> Data Medis</p>
+            <div class="form-grid">
+                <div class="field-wrap">
+                    <label class="field-label">Jenis Kelamin <span class="req">*</span></label>
+                    <select class="field-input" name="jenis_kelamin" required>
+                        <option value="">— Pilih —</option>
+                        <option value="L" {{ old('jenis_kelamin',$pasien?->jenis_kelamin)=='L'?'selected':'' }}>Laki-laki</option>
+                        <option value="P" {{ old('jenis_kelamin',$pasien?->jenis_kelamin)=='P'?'selected':'' }}>Perempuan</option>
+                    </select>
+                </div>
+                <div class="field-wrap">
+                    <label class="field-label">Golongan Darah</label>
+                    <select class="field-input" name="golongan_darah">
+                        <option value="">— Pilih —</option>
+                        @foreach(['A','B','AB','O'] as $gb)
+                        <option value="{{ $gb }}" {{ old('golongan_darah',$pasien?->golongan_darah)==$gb?'selected':'' }}>{{ $gb }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="field-wrap">
+                    <label class="field-label">Tempat Lahir <span class="req">*</span></label>
+                    <input class="field-input" type="text" name="tempat_lahir"
+                           value="{{ old('tempat_lahir', $pasien?->tempat_lahir) }}" required>
+                </div>
+                <div class="field-wrap">
+                    <label class="field-label">Tanggal Lahir <span class="req">*</span></label>
+                    <input class="field-input" type="date" name="tanggal_lahir"
+                           value="{{ old('tanggal_lahir', $pasien?->tanggal_lahir?->format('Y-m-d')) }}" required>
+                </div>
+                <div class="field-wrap">
+                    <label class="field-label">Agama</label>
+                    <select class="field-input" name="agama">
+                        <option value="">— Pilih —</option>
+                        @foreach(['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu','Lainnya'] as $ag)
+                        <option value="{{ $ag }}" {{ old('agama',$pasien?->agama)==$ag?'selected':'' }}>{{ $ag }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="field-wrap">
+                    <label class="field-label">Pekerjaan</label>
+                    <input class="field-input" type="text" name="pekerjaan"
+                           value="{{ old('pekerjaan', $pasien?->pekerjaan) }}"
+                           placeholder="Pegawai Swasta, Wiraswasta, dll">
+                </div>
+                <div class="field-wrap" style="grid-column:span 2">
+                    <label class="field-label">Alamat Lengkap <span class="req">*</span></label>
+                    <textarea class="field-input" name="alamat" rows="2" required
+                              style="resize:none"
+                              placeholder="Jalan, No. Rumah, RT/RW, Kelurahan, Kecamatan, Kota">{{ old('alamat', $pasien?->alamat) }}</textarea>
+                </div>
+            </div>
+        </div>
 
+        {{-- ── SAVE BUTTON ──────────────────────────────── --}}
+        <button type="submit" class="btn-save fade-section" style="transition-delay:.2s" id="btn-save-profil">
+            <span class="spinner"></span>
+            <span class="btn-txt">
+                <i class="fas fa-floppy-disk" style="font-size:13px"></i>
+                &nbsp;Simpan Profil
+            </span>
+        </button>
+    </form>
+
+    {{-- ══════════════════════════════════════════════════
+         TAB: RIWAYAT
+    ══════════════════════════════════════════════════ --}}
+    @elseif($activeTab === 'riwayat')
+    @php
+        $bookings = \App\Models\JanjiTemu::with(['jadwalDokter.dokter.spesialisasi'])
+            ->where('pasien_id', $pasien?->id ?? 0)
+            ->orderByDesc('tanggal_booking')
+            ->paginate(10);
+    @endphp
+
+    <div class="fade-section" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <p style="font-size:13px;color:#9ca3af">Semua riwayat janji temu kamu</p>
+        <a href="{{ route('portal.booking.create') }}"
+           style="display:inline-flex;align-items:center;gap:6px;background:#00521f;color:#fff;font-size:12px;font-weight:700;padding:9px 16px;border-radius:11px;text-decoration:none;transition:background .15s"
+           onmouseover="this.style.background='#003d17'"
+           onmouseout="this.style.background='#00521f'">
+            <i class="fas fa-plus" style="font-size:10px"></i> Buat Janji Baru
+        </a>
     </div>
+
+    @forelse($bookings as $bi => $b)
+    @php
+        $sMap = [
+            'pending'   => ['Menunggu',     '#b45309','#fffbeb','#fde68a'],
+            'approved'  => ['Dikonfirmasi', '#1d4ed8','#eff6ff','#bfdbfe'],
+            'completed' => ['Selesai',      '#166534','#f0fdf4','#bbf7d0'],
+            'cancelled' => ['Dibatalkan',   '#991b1b','#fef2f2','#fecaca'],
+        ];
+        [$sl,$sc,$sbg,$sbd] = $sMap[$b->status] ?? [$b->status,'#4b5563','#f9fafb','#e5e7eb'];
+    @endphp
+    <div class="section-card fade-section" style="padding:0;transition-delay:{{ $bi * 60 }}ms">
+        {{-- Header --}}
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px 10px;border-bottom:1px solid #f3f4f6;gap:10px;flex-wrap:wrap">
+            <span style="font-family:'Courier New',monospace;font-size:11px;font-weight:700;color:#4b5563;background:#f3f4f6;padding:3px 10px;border-radius:7px">{{ $b->kode_booking }}</span>
+            <span style="font-size:11px;font-weight:800;padding:3px 11px;border-radius:999px;color:{{ $sc }};background:{{ $sbg }};border:1px solid {{ $sbd }}">{{ $sl }}</span>
+            @if(in_array($b->status, ['pending','approved']))
+            <form method="POST" action="{{ route('portal.booking.cancel', $b) }}"
+                  style="margin-left:auto"
+                  onsubmit="return confirm('Batalkan janji temu ini?\nKamu bisa buat baru kapan saja.')">
+                @csrf
+                <button type="submit"
+                    style="font-size:11px;font-weight:700;color:#dc2626;background:#fff;border:1.5px solid #fca5a5;padding:5px 12px;border-radius:9px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px"
+                    onmouseover="this.style.background='#fef2f2'"
+                    onmouseout="this.style.background='#fff'">
+                    <i class="fas fa-xmark" style="font-size:10px"></i> Batalkan
+                </button>
+            </form>
+            @endif
+        </div>
+        {{-- Body --}}
+        <div style="padding:14px 18px;display:grid;grid-template-columns:1fr 1fr auto;gap:10px 16px;align-items:start">
+            <div>
+                <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:2px">Dokter</p>
+                <p style="font-size:13px;font-weight:700;color:#111">{{ $b->jadwalDokter?->dokter?->nama_dokter ?? '-' }}</p>
+                <p style="font-size:11px;color:#9ca3af">{{ $b->jadwalDokter?->dokter?->spesialisasi?->nama_spesialis ?? '-' }}</p>
+            </div>
+            <div>
+                <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:2px">Tanggal</p>
+                <p style="font-size:13px;font-weight:700;color:#111">{{ $b->tanggal_booking?->format('d M Y') }}</p>
+                <p style="font-size:11px;color:#9ca3af">{{ $b->jadwalDokter ? substr($b->jadwalDokter->jam_mulai,0,5).' WIB' : '' }}</p>
+            </div>
+            <div style="text-align:center">
+                <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:2px">Antrian</p>
+                <p style="font-size:32px;font-weight:900;color:#00521f;line-height:1;font-family:'Lora',serif">{{ $b->nomor_antrian ?? '-' }}</p>
+            </div>
+        </div>
+        @if($b->keluhan)
+        <div style="margin:0 18px 14px;padding:9px 13px;background:#f9fafb;border-left:3px solid #d1fae5;border-radius:0 10px 10px 0;font-size:12px;color:#374151">
+            <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:2px">Keluhan</p>
+            {{ $b->keluhan }}
+        </div>
+        @endif
+    </div>
+    @empty
+    <div style="background:#fff;border-radius:18px;border:1.5px dashed #d1fae5;padding:56px 24px;text-align:center" class="fade-section">
+        <div style="width:64px;height:64px;background:#f0fdf4;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+            <i class="fas fa-calendar-xmark" style="font-size:24px;color:#bbf7d0"></i>
+        </div>
+        <p style="font-size:15px;font-weight:800;color:#374151;font-family:'Lora',serif">Belum ada riwayat</p>
+        <p style="font-size:13px;color:#9ca3af;margin-top:4px">Yuk buat janji temu pertama kamu.</p>
+        <a href="{{ route('portal.booking.create') }}"
+           style="display:inline-flex;align-items:center;gap:7px;margin-top:16px;background:#00521f;color:#fff;padding:10px 22px;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none">
+            <i class="fas fa-plus" style="font-size:10px"></i> Buat Janji Temu
+        </a>
+    </div>
+    @endforelse
+    @if($bookings->hasPages())
+    <div style="margin-top:14px">{{ $bookings->appends(['tab' => 'riwayat'])->links() }}</div>
+    @endif
+
+    {{-- ══════════════════════════════════════════════════
+         TAB: PENJAMIN
+    ══════════════════════════════════════════════════ --}}
+    @elseif($activeTab === 'penjamin')
+    <form method="POST" action="{{ route('portal.profil.update') }}" class="space-y-4" id="form-penjamin">
+        @csrf @method('PUT')
+        <input type="hidden" name="nama_lengkap" value="{{ Auth::user()->nama }}">
+        <input type="hidden" name="telepon"       value="{{ Auth::user()->no_hp }}">
+        <input type="hidden" name="nik"           value="{{ $pasien?->nik ?? '0000000000000000' }}">
+        <input type="hidden" name="jenis_kelamin" value="{{ $pasien?->jenis_kelamin ?? 'L' }}">
+        <input type="hidden" name="tempat_lahir"  value="{{ $pasien?->tempat_lahir ?? '-' }}">
+        <input type="hidden" name="tanggal_lahir" value="{{ $pasien?->tanggal_lahir?->format('Y-m-d') ?? now()->subYears(20)->format('Y-m-d') }}">
+        <input type="hidden" name="alamat"        value="{{ $pasien?->alamat ?? '-' }}">
+
+        <div class="section-card fade-section" style="transition-delay:.05s">
+            <p class="section-card-title"><i class="fas fa-shield-halved"></i> Penjamin / Asuransi</p>
+            <p style="font-size:12px;color:#9ca3af;margin-bottom:16px">
+                Isi jika kamu menggunakan BPJS Kesehatan atau asuransi swasta. Data ini dipakai saat pembayaran.
+            </p>
+
+            @if($pasien?->penjamin)
+            <div class="penjamin-active-badge">
+                <div class="penjamin-active-icon"><i class="fas fa-circle-check"></i></div>
+                <div>
+                    <p style="font-size:12px;font-weight:800;color:#166534">{{ $pasien->penjamin->nama_penjamin }}</p>
+                    @if($pasien->nomor_penjamin)
+                    <p style="font-size:11px;color:#16a34a;margin-top:1px">No. Kartu: {{ $pasien->nomor_penjamin }}</p>
+                    @endif
+                </div>
+            </div>
+            @endif
+
+            <div class="form-grid">
+                <div class="field-wrap">
+                    <label class="field-label">Penjamin</label>
+                    <select class="field-input" name="penjamin_id">
+                        <option value="">— Umum / Bayar Sendiri —</option>
+                        @foreach($penjamins->groupBy('tipePenjamin.nama_tipe') as $tipe => $list)
+                        <optgroup label="{{ $tipe }}">
+                            @foreach($list as $p)
+                            <option value="{{ $p->id }}" {{ old('penjamin_id', $pasien?->penjamin_id) == $p->id ? 'selected' : '' }}>
+                                {{ $p->nama_penjamin }}
+                            </option>
+                            @endforeach
+                        </optgroup>
+                        @endforeach
+                    </select>
+                    <p class="field-hint">BPJS, Prudential, Allianz, dll.</p>
+                </div>
+                <div class="field-wrap">
+                    <label class="field-label">Nomor Kartu Penjamin</label>
+                    <input class="field-input" type="text" name="nomor_penjamin"
+                           value="{{ old('nomor_penjamin', $pasien?->nomor_penjamin) }}"
+                           placeholder="No. BPJS / No. Polis">
+                    <p class="field-hint">Nomor di kartu BPJS atau polis asuransi.</p>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-save fade-section" style="transition-delay:.1s" id="btn-save-penjamin">
+            <span class="spinner"></span>
+            <span class="btn-txt"><i class="fas fa-floppy-disk" style="font-size:13px"></i>&nbsp;Simpan Data Penjamin</span>
+        </button>
+    </form>
+    @endif
+
+</div>
+</div>
+
+{{-- Toast --}}
+<div id="profil-toast">
+    <div class="t-icon"><i class="fas fa-check"></i></div>
+    <span id="profil-toast-msg"></span>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-// Preview foto profil saat dipilih
-document.getElementById('foto-input')?.addEventListener('change', function () {
-    const file = this.files[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
+/**
+ * ── 1. TOAST ─────────────────────────────────────────────
+ * Tampilkan notifikasi ringan di pojok kanan bawah.
+ */
+function showToast(msg, dur = 3500) {
+    const t = document.getElementById('profil-toast');
+    const m = document.getElementById('profil-toast-msg');
+    if (!t || !m) return;
+    m.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), dur);
+}
 
-    // Update preview di card Edit Profile
-    const previewImg  = document.getElementById('foto-preview-img');
-    const previewInit = document.getElementById('foto-preview-initial');
-    if (previewImg) {
-        previewImg.src = url;
-        previewImg.classList.remove('hidden');
-    }
-    if (previewInit) previewInit.classList.add('hidden');
+/**
+ * ── 2. SECTION ENTRANCE ANIMATION ────────────────────────
+ * Tiap section card masuk dengan fade+slide menggunakan
+ * IntersectionObserver — jalan saat elemen masuk viewport.
+ */
+function initFadeSections() {
+    const els = document.querySelectorAll('.fade-section');
+    const obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                obs.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.05 });
+    els.forEach(el => obs.observe(el));
+}
 
-    // Update juga foto di header atas
-    const headerFoto  = document.getElementById('header-foto');
-    const headerInit  = document.getElementById('header-initial');
-    if (headerFoto) {
-        headerFoto.src = url;
-        headerFoto.classList.remove('hidden');
+/**
+ * ── 3. FOTO PREVIEW ──────────────────────────────────────
+ * Saat user pilih foto di hero avatar ATAU di card foto,
+ * kedua preview langsung update tanpa reload, dan file
+ * dijadikan satu input sebelum form submit.
+ */
+function initFotoPreview() {
+    const heroInput = document.getElementById('foto-input-hero');
+    const secondaryInput = document.getElementById('foto-input-secondary');
+    const formInput  = document.getElementById('foto-input-form');
+
+    function applyPhoto(file) {
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+
+        // Hero avatar
+        const heroImg  = document.getElementById('hero-foto-img');
+        const heroInit = document.getElementById('hero-init');
+        if (heroImg)  { heroImg.src = url; heroImg.style.display = 'block'; }
+        if (heroInit) heroInit.style.display = 'none';
+
+        // Card thumb
+        const thumbImg  = document.getElementById('foto-thumb-img');
+        const thumbInit = document.getElementById('foto-thumb-init');
+        if (thumbImg)  { thumbImg.src = url; thumbImg.style.display = 'block'; }
+        if (thumbInit) thumbInit.style.display = 'none';
+
+        // Nama file
+        const fn = document.getElementById('foto-file-name');
+        if (fn) fn.textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+
+        // Sinkron ke formInput (nama="foto") agar ikut terkirim
+        if (formInput) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            formInput.files = dt.files;
+        }
     }
-    if (headerInit) headerInit.classList.add('hidden');
+
+    // Trigger dari hero avatar
+    heroInput?.addEventListener('change', function () {
+        applyPhoto(this.files[0]);
+        // Sync juga ke secondary input agar UI konsisten
+        if (secondaryInput) {
+            const dt = new DataTransfer();
+            if (this.files[0]) dt.items.add(this.files[0]);
+            secondaryInput.files = dt.files;
+        }
+    });
+
+    // Trigger dari card foto
+    secondaryInput?.addEventListener('change', function () {
+        applyPhoto(this.files[0]);
+        // Sync ke hero input
+        if (heroInput) {
+            const dt = new DataTransfer();
+            if (this.files[0]) dt.items.add(this.files[0]);
+            heroInput.files = dt.files;
+        }
+    });
+}
+
+/**
+ * ── 4. NAMA REAL-TIME UPDATE DI HERO ─────────────────────
+ * Saat user mengetik nama baru, tampilkan langsung di hero card
+ * tanpa harus submit dulu.
+ */
+function initNamaLiveUpdate() {
+    const inputNama = document.getElementById('input-nama');
+    const heroName  = document.getElementById('hero-name-display');
+    if (!inputNama || !heroName) return;
+    inputNama.addEventListener('input', function () {
+        heroName.textContent = this.value || '—';
+    });
+}
+
+/**
+ * ── 5. SAVE BUTTON LOADING STATE ─────────────────────────
+ * Saat form di-submit, tombol simpan ganti jadi spinner
+ * agar user tahu proses sedang berjalan.
+ */
+function initSaveLoading() {
+    ['form-profil', 'form-penjamin'].forEach(function (formId) {
+        const form = document.getElementById(formId);
+        if (!form) return;
+        form.addEventListener('submit', function () {
+            const btn = form.querySelector('.btn-save');
+            if (btn) {
+                btn.classList.add('loading');
+                // Efek ripple pada klik
+                const ripple = document.createElement('span');
+                ripple.className = 'btn-save-ripple';
+                ripple.style.cssText = 'width:200px;height:200px;left:calc(50% - 100px);top:calc(50% - 100px)';
+                btn.appendChild(ripple);
+                ripple.addEventListener('animationend', () => ripple.remove());
+            }
+        });
+    });
+}
+
+/**
+ * ── 6. FIELD FOCUS RING ───────────────────────────────────
+ * Tambah efek subtle saat field aktif — border label berubah
+ * warna mengikuti focus state input.
+ */
+function initFieldFocus() {
+    document.querySelectorAll('.field-input').forEach(function (input) {
+        const label = input.closest('.field-wrap')?.querySelector('.field-label');
+        input.addEventListener('focus', function () {
+            if (label) label.style.color = '#00521f';
+        });
+        input.addEventListener('blur', function () {
+            if (label) label.style.color = '';
+        });
+    });
+}
+
+// ── INIT SEMUA ────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+    initFadeSections();
+    initFotoPreview();
+    initNamaLiveUpdate();
+    initSaveLoading();
+    initFieldFocus();
+
+    // Tampilkan toast jika ada session success
+    const flashMsg = document.getElementById('flash-msg');
+    if (flashMsg) {
+        // Sembunyikan flash inline, ganti ke toast
+        const flashEl = document.getElementById('flash-success');
+        if (flashEl) flashEl.style.display = 'none';
+        showToast(flashMsg.dataset.msg || 'Profil berhasil disimpan!');
+    }
 });
 </script>
 @endpush

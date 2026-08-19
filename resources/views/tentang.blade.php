@@ -145,9 +145,10 @@
         </div>
         <div class="max-w-4xl mx-auto ao-fade-up ao-delay-2">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="grid grid-cols-1 md:grid-cols-3">
+                {{-- Pakai grid 4 kolom: foto 1 kolom, teks 3 kolom agar lebih lega --}}
+                <div style="display:grid;grid-template-columns:220px 1fr" class="max-md:block">
                     {{-- Foto / Ikon Direktur --}}
-                    <div class="flex flex-col items-center justify-center p-8 md:p-10 bg-gradient-to-br from-green-600 to-green-700 text-center">
+                    <div class="flex flex-col items-center justify-center p-8 bg-gradient-to-br from-green-600 to-green-700 text-center" style="min-width:0">
                         <div class="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 border-2 border-white/30">
                             <i class="fas fa-user-tie text-white text-3xl"></i>
                         </div>
@@ -155,13 +156,11 @@
                         <p class="text-green-200 text-xs mt-1 uppercase tracking-wider font-semibold">{{ $setting->nama_rumahsakit ?? 'Rumah Sakit' }}</p>
                     </div>
                     {{-- Isi Sambutan --}}
-                    <div class="md:col-span-2 p-8 md:p-10 flex items-center">
-                        <div>
-                            <i class="fas fa-quote-left text-green-200 text-3xl mb-4 block"></i>
-                            <div class="text-gray-600 leading-relaxed text-sm">
-                                {!! nl2br(e($setting->sambutan_direktur)) !!}
-                            </div>
-                        </div>
+                    <div class="p-8 md:p-10" style="min-width:0">
+                        <i class="fas fa-quote-left text-green-200 text-3xl mb-4 block"></i>
+                        {{-- max-height + overflow-y:auto agar tidak makan tempat terlalu panjang --}}
+                        <div class="text-gray-600 leading-relaxed text-sm"
+                             style="max-height:260px;overflow-y:auto;padding-right:8px;word-break:break-word;white-space:pre-line">{{ $setting->sambutan_direktur }}</div>
                     </div>
                 </div>
             </div>
