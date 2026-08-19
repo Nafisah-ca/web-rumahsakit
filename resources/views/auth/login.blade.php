@@ -8,20 +8,39 @@
         inset: 0;
         z-index: 0;
         overflow: hidden;
+        pointer-events: none; /* background tidak blokir klik di bawahnya */
     }
 
     /* Override body bg khusus halaman auth */
     body { background: transparent !important; }
+
+    /* Pastikan navbar & footer tetap di atas background */
+    #navbar-main, nav, footer, .topbar {
+        position: relative;
+        z-index: 100 !important;
+    }
+
+    /* Sembunyikan footer di halaman auth — tidak relevan di halaman login/register */
+    footer.footer-main,
+    #bottom-nav,
+    #bottom-nav-spacer,
+    #btn-whatsapp,
+    #btn-back-to-top {
+        display: none !important;
+    }
 
     .auth-bg-image {
         position: absolute;
         inset: -10%;
         width: 120%;
         height: 120%;
-        background-image: url('{{ asset('images/auth-bg.jpg') }}');
+        /* Fallback gradient jika gambar belum ada */
+        background-image:
+            url('{{ asset('images/auth-bg.jpg') }}'),
+            linear-gradient(135deg, #064e3b 0%, #065f46 40%, #047857 70%, #34d399 100%);
         background-size: cover;
         background-position: center;
-        opacity: 0.18;
+        opacity: 0.22;
         animation: medicalBgMotion 20s ease-in-out infinite;
         will-change: transform;
     }

@@ -18,6 +18,8 @@
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
+# Izinkan gambar auth background ikut git
+!/public/images/auth-bg.jpg
 /storage/*.key
 /storage/pail
 /vendor
