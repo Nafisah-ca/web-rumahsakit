@@ -460,7 +460,8 @@
 
 {{-- Social media section dihapus --}}
 
-{{-- ===== FOOTER ===== --}}
+{{-- ===== FOOTER — disembunyikan di halaman auth ===== --}}
+@if(!request()->routeIs('login') && !request()->routeIs('login.post') && !request()->routeIs('register') && !request()->routeIs('register.post'))
 <footer class="footer-main text-white">
     <div class="max-w-screen-xl mx-auto px-4 py-12">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -641,6 +642,7 @@
         </div>
     </div>
 </footer>
+@endif
 
 {{-- BACK TO TOP --}}
 <button id="btn-back-to-top" aria-label="Kembali ke atas"
