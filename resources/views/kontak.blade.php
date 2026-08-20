@@ -405,4 +405,459 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+
+{{-- ===== PROFESSIONAL ENHANCEMENT JS ===== --}}
+<script>
+(function () {
+    'use strict';
+
+    /* ═══════════════════════════════════════════════════════════
+       KEYFRAMES & GLOBAL STYLES
+    ═══════════════════════════════════════════════════════════ */
+    var css = `
+        /* Scroll reveal initial state */
+        .k-reveal {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1);
+        }
+        .k-reveal.k-visible { opacity: 1; transform: translateY(0); }
+
+        /* Ripple */
+        .k-ripple-host { position: relative; overflow: hidden; }
+        .k-ripple {
+            position: absolute; border-radius: 50%; transform: scale(0);
+            background: rgba(255,255,255,.35);
+            animation: kRipple .55s linear;
+            pointer-events: none;
+        }
+        @keyframes kRipple { to { transform: scale(4); opacity: 0; } }
+
+        /* Toast */
+        #k-toast-wrap {
+            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 8px;
+            pointer-events: none;
+        }
+        .k-toast {
+            display: flex; align-items: center; gap: 10px;
+            background: #111827; color: #fff;
+            padding: 10px 20px; border-radius: 100px;
+            font-size: 13px; font-weight: 600;
+            box-shadow: 0 8px 32px rgba(0,0,0,.22);
+            opacity: 0; transform: translateY(14px) scale(.95);
+            transition: opacity .28s cubic-bezier(.22,1,.36,1), transform .28s cubic-bezier(.22,1,.36,1);
+            pointer-events: auto; max-width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .k-toast.k-toast-in { opacity: 1; transform: translateY(0) scale(1); }
+        .k-toast.k-toast-out { opacity: 0; transform: translateY(-8px) scale(.95); }
+        .k-toast-icon { flex-shrink: 0; width: 18px; height: 18px; }
+
+        /* Alert progress bar */
+        .k-alert-bar {
+            position: absolute; bottom: 0; left: 0; height: 3px; width: 100%;
+            background: linear-gradient(90deg, #16a34a, #4ade80);
+            border-radius: 0 0 1rem 1rem;
+            transform-origin: left;
+            animation: kBar 5s linear forwards;
+        }
+        @keyframes kBar { to { transform: scaleX(0); } }
+
+        /* Input focus glow line */
+        .k-field { position: relative; }
+        .k-field::after {
+            content: '';
+            position: absolute; bottom: 0; left: 50%; right: 50%;
+            height: 2px; background: linear-gradient(90deg, #16a34a, #4ade80);
+            border-radius: 2px;
+            transition: left .28s cubic-bezier(.22,1,.36,1), right .28s cubic-bezier(.22,1,.36,1);
+            pointer-events: none;
+        }
+        .k-field.k-field-active::after { left: 0; right: 0; }
+
+        /* Char counter pill */
+        .k-counter {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 11px; font-weight: 600; color: #9ca3af;
+            transition: color .2s;
+        }
+        .k-counter.k-counter-warn { color: #f97316; }
+        .k-counter.k-counter-danger { color: #ef4444; }
+        .k-counter-ring {
+            width: 18px; height: 18px;
+        }
+        .k-counter-ring circle {
+            transition: stroke-dashoffset .3s ease, stroke .3s ease;
+        }
+
+        /* Inline validation */
+        .k-valid-msg {
+            font-size: 11px; font-weight: 600; margin-top: 4px;
+            display: flex; align-items: center; gap: 4px;
+            opacity: 0; transform: translateY(-4px);
+            transition: opacity .2s, transform .2s;
+        }
+        .k-valid-msg.k-show { opacity: 1; transform: translateY(0); }
+        .k-valid-msg.k-ok { color: #16a34a; }
+        .k-valid-msg.k-err { color: #ef4444; }
+
+        /* Submit btn pulse ring on hover */
+        .k-submit-ring {
+            position: absolute; inset: -3px; border-radius: inherit;
+            border: 2px solid transparent; pointer-events: none;
+            transition: border-color .2s, inset .2s;
+        }
+        button[type=submit]:hover .k-submit-ring {
+            border-color: rgba(22,163,74,.4); inset: -5px;
+        }
+
+        /* Contact card copy hint */
+        .k-copy-card { transition: background .18s, transform .18s, box-shadow .18s; }
+        .k-copy-card:hover {
+            background: #f0fdf4 !important;
+            transform: translateX(4px);
+            box-shadow: 0 4px 18px rgba(22,163,74,.1);
+        }
+        .k-copy-badge {
+            font-size: 10px; font-weight: 700; color: #16a34a;
+            background: #dcfce7; border-radius: 6px;
+            padding: 2px 7px; flex-shrink: 0;
+            opacity: 0; transition: opacity .2s;
+        }
+        .k-copy-card:hover .k-copy-badge { opacity: 1; }
+    `;
+    var styleEl = document.createElement('style');
+    styleEl.textContent = css;
+    document.head.appendChild(styleEl);
+
+    /* ═══════════════════════════════════════════════════════════
+       TOAST SYSTEM
+    ═══════════════════════════════════════════════════════════ */
+    var toastWrap = document.createElement('div');
+    toastWrap.id = 'k-toast-wrap';
+    document.body.appendChild(toastWrap);
+
+    function showToast(msg, type) {
+        var icons = {
+            success: '<svg class="k-toast-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="#16a34a"/><path d="M6 10.5l2.5 2.5 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+            copy:    '<svg class="k-toast-icon" viewBox="0 0 20 20" fill="none"><rect x="4" y="6" width="9" height="11" rx="2" stroke="#a78bfa" stroke-width="1.6"/><path d="M7 6V5a2 2 0 012-2h6a2 2 0 012 2v9a2 2 0 01-2 2h-1" stroke="#a78bfa" stroke-width="1.6"/></svg>',
+            info:    '<svg class="k-toast-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#60a5fa" stroke-width="1.6"/><path d="M10 9v5M10 7h.01" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round"/></svg>',
+        };
+        type = type || 'success';
+        var t = document.createElement('div');
+        t.className = 'k-toast';
+        t.innerHTML = (icons[type] || icons.success) + '<span>' + msg + '</span>';
+        toastWrap.appendChild(t);
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () { t.classList.add('k-toast-in'); });
+        });
+        setTimeout(function () {
+            t.classList.remove('k-toast-in');
+            t.classList.add('k-toast-out');
+            setTimeout(function () { t.remove(); }, 320);
+        }, 2600);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       1. STAGGERED SCROLL REVEAL — IntersectionObserver
+    ═══════════════════════════════════════════════════════════ */
+    var revealSelectors = [
+        '.grid.grid-cols-1.md\\:grid-cols-2 > a',   // WA & email cards
+        '#guestbook',
+        '.space-y-3 > div.flex.gap-3',              // contact info rows
+        '.ulasan-card-kontak',
+        '#ulasan-form > div > div',
+    ];
+
+    var revealAll = document.querySelectorAll(revealSelectors.join(','));
+
+    // group by parent to stagger siblings
+    var groups = new Map();
+    revealAll.forEach(function (el) {
+        var p = el.parentElement;
+        if (!groups.has(p)) groups.set(p, []);
+        groups.get(p).push(el);
+        el.classList.add('k-reveal');
+    });
+
+    var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            var el = entry.target;
+            var siblings = groups.get(el.parentElement) || [el];
+            var idx = siblings.indexOf(el);
+            setTimeout(function () { el.classList.add('k-visible'); }, idx * 80);
+            observer.unobserve(el);
+        });
+    }, { threshold: 0.12, rootMargin: '0px 0px -48px 0px' });
+
+    revealAll.forEach(function (el) { observer.observe(el); });
+
+    /* ═══════════════════════════════════════════════════════════
+       2. RIPPLE EFFECT on submit buttons
+    ═══════════════════════════════════════════════════════════ */
+    document.querySelectorAll('button[type="submit"]').forEach(function (btn) {
+        btn.classList.add('k-ripple-host');
+        btn.style.position = 'relative';
+
+        // add ring element
+        var ring = document.createElement('span');
+        ring.className = 'k-submit-ring';
+        btn.appendChild(ring);
+
+        btn.addEventListener('click', function (e) {
+            var circle = document.createElement('span');
+            var diameter = Math.max(btn.clientWidth, btn.clientHeight);
+            var rect = btn.getBoundingClientRect();
+            circle.className = 'k-ripple';
+            circle.style.cssText = [
+                'width:' + diameter + 'px',
+                'height:' + diameter + 'px',
+                'left:' + (e.clientX - rect.left - diameter / 2) + 'px',
+                'top:' + (e.clientY - rect.top - diameter / 2) + 'px',
+            ].join(';');
+            btn.appendChild(circle);
+            setTimeout(function () { circle.remove(); }, 600);
+        });
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       3. PROFESSIONAL LOADING STATE on form submit
+    ═══════════════════════════════════════════════════════════ */
+    document.querySelectorAll('form').forEach(function (form) {
+        form.addEventListener('submit', function () {
+            var btn = form.querySelector('button[type="submit"]');
+            if (!btn || btn.disabled) return;
+            btn.disabled = true;
+            btn.dataset.original = btn.innerHTML;
+            btn.innerHTML = [
+                '<svg class="animate-spin inline w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">',
+                '<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>',
+                '<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>',
+                '</svg>',
+                '<span>Mengirim Pesan...</span>',
+            ].join('');
+            btn.style.transition = 'opacity .2s';
+            btn.style.opacity = '.85';
+        });
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       4. LIVE CHARACTER COUNTER with SVG ring
+    ═══════════════════════════════════════════════════════════ */
+    document.querySelectorAll('textarea[maxlength]').forEach(function (ta) {
+        var max = parseInt(ta.getAttribute('maxlength'));
+        var hint = ta.closest('div') ? ta.closest('div').querySelector('p.text-xs') : null;
+        if (!hint) return;
+
+        var R = 7, C = 2 * Math.PI * R;
+        hint.innerHTML = [
+            '<span class="k-counter" id="kc-' + max + '">',
+            '<svg class="k-counter-ring" viewBox="0 0 20 20">',
+            '<circle cx="10" cy="10" r="' + R + '" fill="none" stroke="#e5e7eb" stroke-width="2.4"/>',
+            '<circle id="kc-arc-' + max + '" cx="10" cy="10" r="' + R + '" fill="none" stroke="#16a34a" stroke-width="2.4"',
+            ' stroke-dasharray="' + C + '" stroke-dashoffset="' + C + '"',
+            ' stroke-linecap="round" transform="rotate(-90 10 10)"/>',
+            '</svg>',
+            '<span id="kc-txt-' + max + '">' + max + ' karakter tersisa</span>',
+            '</span>',
+        ].join('');
+
+        var arc  = document.getElementById('kc-arc-' + max);
+        var txt  = document.getElementById('kc-txt-' + max);
+        var pill = document.getElementById('kc-' + max);
+
+        function update() {
+            var used = ta.value.length;
+            var remaining = max - used;
+            var pct = used / max;
+            arc.style.strokeDashoffset = C * (1 - pct);
+            txt.textContent = remaining + ' karakter tersisa';
+            if (pct >= 1) {
+                arc.style.stroke = '#ef4444';
+                pill.className = 'k-counter k-counter-danger';
+            } else if (pct >= .85) {
+                arc.style.stroke = '#f97316';
+                pill.className = 'k-counter k-counter-warn';
+            } else {
+                arc.style.stroke = '#16a34a';
+                pill.className = 'k-counter';
+            }
+        }
+
+        ta.addEventListener('input', update);
+        update();
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       5. INLINE LIVE VALIDATION
+    ═══════════════════════════════════════════════════════════ */
+    var rules = {
+        'input[name="nama"]':   { min: 2, msg: 'Nama minimal 2 karakter.' },
+        'input[name="email"]':  { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, msg: 'Format email tidak valid.' },
+        'input[name="telepon"]':{ pattern: /^[0-9+\-\s()]{6,20}$/, msg: 'Format nomor tidak valid.' },
+    };
+
+    Object.keys(rules).forEach(function (sel) {
+        var rule = rules[sel];
+        document.querySelectorAll(sel).forEach(function (inp) {
+            /* add wrapper class */
+            var wrap = inp.closest('div');
+            if (wrap) wrap.classList.add('k-field');
+
+            /* create message el */
+            var msg = document.createElement('p');
+            msg.className = 'k-valid-msg';
+            inp.insertAdjacentElement('afterend', msg);
+
+            function validate() {
+                var v = inp.value.trim();
+                if (!v) { msg.classList.remove('k-show'); return; }
+                var ok = rule.pattern ? rule.pattern.test(v) : (v.length >= (rule.min || 0));
+                msg.innerHTML = ok
+                    ? '<svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="#16a34a"/><path d="M3.5 6.2l1.5 1.5 3-3" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Terlihat bagus!'
+                    : '<svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="#ef4444"/><path d="M4 4l4 4M8 4l-4 4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg> ' + rule.msg;
+                msg.className = 'k-valid-msg k-show ' + (ok ? 'k-ok' : 'k-err');
+                inp.style.borderColor = ok ? '#86efac' : '#fca5a5';
+            }
+
+            inp.addEventListener('blur', validate);
+            inp.addEventListener('input', function () {
+                if (inp.value.length > 3) validate();
+            });
+        });
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       6. INPUT FOCUS GLOW LINE
+    ═══════════════════════════════════════════════════════════ */
+    document.querySelectorAll('input, textarea').forEach(function (inp) {
+        var wrap = inp.closest('div');
+        if (!wrap) return;
+        wrap.classList.add('k-field');
+        inp.addEventListener('focus', function () { wrap.classList.add('k-field-active'); });
+        inp.addEventListener('blur',  function () { wrap.classList.remove('k-field-active'); });
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       7. COPY-TO-CLIPBOARD on contact info cards
+    ═══════════════════════════════════════════════════════════ */
+    document.querySelectorAll('.space-y-3 > div.flex.gap-3').forEach(function (card) {
+        card.classList.add('k-copy-card');
+        card.style.cursor = 'pointer';
+
+        /* append "Salin" badge */
+        var badge = document.createElement('span');
+        badge.className = 'k-copy-badge';
+        badge.textContent = 'Salin';
+        card.appendChild(badge);
+
+        card.addEventListener('click', function () {
+            var textEl = this.querySelector('p.text-gray-500, a');
+            if (!textEl) return;
+            var text = textEl.textContent.trim();
+            if (!text) return;
+
+            var doToast = function () {
+                showToast('Tersalin: ' + text.substring(0, 36) + (text.length > 36 ? '…' : ''), 'copy');
+                /* brief flash */
+                card.style.background = '#f0fdf4';
+                setTimeout(function () { card.style.background = ''; }, 500);
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(doToast);
+            } else {
+                var ta = document.createElement('textarea');
+                ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+                document.body.appendChild(ta); ta.select();
+                document.execCommand('copy'); ta.remove();
+                doToast();
+            }
+        });
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       8. AUTO-DISMISS SUCCESS ALERTS with progress bar
+    ═══════════════════════════════════════════════════════════ */
+    document.querySelectorAll('.bg-green-50.border.border-green-200.rounded-2xl').forEach(function (alert) {
+        alert.style.position = 'relative';
+        alert.style.overflow = 'hidden';
+
+        /* close button */
+        var closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+        closeBtn.style.cssText = 'position:absolute;top:10px;right:12px;color:#9ca3af;background:none;border:none;cursor:pointer;padding:2px;line-height:1;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:color .15s';
+        closeBtn.addEventListener('mouseenter', function () { this.style.color = '#374151'; });
+        closeBtn.addEventListener('mouseleave', function () { this.style.color = '#9ca3af'; });
+        alert.appendChild(closeBtn);
+
+        var bar = document.createElement('div');
+        bar.className = 'k-alert-bar';
+        alert.appendChild(bar);
+
+        function dismiss() {
+            alert.style.transition = 'opacity .35s, max-height .4s ease, padding .3s, margin .3s';
+            alert.style.maxHeight = alert.scrollHeight + 'px';
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    alert.style.opacity = '0';
+                    alert.style.maxHeight = '0';
+                    alert.style.padding = '0';
+                    alert.style.marginBottom = '0';
+                });
+            });
+            setTimeout(function () { alert.remove(); }, 450);
+        }
+
+        closeBtn.addEventListener('click', dismiss);
+        setTimeout(dismiss, 5200);
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       9. SMOOTH TEXTAREA AUTO-RESIZE
+    ═══════════════════════════════════════════════════════════ */
+    document.querySelectorAll('textarea.resize-none').forEach(function (ta) {
+        ta.style.overflowY = 'hidden';
+        function resize() {
+            ta.style.height = 'auto';
+            ta.style.height = (ta.scrollHeight) + 'px';
+        }
+        ta.addEventListener('input', resize);
+        resize();
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       10. FLOATING SCROLL-TO-TOP (appears after 300px scroll)
+    ═══════════════════════════════════════════════════════════ */
+    var fab = document.createElement('button');
+    fab.type = 'button';
+    fab.setAttribute('aria-label', 'Kembali ke atas');
+    fab.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 14V6M6 10l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    fab.style.cssText = [
+        'position:fixed;bottom:88px;right:24px;z-index:9000',
+        'width:44px;height:44px;border-radius:14px',
+        'background:#16a34a;color:#fff;border:none;cursor:pointer',
+        'display:flex;align-items:center;justify-content:center',
+        'box-shadow:0 4px 18px rgba(22,163,74,.35)',
+        'opacity:0;transform:scale(.8) translateY(8px)',
+        'transition:opacity .3s,transform .3s',
+        'pointer-events:none',
+    ].join(';');
+    document.body.appendChild(fab);
+
+    window.addEventListener('scroll', function () {
+        var show = window.scrollY > 300;
+        fab.style.opacity = show ? '1' : '0';
+        fab.style.transform = show ? 'scale(1) translateY(0)' : 'scale(.8) translateY(8px)';
+        fab.style.pointerEvents = show ? 'auto' : 'none';
+    }, { passive: true });
+
+    fab.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+})();
+</script>
 @endpush
