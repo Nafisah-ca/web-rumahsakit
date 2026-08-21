@@ -221,14 +221,16 @@ class HospitalController extends Controller
 
     public function promo()
     {
-        $promos = Promo::aktif()->paginate(10);
-        $banner = \App\Models\PageBanner::getForPage('promo');
-        return view('promo', compact('promos', 'banner'));
+        $promosAktif = Promo::aktif()->paginate(9, ['*'], 'page_a');
+        $promosLewat = Promo::expired()->paginate(6, ['*'], 'page_l');
+        $banner      = \App\Models\PageBanner::getForPage('promo');
+        return view('promo', compact('promosAktif', 'promosLewat', 'banner'));
     }
 
     public function promoDetail(\App\Models\Promo $promo)
     {
-        abort_if($promo->status !== 'aktif', 404);
+        // Promo expired tetap bisa dibuka detailnya
+        abort_if(!in_array($promo->status, ['aktif']), 404);
         $related = Promo::aktif()->where('id', '!=', $promo->id)->limit(3)->get();
         $banner  = \App\Models\PageBanner::getForPage('promo');
         return view('promo-detail', compact('promo', 'related', 'banner'));

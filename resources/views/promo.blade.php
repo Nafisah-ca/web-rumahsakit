@@ -82,20 +82,28 @@
 <section class="py-12 bg-gray-50">
     <div class="max-w-screen-xl mx-auto px-4">
 
-        @if($promos->isEmpty())
+        @if($promosAktif->isEmpty() && $promosLewat->isEmpty())
         <div class="text-center py-20 text-gray-400">
             <i class="fas fa-tag text-5xl opacity-20 block mb-4"></i>
             <p class="font-semibold text-lg">Belum ada promo tersedia</p>
         </div>
         @else
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="promo-grid">
-            @foreach($promos as $index => $p)
+        {{-- ── PROMO AKTIF ─────────────────────────── --}}
+        @if($promosAktif->isNotEmpty())
+        <div class="flex items-end justify-between mb-6">
+            <div>
+                <span class="text-green-600 text-xs font-black uppercase tracking-widest block mb-1">Penawaran Berlangsung</span>
+                <h2 class="text-gray-900 font-extrabold text-2xl">Promo <span class="text-green-600">Aktif</span></h2>
+            </div>
+            <span class="text-xs text-gray-400 font-semibold">{{ $promosAktif->total() }} promo tersedia</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10" id="promo-grid">
+            @foreach($promosAktif as $index => $p)
             <a href="{{ route('promo.detail', $p) }}"
                class="promo-card group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm"
                data-index="{{ $index }}">
-
-                {{-- Gambar — tinggi tetap --}}
                 <div class="relative flex-shrink-0 overflow-hidden" style="height:180px; background: linear-gradient(135deg,#00521f,#00b04f)">
                     @if($p->gambar)
                     <img src="{{ Storage::url($p->gambar) }}" alt="{{ $p->judul }}"
@@ -108,22 +116,13 @@
                         <i class="fas fa-tag text-5xl text-white opacity-20"></i>
                     </div>
                     @endif
-
-                    {{-- Efek Shine / Kilap saat hover --}}
                     <div class="promo-shine"></div>
-
-                    {{-- Badge --}}
                     <div class="absolute top-3 left-3 z-10">
                         <span class="bg-green-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full tracking-wide shadow-sm">PROMO</span>
                     </div>
-
-                    {{-- Overlay gradient bawah --}}
                     <div class="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-                         style="background: linear-gradient(to top, rgba(0,0,0,0.45), transparent)">
-                    </div>
+                         style="background: linear-gradient(to top, rgba(0,0,0,0.45), transparent)"></div>
                 </div>
-
-                {{-- Konten — flex-1 agar semua card sama tinggi --}}
                 <div class="flex flex-col flex-1 p-5">
                     <h3 class="font-extrabold text-gray-900 text-base leading-snug mb-2 group-hover:text-green-600 transition-colors line-clamp-2">
                         {{ $p->judul }}
@@ -145,10 +144,71 @@
             @endforeach
         </div>
 
-        {{-- Pagination --}}
-        <div class="mt-10 flex justify-center">
-            {{ $promos->links() }}
+        <div class="flex justify-center mb-12">
+            {{ $promosAktif->links() }}
         </div>
+        @endif
+
+        {{-- ── PROMO SEBELUMNYA ─────────────────────── --}}
+        @if($promosLewat->isNotEmpty())
+        <div class="border-t border-gray-200 pt-10">
+            <div class="flex items-end justify-between mb-6">
+                <div>
+                    <span class="text-gray-400 text-xs font-black uppercase tracking-widest block mb-1">Sudah Berakhir</span>
+                    <h2 class="text-gray-700 font-extrabold text-2xl">Promo <span class="text-gray-500">Sebelumnya</span></h2>
+                </div>
+                <span class="text-xs text-gray-400 font-semibold">{{ $promosLewat->total() }} promo</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                @foreach($promosLewat as $index => $p)
+                <a href="{{ route('promo.detail', $p) }}"
+                   class="promo-card group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm opacity-80"
+                   data-index="{{ $index + 100 }}">
+                    <div class="relative flex-shrink-0 overflow-hidden" style="height:160px; background:#9ca3af">
+                        @if($p->gambar)
+                        <img src="{{ Storage::url($p->gambar) }}" alt="{{ $p->judul }}"
+                             class="promo-img absolute inset-0 w-full h-full object-cover grayscale">
+                        @elseif($p->thumbnail)
+                        <img src="{{ Storage::url($p->thumbnail) }}" alt="{{ $p->judul }}"
+                             class="promo-img absolute inset-0 w-full h-full object-cover grayscale">
+                        @else
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-tag text-4xl text-white opacity-20"></i>
+                        </div>
+                        @endif
+                        {{-- Overlay gelap tanda expired --}}
+                        <div class="absolute inset-0 bg-gray-900/30"></div>
+                        <div class="absolute top-3 left-3 z-10">
+                            <span class="bg-gray-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full tracking-wide">BERAKHIR</span>
+                        </div>
+                        <div class="absolute top-3 right-3 z-10">
+                            <span class="bg-red-500/90 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                                <i class="fas fa-clock mr-0.5"></i>Expired
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col flex-1 p-4">
+                        <h3 class="font-bold text-gray-600 text-sm leading-snug mb-1.5 line-clamp-2">
+                            {{ $p->judul }}
+                        </h3>
+                        <p class="text-gray-400 text-xs leading-relaxed line-clamp-2 flex-1">
+                            {{ Str::limit(strip_tags($p->deskripsi ?? ''), 90) }}
+                        </p>
+                        <div class="flex items-center gap-1.5 pt-3 mt-3 border-t border-gray-100 text-xs text-gray-400 font-semibold">
+                            <i class="fas fa-calendar-xmark text-gray-300"></i>
+                            Berakhir {{ $p->tanggal_selesai?->format('d M Y') }}
+                        </div>
+                    </div>
+                </a>
+                @endforeach
+            </div>
+
+            <div class="flex justify-center mt-6">
+                {{ $promosLewat->links() }}
+            </div>
+        </div>
+        @endif
 
         @endif
     </div>
@@ -191,6 +251,5 @@ document.addEventListener('DOMContentLoaded', function () {
         // Fallback untuk browser tanpa IntersectionObserver
         promoCards.forEach(card => card.classList.add('is-revealed'));
     }
-});
-</script>
+});</script>
 @endpush

@@ -145,9 +145,18 @@ class CmsController extends Controller
 
     public function promo(Request $request)
     {
-        $promos = Promo::when($request->search, fn($q) => $q->where('judul', 'like', "%{$request->search}%"))
-            ->when($request->status, fn($q) => $q->where('status', $request->status))
-            ->orderByDesc('tanggal_mulai')->paginate(15)->withQueryString();
+        $query = Promo::when($request->search, fn($q) => $q->where('judul', 'like', "%{$request->search}%"));
+
+        // Filter status: 'kedaluwarsa' = aktif tapi tanggal sudah lewat
+        if ($request->status === 'kedaluwarsa') {
+            $query->where('status', 'aktif')
+                  ->whereNotNull('tanggal_selesai')
+                  ->where('tanggal_selesai', '<', today());
+        } elseif ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        $promos = $query->orderByDesc('tanggal_mulai')->paginate(15)->withQueryString();
         return view('cms.promo.index', compact('promos'));
     }
 

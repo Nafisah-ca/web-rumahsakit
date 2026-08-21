@@ -8,10 +8,11 @@
         <div style="display:flex;gap:10px">
             <form style="display:flex;gap:8px" method="GET">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari promo..." class="form-input" style="width:180px">
-                <select name="status" class="form-input" style="width:130px">
+                <select name="status" class="form-input" style="width:150px" onchange="this.form.submit()">
                     <option value="">Semua Status</option>
-                    <option value="aktif"    {{ request('status')=='aktif'?'selected':'' }}>Aktif</option>
-                    <option value="nonaktif" {{ request('status')=='nonaktif'?'selected':'' }}>Nonaktif</option>
+                    <option value="aktif"       {{ request('status')==='aktif'       ? 'selected':'' }}>Aktif</option>
+                    <option value="nonaktif"    {{ request('status')==='nonaktif'    ? 'selected':'' }}>Nonaktif</option>
+                    <option value="kedaluwarsa" {{ request('status')==='kedaluwarsa' ? 'selected':'' }}>Kedaluwarsa</option>
                 </select>
                 <button type="submit" class="btn btn-secondary"><i class="fas fa-search"></i></button>
                 @if(request()->hasAny(['search','status']))<a href="{{ route('cms.promo') }}" class="btn btn-secondary"><i class="fas fa-xmark"></i></a>@endif
@@ -35,8 +36,13 @@
                 @forelse($promos as $promo)
                 @php
                     $isExpired  = $promo->tanggal_selesai && $promo->tanggal_selesai->isPast();
-                    $statusBadge = $promo->status === 'aktif' ? 'badge-green' : 'badge-slate';
-                    $statusLabel = $promo->status === 'aktif' ? 'Aktif' : 'Nonaktif';
+                    // Badge: expired tampil kuning-oranye biar admin langsung tahu
+                    $statusBadge = $isExpired
+                        ? 'badge-amber'
+                        : ($promo->status === 'aktif' ? 'badge-green' : 'badge-slate');
+                    $statusLabel = $isExpired
+                        ? 'Kedaluwarsa'
+                        : ($promo->status === 'aktif' ? 'Aktif' : 'Nonaktif');
                 @endphp
                 <tr>
                     {{-- Judul --}}

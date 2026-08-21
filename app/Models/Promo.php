@@ -47,6 +47,18 @@ class Promo extends Model
                      ->orderBy('id');
     }
 
+    /**
+     * Promo yang sudah expired: status aktif tapi tanggal_selesai sudah lewat.
+     * Ini yang "menghilang" dari portal tanpa disadari admin.
+     */
+    public function scopeExpired(Builder $query): Builder
+    {
+        return $query->where('status', 'aktif')
+                     ->whereNotNull('tanggal_selesai')
+                     ->where('tanggal_selesai', '<', Carbon::today())
+                     ->orderByDesc('tanggal_selesai');
+    }
+
     // ─── Accessors ────────────────────────────────────
 
     public function getBerakhirFormatAttribute(): string
