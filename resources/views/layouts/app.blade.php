@@ -82,6 +82,136 @@
 
 /* Sub-dropdown dokter */
 .nav-dropdown-sub { position: relative; }
+
+/* ===== GLOBAL MOBILE RESPONSIVE FIXES ===== */
+
+/* Prevent any horizontal overflow globally */
+html, body { overflow-x: hidden; max-width: 100%; }
+*, *::before, *::after { box-sizing: border-box; }
+
+/* --- STAT/CARD GRID: 2 kolom di mobile, tidak overflow --- */
+@media (max-width: 639px) {
+    /* Quick stats (layanan page) */
+    .grid.grid-cols-2.md\:grid-cols-4,
+    .grid.grid-cols-2.sm\:grid-cols-3.md\:grid-cols-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.625rem !important;
+    }
+
+    /* Stat cards: text tidak overflow */
+    .stat-toggle-card,
+    [class*="rounded-2xl"][class*="bg-green-50"],
+    [class*="rounded-2xl"][class*="bg-blue-50"],
+    [class*="rounded-2xl"][class*="bg-amber-50"],
+    [class*="rounded-2xl"][class*="bg-purple-50"] {
+        min-width: 0;
+        word-break: break-word;
+    }
+
+    /* Layanan grid: 1 kolom di mobile */
+    .layanan-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
+    }
+
+    /* Tentang Kami: kotak hijau min-height lebih kecil */
+    .grid.grid-cols-1.lg\:grid-cols-2 > div > div[style*="min-height: 380px"] {
+        min-height: 280px !important;
+    }
+
+    /* Visi/Misi/Nilai: stack satu kolom dengan jarak lebih kecil */
+    .grid.grid-cols-1.md\:grid-cols-3 { gap: 0.75rem !important; }
+
+    /* Penghargaan grid: 2 kolom ketat */
+    .grid.grid-cols-2.sm\:grid-cols-3.md\:grid-cols-4 {
+        gap: 0.625rem !important;
+    }
+
+    /* Award card: padding lebih compact */
+    .award-card { padding: 0.75rem !important; }
+    .award-card .w-16.h-16 {
+        width: 2.75rem !important;
+        height: 2.75rem !important;
+    }
+
+    /* Profil singkat: padding lebih kecil */
+    .py-16 { padding-top: 2.5rem !important; padding-bottom: 2.5rem !important; }
+    .py-14 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+
+    /* Section label dan judul: ukuran proporsional */
+    .section-title { font-size: 1.375rem !important; }
+
+    /* Layanan card: pastikan tidak overflow */
+    .layanan-card { overflow: hidden; }
+    .layanan-card img { max-width: 100%; }
+
+    /* CTA Booking section: stack vertikal */
+    .flex.flex-col.md\:flex-row.items-center.justify-between {
+        flex-direction: column !important;
+        text-align: center;
+    }
+
+    /* IGD Banner: teks tidak terpotong */
+    .bg-red-600 .flex { flex-wrap: wrap; }
+
+    /* Quick menu grid: 3 kolom di mobile kecil */
+    .quick-menu-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+
+    /* Hero: pastikan tidak ada overflow horizontal */
+    .hero-slider, .slide { overflow: hidden !important; }
+
+    /* Dokter card: full width di mobile */
+    .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-3 {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Sambutan direktur: stack vertikal */
+    .grid.grid-cols-1.md\:grid-cols-3 { grid-template-columns: 1fr !important; }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+    /* Tablet: layanan grid 2 kolom */
+    .layanan-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    /* Tentang Kami: full width per section */
+    .grid.grid-cols-1.lg\:grid-cols-2 {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Kategori tabs: scroll horizontal tanpa mempengaruhi layout */
+#kategori-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Tombol Buat Janji Temu: full width di mobile dalam card */
+@media (max-width: 639px) {
+    .rs-btn-janji { width: 100%; justify-content: center; }
+}
+
+/* Spesialisasi pills: wrap dengan baik */
+.flex.flex-wrap { flex-wrap: wrap; }
+
+/* Page hero: tidak terlalu tinggi di mobile */
+@media (max-width: 639px) {
+    .page-hero { min-height: 160px !important; }
+    .page-hero h1 { font-size: 1.25rem !important; }
+}
+
+/* Profil dokter card: tidak overflow di mobile */
+@media (max-width: 639px) {
+    [style*="border-radius:18px"] { overflow: hidden; }
+}
+
+/* Bottom nav spacer: pastikan konten tidak tertutup bottom nav */
+#bottom-nav-spacer { height: 60px; display: none; }
+@media (max-width: 1023px) {
+    #bottom-nav-spacer { display: block; }
+    /* Konten utama tidak tertutup */
+    body { padding-bottom: 0; }
+}
 </style>
 </head>
 <body class="font-sans antialiased bg-white text-gray-800">

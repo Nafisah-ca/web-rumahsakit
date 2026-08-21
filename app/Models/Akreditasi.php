@@ -19,7 +19,7 @@ class Akreditasi extends Model
     const DELETED_AT = 'deleted_tm';
 
     protected $fillable = [
-        'nama', 'logo', 'urutan', 'status',
+        'nama', 'tahun', 'deskripsi', 'logo', 'urutan', 'status',
         'created_by', 'updated_by', 'deleted_by',
     ];
 

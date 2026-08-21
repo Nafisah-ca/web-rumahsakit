@@ -43,9 +43,10 @@ class HospitalController extends Controller
 
     public function tentang()
     {
-        $setting = \App\Models\WebsiteSetting::getSetting();
-        $banner  = \App\Models\PageBanner::getForPage('tentang');
-        return view('tentang', compact('setting', 'banner'));
+        $setting    = \App\Models\WebsiteSetting::getSetting();
+        $banner     = \App\Models\PageBanner::getForPage('tentang');
+        $penghargaan = \App\Models\Akreditasi::aktif()->get();
+        return view('tentang', compact('setting', 'banner', 'penghargaan'));
     }
 
     public function layanan()

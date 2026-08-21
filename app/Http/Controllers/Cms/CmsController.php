@@ -971,13 +971,15 @@ class CmsController extends Controller
     public function storeAkreditasi(Request $request)
     {
         $request->validate([
-            'nama'   => 'required|string|max:100',
-            'urutan' => 'nullable|integer|min:0',
-            'status' => 'required|in:aktif,nonaktif',
-            'logo'   => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
+            'nama'      => 'required|string|max:100',
+            'tahun'     => 'nullable|digits:4|integer|min:1900|max:' . (date('Y') + 1),
+            'deskripsi' => 'nullable|string|max:200',
+            'urutan'    => 'nullable|integer|min:0',
+            'status'    => 'required|in:aktif,nonaktif',
+            'logo'      => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
         ]);
 
-        $data               = $request->only(['nama', 'urutan', 'status']);
+        $data               = $request->only(['nama', 'tahun', 'deskripsi', 'urutan', 'status']);
         $data['urutan']     = $request->urutan ?? 0;
         $data['created_by'] = Auth::id();
 
@@ -997,13 +999,15 @@ class CmsController extends Controller
     public function updateAkreditasi(Request $request, Akreditasi $akreditasi)
     {
         $request->validate([
-            'nama'   => 'required|string|max:100',
-            'urutan' => 'nullable|integer|min:0',
-            'status' => 'required|in:aktif,nonaktif',
-            'logo'   => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
+            'nama'      => 'required|string|max:100',
+            'tahun'     => 'nullable|digits:4|integer|min:1900|max:' . (date('Y') + 1),
+            'deskripsi' => 'nullable|string|max:200',
+            'urutan'    => 'nullable|integer|min:0',
+            'status'    => 'required|in:aktif,nonaktif',
+            'logo'      => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
         ]);
 
-        $data               = $request->only(['nama', 'urutan', 'status']);
+        $data               = $request->only(['nama', 'tahun', 'deskripsi', 'urutan', 'status']);
         $data['urutan']     = $request->urutan ?? $akreditasi->urutan;
         $data['updated_by'] = Auth::id();
 

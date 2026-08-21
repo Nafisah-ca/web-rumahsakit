@@ -50,6 +50,31 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.10);
     border-color: #86efac;
 }
+
+/* ── Mobile fixes: Tentang Kami ────────────────────────────── */
+@media (max-width: 767px) {
+    /* Profil: stat grid 2 kolom penuh */
+    .grid.grid-cols-2.gap-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /* Kotak hijau RS: ukuran wajar */
+    [style*="min-height: 380px"] { min-height: 240px !important; }
+    /* Sambutan direktur: stack vertikal */
+    [style*="grid-template-columns:220px 1fr"] {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    /* Visi/Misi/Nilai: gap kecil */
+    .grid.grid-cols-1.md\:grid-cols-3 { gap: 0.75rem; }
+    /* Padding card */
+    .rounded-2xl.p-7 { padding: 1.25rem !important; }
+    /* Sejarah: tidak ada padding kiri berlebih di mobile */
+    .relative.pl-8.border-l-4 { padding-left: 1.5rem; }
+    /* Penghargaan: 2 kolom */
+    .grid.grid-cols-2.sm\:grid-cols-3.md\:grid-cols-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+    .award-card { padding: 0.75rem !important; }
+}
 </style>
 @endpush
 
@@ -267,33 +292,58 @@
 </section>
 @endif
 
-{{-- Penghargaan --}}
+{{-- Penghargaan — data dinamis dari CMS/database --}}
 <section class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="text-center mb-10 ao-fade-up">
             <span class="section-label">Pengakuan & Sertifikasi</span>
             <h2 class="section-title">Penghargaan <span>Kami</span></h2>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            @foreach([
-                ['fa-certificate','KARS Paripurna','2024','yellow'],
-                ['fa-shield-alt','ISO 9001:2015','2023','blue'],
-                ['fa-star','SNARS Edisi 1.1','2024','green'],
-                ['fa-trophy','RS Terpercaya Depok','2023','orange'],
-                ['fa-heart','Patient Safety Award','2024','red'],
-                ['fa-leaf','Green Hospital','2023','teal'],
-                ['fa-users','HR Excellence','2023','indigo'],
-                ['fa-laptop-medical','Digital Health Award','2024','purple'],
-            ] as [$ico,$title,$year,$color])
-            <div class="award-card ao-scale ao-delay-{{ $loop->index + 1 }} bg-gray-50 rounded-2xl p-5 text-center border border-gray-100 group">
-                <div class="w-12 h-12 rounded-xl bg-{{ $color }}-100 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <i class="fas {{ $ico }} text-{{ $color }}-600 text-lg"></i>
+
+        @if($penghargaan->isNotEmpty())
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            @foreach($penghargaan as $p)
+            <div class="award-card ao-scale ao-delay-{{ min($loop->index + 1, 8) }}
+                        bg-gray-50 rounded-2xl p-5 text-center border border-gray-100 group flex flex-col items-center">
+
+                {{-- Logo atau ikon fallback --}}
+                <div class="w-16 h-16 flex items-center justify-center mx-auto mb-3 rounded-xl overflow-hidden
+                            bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-shadow"
+                     style="padding:6px">
+                    @if($p->logo)
+                    <img src="{{ $p->logo_url }}"
+                         alt="{{ $p->nama }}"
+                         class="max-h-full max-w-full object-contain"
+                         style="max-height:52px;max-width:52px"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div style="display:none" class="w-full h-full items-center justify-center">
+                        <i class="fas fa-certificate text-green-400 text-2xl"></i>
+                    </div>
+                    @else
+                    <i class="fas fa-award text-green-500 text-2xl"></i>
+                    @endif
                 </div>
-                <p class="font-bold text-gray-800 text-xs mb-1">{{ $title }}</p>
-                <span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $year }}</span>
+
+                <p class="font-bold text-gray-800 text-xs mb-1 leading-snug">{{ $p->nama }}</p>
+
+                @if($p->tahun)
+                <span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $p->tahun }}</span>
+                @endif
+
+                @if($p->deskripsi)
+                <p class="text-[10px] text-gray-400 mt-1 leading-snug line-clamp-2">{{ $p->deskripsi }}</p>
+                @endif
             </div>
             @endforeach
         </div>
+
+        @else
+        {{-- Fallback jika belum ada data penghargaan di CMS --}}
+        <div class="text-center py-10 text-gray-400">
+            <i class="fas fa-award text-4xl opacity-20 block mb-3"></i>
+            <p class="text-sm">Belum ada data penghargaan. Tambahkan melalui CMS &rarr; Penghargaan.</p>
+        </div>
+        @endif
     </div>
 </section>
 @endsection
