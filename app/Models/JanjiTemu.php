@@ -18,12 +18,14 @@ class JanjiTemu extends Model
     protected $fillable = [
         'pasien_id', 'jadwal_dokter_id',
         'tanggal_booking', 'keluhan', 'nomor_antrian', 'status',
+        'alasan_pembatalan', 'tanggal_pembatalan', 'dibatalkan_oleh',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
     protected $casts = [
-        'tanggal_booking' => 'date',
-        'nomor_antrian'   => 'integer',
+        'tanggal_booking'    => 'date',
+        'nomor_antrian'      => 'integer',
+        'tanggal_pembatalan' => 'datetime',
     ];
 
     /** Status-to-label + warna badge untuk UI */

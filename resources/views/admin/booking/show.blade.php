@@ -72,22 +72,55 @@
     <div style="display:flex;flex-direction:column;gap:16px">
         <div class="card card-body">
             <p style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:16px">Update Status</p>
-            <form method="POST" action="{{ route('admin.booking.status', $janjiTemu) }}">
+            <form method="POST" action="{{ route('admin.booking.status', $janjiTemu) }}" id="form-status-admin">
                 @csrf @method('PUT')
                 <div class="form-group">
                     <label class="form-label">Status <span style="color:#ef4444">*</span></label>
-                    <select name="status" class="form-input" required>
+                    <select name="status" class="form-input" required id="select-status-admin" onchange="toggleAlasanAdmin(this.value)">
                         <option value="pending"   {{ $janjiTemu->status=='pending'?'selected':'' }}>Menunggu</option>
                         <option value="approved"  {{ $janjiTemu->status=='approved'?'selected':'' }}>Dikonfirmasi</option>
                         <option value="completed" {{ $janjiTemu->status=='completed'?'selected':'' }}>Selesai</option>
                         <option value="cancelled" {{ $janjiTemu->status=='cancelled'?'selected':'' }}>Dibatalkan</option>
                     </select>
                 </div>
+
+                {{-- Field alasan — muncul hanya jika status = cancelled --}}
+                <div id="wrap-alasan-admin" style="{{ $janjiTemu->status === 'cancelled' ? '' : 'display:none' }}" class="form-group">
+                    <label class="form-label">
+                        Alasan Pembatalan <span style="color:#ef4444">*</span>
+                    </label>
+                    <textarea name="alasan_pembatalan" rows="3" class="form-input"
+                        placeholder="Tuliskan alasan pembatalan booking ini..."
+                        {{ $janjiTemu->status === 'cancelled' ? '' : 'style=resize:none' }}
+                        id="textarea-alasan-admin">{{ old('alasan_pembatalan', $janjiTemu->alasan_pembatalan) }}</textarea>
+                    <p class="form-hint">Alasan ini akan ditampilkan ke pasien sebagai notifikasi.</p>
+                </div>
+
+                @if($errors->has('alasan_pembatalan'))
+                <p style="color:#dc2626;font-size:12px;margin-bottom:8px">{{ $errors->first('alasan_pembatalan') }}</p>
+                @endif
+
                 <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
                     <i class="fas fa-save"></i> Simpan Status
                 </button>
             </form>
         </div>
+
+        {{-- Info pembatalan jika sudah cancelled --}}
+        @if($janjiTemu->status === 'cancelled' && $janjiTemu->alasan_pembatalan)
+        <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:14px;padding:14px">
+            <p style="font-size:11px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">
+                <i class="fas fa-circle-xmark" style="margin-right:4px"></i>Info Pembatalan
+            </p>
+            <p style="font-size:12px;color:#7f1d1d;line-height:1.6;margin-bottom:6px">{{ $janjiTemu->alasan_pembatalan }}</p>
+            <p style="font-size:11px;color:#ef4444">
+                Dibatalkan oleh: <strong>{{ $janjiTemu->dibatalkan_oleh === 'admin' ? 'Admin' : 'Pasien' }}</strong>
+                @if($janjiTemu->tanggal_pembatalan)
+                  — {{ $janjiTemu->tanggal_pembatalan->format('d M Y H:i') }}
+                @endif
+            </p>
+        </div>
+        @endif
 
         {{-- Tombol Transaksi dinonaktifkan (fitur belum tersedia) --}}
 
@@ -103,3 +136,20 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function toggleAlasanAdmin(val) {
+    const wrap     = document.getElementById('wrap-alasan-admin');
+    const textarea = document.getElementById('textarea-alasan-admin');
+    if (val === 'cancelled') {
+        wrap.style.display = '';
+        textarea.required  = true;
+    } else {
+        wrap.style.display = 'none';
+        textarea.required  = false;
+        textarea.value     = '';
+    }
+}
+</script>
+@endpush

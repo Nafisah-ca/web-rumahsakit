@@ -387,13 +387,27 @@ class AdminController extends Controller
 
     public function updateStatusBooking(Request $request, JanjiTemu $janjiTemu)
     {
-        $request->validate([
-            'status' => 'required|in:pending,approved,completed,cancelled',
+        $rules = ['status' => 'required|in:pending,approved,completed,cancelled'];
+        if ($request->status === 'cancelled') {
+            $rules['alasan_pembatalan'] = 'required|string|min:3|max:500';
+        }
+        $request->validate($rules, [
+            'alasan_pembatalan.required' => 'Alasan pembatalan wajib diisi ketika membatalkan booking.',
+            'alasan_pembatalan.min'      => 'Alasan minimal 3 karakter.',
         ]);
-        $janjiTemu->update([
+
+        $data = [
             'status'     => $request->status,
             'updated_by' => Auth::id(),
-        ]);
+        ];
+
+        if ($request->status === 'cancelled') {
+            $data['alasan_pembatalan']  = $request->alasan_pembatalan;
+            $data['tanggal_pembatalan'] = now();
+            $data['dibatalkan_oleh']    = 'admin';
+        }
+
+        $janjiTemu->update($data);
         return back()->with('success', 'Status booking berhasil diperbarui.');
     }
 

@@ -165,18 +165,28 @@ class BookingController extends Controller
         return view('portal.booking.riwayat', compact('bookings', 'pasien'));
     }
 
-    /** Batalkan booking */
-    public function cancel(JanjiTemu $janjiTemu)
+    /** Batalkan booking (pasien) — simpan alasan, jangan hapus */
+    public function cancel(Request $request, JanjiTemu $janjiTemu)
     {
         $pasien = Auth::user()->pasien;
         abort_unless($pasien && $janjiTemu->pasien_id === $pasien->id, 403);
         abort_unless(in_array($janjiTemu->status, ['pending', 'approved']), 422, 'Booking tidak dapat dibatalkan.');
-        
-        $janjiTemu->update([
-            'status'     => 'cancelled', // DB baru: dibatalkan → cancelled
-            'updated_by' => Auth::id(),
+
+        $request->validate([
+            'alasan_pembatalan' => 'required|string|min:3|max:500',
+        ], [
+            'alasan_pembatalan.required' => 'Alasan pembatalan wajib diisi.',
+            'alasan_pembatalan.min'      => 'Alasan minimal 3 karakter.',
         ]);
-        
+
+        $janjiTemu->update([
+            'status'             => 'cancelled',
+            'alasan_pembatalan'  => $request->alasan_pembatalan,
+            'tanggal_pembatalan' => now(),
+            'dibatalkan_oleh'    => 'pasien',
+            'updated_by'         => Auth::id(),
+        ]);
+
         return back()->with('success', 'Booking berhasil dibatalkan.');
     }
 }
