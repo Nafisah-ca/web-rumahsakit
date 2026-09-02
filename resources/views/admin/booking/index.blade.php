@@ -67,19 +67,40 @@
                 @php
                 $bc = ['pending'=>'badge-amber','approved'=>'badge-blue','completed'=>'badge-green','cancelled'=>'badge-red'][$b->status] ?? 'badge-slate';
                 $bl = ['pending'=>'Menunggu','approved'=>'Dikonfirmasi','completed'=>'Selesai','cancelled'=>'Dibatalkan'][$b->status] ?? $b->status;
+                $rowBg = match($b->status) {
+                    'pending'   => 'background:#fffbeb;border-left:4px solid #f59e0b',
+                    'completed' => 'background:#f0fdf4;border-left:4px solid #16a34a',
+                    'cancelled' => 'background:#fef2f2;border-left:4px solid #dc2626',
+                    'approved'  => 'background:#eff6ff;border-left:4px solid #3b82f6',
+                    default     => '',
+                };
+                $kodeSt = match($b->status) {
+                    'pending'   => 'background:#fef3c7;color:#92400e;border:1px solid #f59e0b;font-weight:800',
+                    'approved'  => 'background:#dbeafe;color:#1e40af;border:1px solid #3b82f6;font-weight:800',
+                    'completed' => 'background:#dcfce7;color:#166534;border:1px solid #16a34a;font-weight:800',
+                    'cancelled' => 'background:#fee2e2;color:#991b1b;border:1px solid #dc2626;font-weight:800;text-decoration:line-through',
+                    default     => '',
+                };
+                $antrianSt = match($b->status) {
+                    'pending'   => 'color:#d97706;font-size:22px;font-weight:900',
+                    'approved'  => 'color:#2563eb;font-size:22px;font-weight:900',
+                    'completed' => 'color:#15803d;font-size:22px;font-weight:900',
+                    'cancelled' => 'color:#dc2626;font-size:22px;font-weight:900;text-decoration:line-through;opacity:.6',
+                    default     => 'color:#0f172a;font-size:22px;font-weight:900',
+                };
                 @endphp
-                <tr>
-                    <td><span class="code-tag">{{ $b->kode_booking }}</span></td>
+                <tr style="{{ $rowBg }}">
+                    <td><span class="code-tag" style="{{ $kodeSt }}">{{ $b->kode_booking }}</span></td>
                     <td>
-                        <p style="font-weight:600;font-size:13px">{{ $b->pasien?->user?->nama ?? $b->pasien?->nama_lengkap ?? '-' }}</p>
+                        <p style="font-weight:600;font-size:13px{{ $b->status==='cancelled' ? ';color:#9ca3af' : '' }}">{{ $b->pasien?->user?->nama ?? $b->pasien?->nama_lengkap ?? '-' }}</p>
                         <p style="font-size:11px;color:#94a3b8">{{ $b->pasien?->no_rekam_medis ?? '-' }}</p>
                     </td>
-                    <td style="color:#64748b;font-size:12px">{{ $b->jadwalDokter?->dokter?->nama_dokter ?? '-' }}</td>
+                    <td style="color:#64748b;font-size:12px{{ $b->status==='cancelled' ? ';color:#9ca3af' : '' }}">{{ $b->jadwalDokter?->dokter?->nama_dokter ?? '-' }}</td>
                     <td style="color:#64748b;font-size:12px">
                         {{ $b->tanggal_booking?->format('d M Y') ?? '-' }}
                         <br><span style="color:#94a3b8">{{ $b->jadwalDokter?->jam_mulai ? substr($b->jadwalDokter->jam_mulai,0,5).' WIB' : '' }}</span>
                     </td>
-                    <td style="font-weight:700;text-align:center">{{ $b->nomor_antrian ?? '-' }}</td>
+                    <td style="font-weight:800;text-align:center;font-size:18px;{{ $antrianSt }}">{{ $b->nomor_antrian ?? '-' }}</td>
                     <td><span class="badge {{ $bc }}">{{ $bl }}</span></td>
                     <td>
                         <div style="display:flex;gap:6px">

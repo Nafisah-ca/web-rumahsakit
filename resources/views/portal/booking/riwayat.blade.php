@@ -110,7 +110,7 @@
 .booking-card {
     background: #fff;
     border-radius: 18px;
-    border: 1px solid #e8eee9;
+    border: 1.5px solid #e8eee9;
     box-shadow: 0 1px 8px rgba(0,0,0,.05);
     overflow: hidden;
     transition: box-shadow .2s ease, transform .2s ease;
@@ -119,6 +119,164 @@
 .booking-card:hover {
     box-shadow: 0 6px 24px rgba(0,82,31,.1);
     transform: translateY(-2px);
+}
+
+/* ── STATUS WARNA FULL CARD ─────────────────────────────── */
+
+/* MENUNGGU = KUNING BOLD */
+.booking-card.status-pending {
+    border: 2.5px solid #f59e0b;
+    background: #fff;
+    box-shadow: 0 2px 16px rgba(245,158,11,.18);
+}
+.booking-card.status-pending .booking-card-header {
+    background: #f59e0b;
+    border-bottom: none;
+}
+.booking-card.status-pending .booking-kode {
+    background: rgba(255,255,255,.25);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.4);
+    font-weight: 800;
+}
+.booking-card.status-pending .sbadge {
+    background: rgba(255,255,255,.2);
+    color: #fff;
+    border-color: rgba(255,255,255,.4);
+}
+.booking-card.status-pending .sbadge::before { background: #fff; }
+.booking-card.status-pending .antrian-num {
+    color: #f59e0b;
+    font-size: 42px;
+}
+.booking-card.status-pending .booking-field-label { color: #d97706; }
+
+/* DIKONFIRMASI = BIRU BOLD */
+.booking-card.status-approved {
+    border: 2.5px solid #3b82f6;
+    background: #fff;
+    box-shadow: 0 2px 16px rgba(59,130,246,.18);
+}
+.booking-card.status-approved .booking-card-header {
+    background: #3b82f6;
+    border-bottom: none;
+}
+.booking-card.status-approved .booking-kode {
+    background: rgba(255,255,255,.25);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.4);
+    font-weight: 800;
+}
+.booking-card.status-approved .sbadge {
+    background: rgba(255,255,255,.2);
+    color: #fff;
+    border-color: rgba(255,255,255,.4);
+}
+.booking-card.status-approved .sbadge::before { background: #fff; }
+.booking-card.status-approved .antrian-num {
+    color: #3b82f6;
+    font-size: 42px;
+}
+.booking-card.status-approved .booking-field-label { color: #2563eb; }
+
+/* SELESAI = HIJAU BOLD */
+.booking-card.status-completed {
+    border: 2.5px solid #16a34a;
+    background: #fff;
+    box-shadow: 0 2px 16px rgba(22,163,74,.18);
+}
+.booking-card.status-completed .booking-card-header {
+    background: #16a34a;
+    border-bottom: none;
+}
+.booking-card.status-completed .booking-kode {
+    background: rgba(255,255,255,.25);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.4);
+    font-weight: 800;
+}
+.booking-card.status-completed .sbadge {
+    background: rgba(255,255,255,.2);
+    color: #fff;
+    border-color: rgba(255,255,255,.4);
+}
+.booking-card.status-completed .sbadge::before { background: #fff; }
+.booking-card.status-completed .antrian-num {
+    color: #16a34a;
+    font-size: 42px;
+}
+.booking-card.status-completed .booking-field-label { color: #15803d; }
+.booking-card.status-completed .booking-keluhan {
+    background: #f0fdf4;
+    border-left-color: #16a34a;
+}
+
+/* DIBATALKAN = MERAH BOLD */
+.booking-card.status-cancelled {
+    border: 2.5px solid #dc2626;
+    background: #fff;
+    box-shadow: 0 2px 16px rgba(220,38,38,.15);
+    position: relative;
+    overflow: hidden;
+}
+.booking-card.status-cancelled .booking-card-header {
+    background: #dc2626;
+    border-bottom: none;
+}
+.booking-card.status-cancelled .booking-kode {
+    background: rgba(255,255,255,.2);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.35);
+    font-weight: 800;
+    text-decoration: line-through;
+    opacity: .85;
+}
+.booking-card.status-cancelled .sbadge {
+    background: rgba(255,255,255,.2);
+    color: #fff;
+    border-color: rgba(255,255,255,.35);
+}
+.booking-card.status-cancelled .sbadge::before { background: #fff; }
+.booking-card.status-cancelled .antrian-num {
+    color: #dc2626;
+    font-size: 42px;
+    text-decoration: line-through;
+    opacity: .55;
+}
+.booking-card.status-cancelled .booking-field-val { color: #9ca3af; }
+.booking-card.status-cancelled .booking-field-sub { color: #d1d5db; }
+.booking-card.status-cancelled .booking-field-label { color: #d1d5db; }
+.booking-card.status-cancelled .booking-keluhan {
+    background: #fef2f2;
+    border-left-color: #dc2626;
+    color: #9ca3af;
+}
+/* Stripe diagonal merah samar di body card --*/
+.booking-card.status-cancelled::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 22px,
+        rgba(220,38,38,.04) 22px,
+        rgba(220,38,38,.04) 23px
+    );
+    pointer-events: none;
+    z-index: 0;
+}
+.booking-card.status-cancelled > * { position: relative; z-index: 1; }
+
+/* Header teks putih semua status --*/
+.booking-card-header .btn-batal {
+    background: rgba(255,255,255,.15);
+    border-color: rgba(255,255,255,.4);
+    color: #fff;
+}
+.booking-card-header .btn-batal:hover {
+    background: rgba(255,255,255,.3);
+    border-color: #fff;
 }
 .booking-card-header {
     display: flex;
@@ -129,8 +287,7 @@
     background: #fcfffe;
     gap: 10px;
     flex-wrap: wrap;
-}
-.booking-kode {
+}.booking-kode {
     font-family: 'Courier New', monospace;
     font-size: 11px;
     font-weight: 700;
@@ -412,7 +569,7 @@
         ];
         [$sLabel, $sClass] = $sMap[$b->status] ?? [$b->status, 'sbadge-pending'];
     @endphp
-    <div class="booking-card">
+    <div class="booking-card status-{{ $b->status }}">
         {{-- Header --}}
         <div class="booking-card-header">
             <span class="booking-kode">{{ $b->kode_booking }}</span>
