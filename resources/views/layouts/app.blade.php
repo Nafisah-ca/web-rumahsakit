@@ -250,10 +250,6 @@ html, body { overflow-x: hidden; max-width: 100%; }
                 <a href="{{ route('live.antrian') }}" class="flex items-center gap-2 hover:text-green-600 transition-colors font-semibold">
                     <span class="live-badge">Live</span> Live Antrian
                 </a>
-                <span class="flex items-center gap-1.5 text-gray-500" id="jam-sholat">
-                    <i class="fas fa-mosque text-green-600 text-xs"></i>
-                    <span id="waktu-sholat">...</span>
-                </span>
             </div>
             <div class="flex items-center gap-4">
                 <div class="w-px h-4 bg-gray-200"></div>
@@ -936,44 +932,6 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelector('.slide-arrow.next') && document.querySelector('.slide-arrow.next').addEventListener('click', () => { stopAuto(); goTo(current + 1); startAuto(); });
         dots.forEach((d, i) => d.addEventListener('click', () => { stopAuto(); goTo(i); startAuto(); }));
     }
-
-    // ── Jadwal Sholat (data dari CMS, berganti-ganti) ─────────────────
-    (function () {
-        const el = document.getElementById('waktu-sholat');
-        if (!el) return;
-
-        @php
-            $sholatJson = $setting_global->jadwal_sholat ?? '{}';
-            $sholatData = json_decode($sholatJson, true) ?? [];
-            $sholatArr  = [
-                ['label' => 'Subuh',   'waktu' => $sholatData['subuh']   ?? '04:30'],
-                ['label' => 'Dzuhur',  'waktu' => $sholatData['dzuhur']  ?? '12:00'],
-                ['label' => 'Ashar',   'waktu' => $sholatData['ashar']   ?? '15:20'],
-                ['label' => 'Maghrib', 'waktu' => $sholatData['maghrib'] ?? '17:52'],
-                ['label' => 'Isya',    'waktu' => $sholatData['isya']    ?? '19:06'],
-            ];
-        @endphp
-
-        const jadwal = @json($sholatArr);
-        let idx = 0;
-
-        // Tentukan index awal: waktu sholat berikutnya
-        const now        = new Date();
-        const minutesNow = now.getHours() * 60 + now.getMinutes();
-        function toMin(t) { const [h,m] = t.split(':').map(Number); return h*60+m; }
-
-        const nextIdx = jadwal.findIndex(j => toMin(j.waktu) > minutesNow);
-        idx = nextIdx >= 0 ? nextIdx : 0;
-
-        function show() {
-            const j = jadwal[idx];
-            el.innerHTML = `<strong style="color:#15803d">${j.label}</strong>&nbsp;${j.waktu}`;
-            idx = (idx + 1) % jadwal.length;
-        }
-
-        show();
-        setInterval(show, 3000); // ganti tiap 3 detik
-    })();
 
     // User dropdown (topbar)
     const dropBtn  = document.getElementById('user-dropdown-btn');

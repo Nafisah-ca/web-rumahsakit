@@ -19,39 +19,113 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: #f8fafc
 
 /* ===== LAYOUT ===== */
 .app-shell      { display: flex; height: 100vh; overflow: hidden; }
-.sidebar        { width: 240px; background: #0f172a; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
-.main-wrap      { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.sidebar        { width: 240px; background: #0f172a; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; transition: transform .25s ease, width .25s ease; }
+.main-wrap      { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 .main-content   { flex: 1; overflow-y: auto; padding: 24px; }
 
 /* ===== SIDEBAR ===== */
-.sidebar-logo   { padding: 20px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.sidebar-logo   { padding: 20px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 12px; text-decoration: none; flex-shrink: 0; }
 .sidebar-logo-text p    { color: #fff; font-size: 13px; font-weight: 700; line-height: 1.3; }
 .sidebar-logo-text span { color: #7dd3fc; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 
 .sidebar-nav    { flex: 1; padding: 12px; }
-.sidebar-group  { font-size: 10px; font-weight: 700; color: #64748b; letter-spacing: 0.1em; text-transform: uppercase; padding: 20px 12px 6px; }
+.sidebar-group  { font-size: 10px; font-weight: 700; color: #64748b; letter-spacing: 0.1em; text-transform: uppercase; padding: 20px 12px 6px; white-space: nowrap; overflow: hidden; }
 
-.sidebar-link   { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 500; transition: background .15s, color .15s; margin-bottom: 2px; }
+.sidebar-link   { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 500; transition: background .15s, color .15s; margin-bottom: 2px; white-space: nowrap; overflow: hidden; }
 .sidebar-link:hover { background: #1e293b; color: #fff; }
 .sidebar-link.active { background: #2563eb; color: #fff; box-shadow: 0 4px 14px rgba(37,99,235,.3); }
 .sidebar-link .icon { width: 16px; text-align: center; flex-shrink: 0; font-size: 13px; }
-.sidebar-link .badge-count { margin-left: auto; background: #ef4444; color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px; }
+.sidebar-link .link-label { overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link .badge-count { margin-left: auto; background: #ef4444; color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px; flex-shrink: 0; }
 
-.sidebar-user   { padding: 12px; border-top: 1px solid #1e293b; display: flex; align-items: center; gap: 10px; }
-.sidebar-user-photo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.sidebar-user   { padding: 12px; border-top: 1px solid #1e293b; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .sidebar-user-avatar { width: 32px; height: 32px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; font-weight: 700; color: #fff; }
-.sidebar-user-info { flex: 1; min-width: 0; }
+.sidebar-user-info { flex: 1; min-width: 0; overflow: hidden; }
 .sidebar-user-info p { color: #fff; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sidebar-user-info span { color: #64748b; font-size: 10px; }
 .sidebar-logout { background: none; border: none; cursor: pointer; color: #64748b; padding: 4px; border-radius: 6px; transition: color .15s; }
 .sidebar-logout:hover { color: #ef4444; }
 
 /* ===== TOPBAR ===== */
-.topbar         { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-.topbar-left h1 { font-size: 18px; font-weight: 800; color: #0f172a; }
-.topbar-left p  { font-size: 12px; color: #94a3b8; margin-top: 1px; }
-.topbar-right   { display: flex; align-items: center; gap: 12px; }
+.topbar         { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 12px; }
+.topbar-left    { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.topbar-left h1 { font-size: 18px; font-weight: 800; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar-left p  { font-size: 12px; color: #94a3b8; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar-right   { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .topbar-name    { font-size: 13px; font-weight: 600; color: #334155; }
+
+/* ── Hamburger toggle button (mobile only) ── */
+.sidebar-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #475569;
+    font-size: 15px;
+    flex-shrink: 0;
+    transition: background .15s, color .15s;
+}
+.sidebar-toggle:hover { background: #0f172a; color: #fff; border-color: #0f172a; }
+
+/* ── Sidebar overlay (mobile) ── */
+#sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 1001;
+    backdrop-filter: blur(2px);
+}
+
+/* ===== RESPONSIVE MOBILE ===== */
+@media (max-width: 1023px) {
+    /* sidebar offscreen by default */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1100;
+        transform: translateX(-100%);
+        width: 260px;
+        box-shadow: 4px 0 24px rgba(0,0,0,.25);
+    }
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    /* show overlay when sidebar open */
+    #sidebar-overlay.open {
+        display: block;
+    }
+    /* hamburger visible */
+    .sidebar-toggle {
+        display: inline-flex;
+    }
+    /* main takes full width */
+    .main-wrap {
+        width: 100%;
+    }
+    /* topbar adjustments */
+    .topbar { padding: 12px 16px; }
+    .topbar-left h1 { font-size: 15px; }
+    .topbar-name { display: none; }
+    /* main content padding */
+    .main-content { padding: 16px; }
+    /* form grid → single column */
+    .form-row, .form-row-3 { grid-template-columns: 1fr !important; }
+    /* stats grid → 2 col */
+    .stats-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (max-width: 479px) {
+    .stats-grid { grid-template-columns: 1fr !important; }
+    .topbar-left h1 { font-size: 14px; }
+}
 
 /* ===== PROFILE DROPDOWN ===== */
 .profile-dropdown        { position: relative; }
@@ -151,11 +225,14 @@ nav[role="navigation"] span[aria-current="page"] span, nav[role="navigation"] sp
 nav[role="navigation"] span[aria-current="page"] span { background: #2563eb; color: #fff; }
 nav[role="navigation"] a { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 8px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #475569; text-decoration: none; border: 1px solid #e2e8f0; transition: all .15s; }
 nav[role="navigation"] a:hover { background: #f1f5f9; }
-@media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr 1fr; } .form-row { grid-template-columns: 1fr; } .topbar-name { display: none; } }
+@media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr 1fr; } .form-row { grid-template-columns: 1fr; } }
 </style>
 @stack('styles')
 </head>
 <body>
+
+{{-- ===== SIDEBAR OVERLAY (mobile) ===== --}}
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <div class="app-shell">
     {{-- ===== SIDEBAR ===== --}}
@@ -173,10 +250,27 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
                 <i class="fas fa-gauge-high icon"></i> Dashboard
             </a>
 
-            <div class="sidebar-group">Konten Website</div>
-            <a href="{{ route('cms.website-setting') }}" class="sidebar-link {{ request()->routeIs('cms.website-setting*') ? 'active' : '' }}">
-                <i class="fas fa-sliders icon"></i> Website Setting
+            <div class="sidebar-group">Pengaturan</div>
+            <a href="{{ route('cms.identitas-rs') }}" class="sidebar-link {{ request()->routeIs('cms.identitas-rs*') ? 'active' : '' }}">
+                <i class="fas fa-hospital icon"></i> Identitas RS
             </a>
+            <a href="{{ route('cms.kontak-lokasi') }}" class="sidebar-link {{ request()->routeIs('cms.kontak-lokasi*') ? 'active' : '' }}">
+                <i class="fas fa-phone icon"></i> Kontak & Lokasi
+            </a>
+            <a href="{{ route('cms.logo-tampilan') }}" class="sidebar-link {{ request()->routeIs('cms.logo-tampilan*') ? 'active' : '' }}">
+                <i class="fas fa-image icon"></i> Logo & Tampilan
+            </a>
+            <a href="{{ route('cms.statistik') }}" class="sidebar-link {{ request()->routeIs('cms.statistik*') ? 'active' : '' }}">
+                <i class="fas fa-chart-bar icon"></i> Statistik
+            </a>
+            <a href="{{ route('cms.sosial-media') }}" class="sidebar-link {{ request()->routeIs('cms.sosial-media*') ? 'active' : '' }}">
+                <i class="fas fa-share-nodes icon"></i> Sosial Media
+            </a>
+            <a href="{{ route('cms.footer') }}" class="sidebar-link {{ request()->routeIs('cms.footer*') ? 'active' : '' }}">
+                <i class="fas fa-align-left icon"></i> Footer
+            </a>
+
+            <div class="sidebar-group">Konten Website</div>
             <a href="{{ route('cms.page-banner') }}" class="sidebar-link {{ request()->routeIs('cms.page-banner*') ? 'active' : '' }}">
                 <i class="fas fa-image icon"></i> Banner Halaman
             </a>
@@ -253,8 +347,14 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
     <div class="main-wrap">
         <header class="topbar">
             <div class="topbar-left">
-                <h1>{{ $pageTitle ?? 'Dashboard' }}</h1>
-                @isset($breadcrumb)<p>{{ $breadcrumb }}</p>@endisset
+                {{-- Hamburger — hanya tampil di mobile --}}
+                <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Buka menu">
+                    <i class="fas fa-bars" id="hamburger-icon"></i>
+                </button>
+                <div>
+                    <h1>{{ $pageTitle ?? 'Dashboard' }}</h1>
+                    @isset($breadcrumb)<p>{{ $breadcrumb }}</p>@endisset
+                </div>
             </div>
             <div class="topbar-right">
                 {{-- Profile Dropdown --}}
@@ -349,7 +449,46 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
 </div>
 
 <script>
+/* ── Alert auto-dismiss ── */
 setTimeout(() => { document.getElementById('alert-success')?.remove(); }, 4500);
+
+/* ── Sidebar mobile toggle ── */
+const sidebar  = document.getElementById('sidebar');
+const overlay  = document.getElementById('sidebar-overlay');
+const hamIcon  = document.getElementById('hamburger-icon');
+
+function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+    hamIcon.classList.replace('fa-bars', 'fa-xmark');
+    document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+    hamIcon.classList.replace('fa-xmark', 'fa-bars');
+    document.body.style.overflow = '';
+}
+function toggleSidebar() {
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+}
+
+/* Tutup sidebar otomatis saat link diklik (mobile) */
+document.querySelectorAll('.sidebar-link').forEach(function (link) {
+    link.addEventListener('click', function () {
+        if (window.innerWidth < 1024) closeSidebar();
+    });
+});
+
+/* Tutup sidebar saat resize ke desktop */
+window.addEventListener('resize', function () {
+    if (window.innerWidth >= 1024) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+        hamIcon.classList.replace('fa-xmark', 'fa-bars');
+        document.body.style.overflow = '';
+    }
+}, { passive: true });
 </script>
 @stack('scripts')
 </body>

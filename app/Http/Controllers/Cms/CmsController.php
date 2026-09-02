@@ -613,15 +613,7 @@ class CmsController extends Controller
             'privacy_policy', 'syarat_ketentuan',
         ]);
 
-        // Jadwal sholat — dari 5 input terpisah, simpan sebagai JSON
-        $sholat = [
-            'subuh'   => $request->sholat_subuh   ?? '04:30',
-            'dzuhur'  => $request->sholat_dzuhur  ?? '12:00',
-            'ashar'   => $request->sholat_ashar   ?? '15:20',
-            'maghrib' => $request->sholat_maghrib ?? '17:52',
-            'isya'    => $request->sholat_isya    ?? '19:06',
-        ];
-        $data['jadwal_sholat'] = json_encode($sholat);
+        // Jadwal sholat dihapus — tidak lagi diproses atau disimpan
         $data['updated_by'] = Auth::id();
         if (!$setting->exists) $data['created_by'] = Auth::id();
 
@@ -636,6 +628,165 @@ class CmsController extends Controller
 
         $setting->fill($data)->save();
         return redirect()->route('cms.website-setting')->with('success', 'Pengaturan website berhasil diperbarui.');
+    }
+
+    // ─────────────────────────── PENGATURAN (dipecah per bagian) ────────────────
+
+    private function getSettingOrNew(): WebsiteSetting
+    {
+        return WebsiteSetting::first() ?? new WebsiteSetting();
+    }
+
+    private function saveSetting(array $data, WebsiteSetting $setting): void
+    {
+        $data['updated_by'] = Auth::id();
+        if (!$setting->exists) $data['created_by'] = Auth::id();
+        $setting->fill($data)->save();
+    }
+
+    // ── Identitas RS ──────────────────────────────────────────────────────────
+
+    public function identitasRs()
+    {
+        $setting = $this->getSettingOrNew();
+        return view('cms.pengaturan.identitas-rs', compact('setting'));
+    }
+
+    public function updateIdentitasRs(Request $request)
+    {
+        $request->validate([
+            'nama_rumahsakit' => 'required|string|max:150',
+            'nama_direktur'   => 'nullable|string|max:150',
+            'foto_direktur'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+        $setting = $this->getSettingOrNew();
+
+        $data = $request->only([
+            'nama_rumahsakit', 'motto', 'tentang_kami',
+            'visi', 'misi', 'sejarah', 'sambutan_direktur', 'nama_direktur',
+        ]);
+
+        if ($request->hasFile('foto_direktur')) {
+            if ($setting->foto_direktur) {
+                Storage::disk('public')->delete($setting->foto_direktur);
+            }
+            $data['foto_direktur'] = $request->file('foto_direktur')->store('direktur', 'public');
+        }
+
+        // Hapus foto jika checkbox dicentang
+        if ($request->hapus_foto_direktur && $setting->foto_direktur) {
+            Storage::disk('public')->delete($setting->foto_direktur);
+            $data['foto_direktur'] = null;
+        }
+
+        $this->saveSetting($data, $setting);
+        return redirect()->route('cms.identitas-rs')->with('success', 'Identitas RS berhasil diperbarui.');
+    }
+
+    // ── Kontak & Lokasi ───────────────────────────────────────────────────────
+
+    public function kontakLokasi()
+    {
+        $setting = $this->getSettingOrNew();
+        return view('cms.pengaturan.kontak-lokasi', compact('setting'));
+    }
+
+    public function updateKontakLokasi(Request $request)
+    {
+        $request->validate([
+            'email'   => 'nullable|email',
+            'telepon' => 'nullable|string|max:20',
+            'whatsapp'=> 'nullable|string|max:20',
+        ]);
+        $setting = $this->getSettingOrNew();
+        $this->saveSetting($request->only([
+            'email', 'telepon', 'whatsapp',
+            'alamat', 'google_maps', 'jam_operasional',
+        ]), $setting);
+        return redirect()->route('cms.kontak-lokasi')->with('success', 'Kontak & Lokasi berhasil diperbarui.');
+    }
+
+    // ── Logo & Tampilan ───────────────────────────────────────────────────────
+
+    public function logoTampilan()
+    {
+        $setting = $this->getSettingOrNew();
+        return view('cms.pengaturan.logo-tampilan', compact('setting'));
+    }
+
+    public function updateLogoTampilan(Request $request)
+    {
+        $request->validate([
+            'logo'    => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
+            'favicon' => 'nullable|image|mimes:jpg,jpeg,png,webp,ico|max:512',
+        ]);
+        $setting = $this->getSettingOrNew();
+        $data    = [];
+        if ($request->hasFile('logo')) {
+            if ($setting->logo) Storage::disk('public')->delete($setting->logo);
+            $data['logo'] = $request->file('logo')->store('setting', 'public');
+        }
+        if ($request->hasFile('favicon')) {
+            if ($setting->favicon) Storage::disk('public')->delete($setting->favicon);
+            $data['favicon'] = $request->file('favicon')->store('setting', 'public');
+        }
+        $this->saveSetting($data, $setting);
+        return redirect()->route('cms.logo-tampilan')->with('success', 'Logo & Tampilan berhasil diperbarui.');
+    }
+
+    // ── Statistik ─────────────────────────────────────────────────────────────
+
+    public function statistik()
+    {
+        $setting = $this->getSettingOrNew();
+        return view('cms.pengaturan.statistik', compact('setting'));
+    }
+
+    public function updateStatistik(Request $request)
+    {
+        $request->validate([
+            'jumlah_spesialisasi'   => 'nullable|integer|min:0|max:9999',
+            'jumlah_mitra_asuransi' => 'nullable|integer|min:0|max:9999',
+        ]);
+        $setting = $this->getSettingOrNew();
+        $this->saveSetting($request->only([
+            'jumlah_spesialisasi', 'jumlah_mitra_asuransi',
+        ]), $setting);
+        return redirect()->route('cms.statistik')->with('success', 'Statistik berhasil diperbarui.');
+    }
+
+    // ── Sosial Media ──────────────────────────────────────────────────────────
+
+    public function sosialMedia()
+    {
+        $setting = $this->getSettingOrNew();
+        return view('cms.pengaturan.sosial-media', compact('setting'));
+    }
+
+    public function updateSosialMedia(Request $request)
+    {
+        $setting = $this->getSettingOrNew();
+        $this->saveSetting($request->only([
+            'facebook', 'instagram', 'youtube',
+        ]), $setting);
+        return redirect()->route('cms.sosial-media')->with('success', 'Sosial Media berhasil diperbarui.');
+    }
+
+    // ── Footer ────────────────────────────────────────────────────────────────
+
+    public function footerSetting()
+    {
+        $setting = $this->getSettingOrNew();
+        return view('cms.pengaturan.footer', compact('setting'));
+    }
+
+    public function updateFooterSetting(Request $request)
+    {
+        $setting = $this->getSettingOrNew();
+        $this->saveSetting($request->only([
+            'footer', 'copyright',
+        ]), $setting);
+        return redirect()->route('cms.footer')->with('success', 'Footer berhasil diperbarui.');
     }
 
     // ─────────────────────────── KEBIJAKAN PRIVASI ───────────────────

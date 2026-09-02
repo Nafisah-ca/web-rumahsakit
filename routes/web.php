@@ -248,9 +248,27 @@ Route::middleware(['auth', 'cms.verified', 'last.activity'])->prefix('cms')->nam
     Route::put('/ulasan/{ulasan}/mark',       [CmsController::class, 'markUlasan'])->name('ulasan.mark');
     Route::delete('/ulasan/{ulasan}',         [CmsController::class, 'destroyUlasan'])->name('ulasan.destroy'); 
 
-    // Website Setting
-    Route::get('/website-setting',          [CmsController::class, 'websiteSetting'])->name('website-setting');
-    Route::put('/website-setting',          [CmsController::class, 'updateWebsiteSetting'])->name('website-setting.update');
+    // Website Setting (redirect ke identitas-rs untuk backward compatibility)
+    Route::get('/website-setting', fn() => redirect()->route('cms.identitas-rs'))->name('website-setting');
+
+    // Pengaturan — dipecah per bagian
+    Route::get('/identitas-rs',          [CmsController::class, 'identitasRs'])->name('identitas-rs');
+    Route::put('/identitas-rs',          [CmsController::class, 'updateIdentitasRs'])->name('identitas-rs.update');
+
+    Route::get('/kontak-lokasi',         [CmsController::class, 'kontakLokasi'])->name('kontak-lokasi');
+    Route::put('/kontak-lokasi',         [CmsController::class, 'updateKontakLokasi'])->name('kontak-lokasi.update');
+
+    Route::get('/logo-tampilan',         [CmsController::class, 'logoTampilan'])->name('logo-tampilan');
+    Route::put('/logo-tampilan',         [CmsController::class, 'updateLogoTampilan'])->name('logo-tampilan.update');
+
+    Route::get('/statistik',             [CmsController::class, 'statistik'])->name('statistik');
+    Route::put('/statistik',             [CmsController::class, 'updateStatistik'])->name('statistik.update');
+
+    Route::get('/sosial-media',          [CmsController::class, 'sosialMedia'])->name('sosial-media');
+    Route::put('/sosial-media',          [CmsController::class, 'updateSosialMedia'])->name('sosial-media.update');
+
+    Route::get('/footer',                [CmsController::class, 'footerSetting'])->name('footer');
+    Route::put('/footer',                [CmsController::class, 'updateFooterSetting'])->name('footer.update');
 
     // Kebijakan Privasi (CMS editor)
     Route::get('/kebijakan-privasi',        [CmsController::class, 'privacyPolicyEditor'])->name('privacy-policy');

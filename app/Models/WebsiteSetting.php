@@ -18,7 +18,8 @@ class WebsiteSetting extends Model
 
     protected $fillable = [
         'nama_rumahsakit', 'logo', 'favicon', 'tentang_kami', 'visi', 'misi', 'sejarah',
-        'motto', 'sambutan_direktur', 'alamat', 'telepon', 'email', 'google_maps',
+        'motto', 'sambutan_direktur', 'nama_direktur', 'foto_direktur',
+        'alamat', 'telepon', 'email', 'google_maps',
         'facebook', 'instagram', 'youtube', 'jam_operasional', 'jadwal_sholat',
         'estimasi_antrian',
         'jumlah_spesialisasi', 'jumlah_mitra_asuransi',

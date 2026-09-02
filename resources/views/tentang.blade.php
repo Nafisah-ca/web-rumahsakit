@@ -174,10 +174,29 @@
                 <div style="display:grid;grid-template-columns:220px 1fr" class="max-md:block">
                     {{-- Foto / Ikon Direktur --}}
                     <div class="flex flex-col items-center justify-center p-8 bg-gradient-to-br from-green-600 to-green-700 text-center" style="min-width:0">
+                        @if($setting->foto_direktur ?? null)
+                        {{-- Foto asli jika sudah diupload --}}
+                        <div class="mb-4" style="width:100px;height:100px;border-radius:50%;overflow:hidden;
+                                                  border:4px solid rgba(255,255,255,0.4);
+                                                  box-shadow:0 6px 20px rgba(0,0,0,0.25)">
+                            <img src="{{ Storage::url($setting->foto_direktur) }}"
+                                 alt="{{ $setting->nama_direktur ?? 'Direktur' }}"
+                                 style="width:100%;height:100%;object-fit:cover;object-position:top"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                            <div style="display:none;width:100%;height:100%;background:rgba(255,255,255,0.2);
+                                        align-items:center;justify-content:center">
+                                <i class="fas fa-user-tie text-white text-4xl"></i>
+                            </div>
+                        </div>
+                        @else
+                        {{-- Fallback ikon jika belum ada foto --}}
                         <div class="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 border-2 border-white/30">
                             <i class="fas fa-user-tie text-white text-3xl"></i>
                         </div>
-                        <p class="text-white font-extrabold text-base leading-tight">Direktur</p>
+                        @endif
+                        <p class="text-white font-extrabold text-base leading-tight">
+                            {{ $setting->nama_direktur ?? 'Direktur' }}
+                        </p>
                         <p class="text-green-200 text-xs mt-1 uppercase tracking-wider font-semibold">{{ $setting->nama_rumahsakit ?? 'Rumah Sakit' }}</p>
                     </div>
                     {{-- Isi Sambutan --}}
