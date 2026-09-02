@@ -25,6 +25,26 @@
 .topbar { position: relative; z-index: 200; }
 #user-dropdown-wrap { position: relative; }
 
+/* ===== NAVBAR FIXED WRAPPER ===== */
+#nav-sticky-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 150;
+    width: 100%;
+}
+
+/* Dorong konten ke bawah agar tidak tertimpa navbar fixed.
+   Topbar (h-10 = 40px) + Navbar (h-16 = 64px) = 104px desktop
+   Mobile tidak ada topbar: hanya navbar 64px */
+body {
+    padding-top: 104px;
+}
+@media (max-width: 767px) {
+    body { padding-top: 64px; }
+}
+
 /* ===== BOTTOM NAV MOBILE ===== */
 #bottom-nav {
     display: none;
@@ -215,6 +235,9 @@ html, body { overflow-x: hidden; max-width: 100%; }
 </style>
 </head>
 <body class="font-sans antialiased bg-white text-gray-800">
+
+{{-- ===== STICKY WRAPPER: topbar + navbar ===== --}}
+<div id="nav-sticky-wrap">
 
 {{-- ===== TOPBAR ===== --}}
 <div class="topbar hidden md:block">
@@ -585,6 +608,8 @@ html, body { overflow-x: hidden; max-width: 100%; }
     </div>
 </div>
 
+</div>{{-- /#nav-sticky-wrap --}}
+
 {{-- MAIN --}}
 <main>@yield('content')</main>
 
@@ -834,7 +859,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const navbar = document.getElementById('navbar-main');
     window.addEventListener('scroll', () => {
         navbar && navbar.classList.toggle('scrolled', window.scrollY > 60);
-    });
+    }, { passive: true });
 
     // Mobile menu
     const hamburger = document.getElementById('hamburger-btn');

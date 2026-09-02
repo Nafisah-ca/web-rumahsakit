@@ -2,6 +2,28 @@
 
 @push('styles')
 <style>
+/* ── SECTION DIVIDER ──────────────────────────────────────── */
+.section-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2px;
+    background: #f3f4f6;
+    position: relative;
+    margin: 0;
+}
+.section-divider::before {
+    content: '';
+    width: 48px;
+    height: 3px;
+    background: linear-gradient(90deg, #00521f, #00b04f);
+    border-radius: 999px;
+    position: absolute;
+    top: -1px;
+}
+
+/* ── Semua section pakai bg putih bersih ─────────────────── */
+.section-home { background: #fff; }
 /* ── CURSOR GLOW ─────────────────────────────────────── */
 #cursor-glow {
     position: fixed;
@@ -228,8 +250,8 @@
 </div>
 
 {{-- ===== SPESIALISASI ===== --}}
-<section class="py-14 bg-white">
-    <div class="max-w-screen-xl mx-auto px-4">
+<div class="section-divider"></div>
+<section class="py-14 bg-white"><div class="max-w-screen-xl mx-auto px-4">
         <div class="flex items-end justify-between mb-8 fade-up">
             <div>
                 <span class="section-label">Pelayanan Spesialis</span>
@@ -258,7 +280,8 @@
 </section>
 
 {{-- ===== TENTANG / STATS ===== --}}
-<section class="py-0 bg-white">
+<div class="section-divider"></div>
+<section class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="rounded-2xl overflow-hidden shadow-xl fade-up" style="background: linear-gradient(135deg, #00521f 0%, #00b04f 100%);">
             <div class="grid grid-cols-1 lg:grid-cols-2">
@@ -303,7 +326,8 @@
 </section>
 
 {{-- ===== PROMO ===== --}}
-<section class="py-14 bg-gray-50">
+<div class="section-divider"></div>
+<section class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="flex items-end justify-between mb-8 fade-up">
             <div>
@@ -363,6 +387,7 @@
 </section>
 
 {{-- ===== EVENT ===== --}}
+<div class="section-divider"></div>
 <section class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="flex items-end justify-between mb-8 fade-up">
@@ -421,7 +446,8 @@
 </section>
 
 {{-- ===== INFORMASI / ARTIKEL ===== --}}
-<section class="py-14 bg-gray-50">
+<div class="section-divider"></div>
+<section class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="flex items-end justify-between mb-8 fade-up">
             <div>
@@ -479,6 +505,7 @@
 
 {{-- ===== ULASAN PASIEN ===== --}}
 @if($ulasanHome->count() > 0)
+<div class="section-divider"></div>
 <section class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="flex items-end justify-between mb-8 fade-up">

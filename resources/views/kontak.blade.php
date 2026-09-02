@@ -226,7 +226,8 @@
 </section>
 
 {{-- ===== FORM ULASAN ===== --}}
-<section id="ulasan-form" class="py-14 bg-gray-50">
+<div class="section-divider"></div>
+<section id="ulasan-form" class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
 

@@ -9,7 +9,12 @@ img { max-width: 100%; display: block; }
 .topbar { background: #fff; border-bottom: 1px solid #e8f0eb; }
 
 /* Navbar */
-.navbar-main { background: #00b04f; position: sticky; top: 0; z-index: 100; transition: box-shadow .3s; }
+.navbar-main {
+    background: #00b04f;
+    position: relative;
+    z-index: 100;
+    transition: box-shadow .3s;
+}
 .navbar-main.scrolled { box-shadow: 0 4px 20px rgba(0,176,79,.3); }
 .nav-item { color: #fff; font-weight: 600; font-size: .875rem; padding: .5rem .875rem; border-radius: .5rem; transition: background .2s; }
 .nav-item:hover, .nav-item.active { background: rgba(255,255,255,.15); }
