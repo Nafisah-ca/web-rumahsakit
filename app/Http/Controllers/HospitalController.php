@@ -268,11 +268,30 @@ class HospitalController extends Controller
         return view('informasi-detail', compact('informasi', 'related', 'banner'));
     }
 
-    public function artikel()
+    public function artikel(Request $request)
     {
-        $articles  = Artikel::published()->with(['kategori', 'penulis'])->paginate(9);
+        $kategoriId = $request->get('kategori_id');
+        $perPage    = 999; // Semua artikel di-load, pembatasan tampilan di frontend (6 dulu, sisanya hidden)
+
+        $query = Artikel::published()->with(['kategori', 'penulis']);
+        if ($kategoriId) {
+            $query->where('kategori_artikel_id', $kategoriId);
+        }
+        $articles  = $query->orderByDesc('created_tm')->paginate($perPage);
         $kategoris = \App\Models\KategoriArtikel::withCount(['artikels' => fn($q) => $q->where('status','publish')])->aktif()->get();
         $banner    = \App\Models\PageBanner::getForPage('artikel');
+
+        // AJAX → return JSON dengan HTML cards
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'html'        => view('_partials.artikel-cards', compact('articles'))->render(),
+                'hasMore'     => $articles->hasMorePages(),
+                'currentPage' => $articles->currentPage(),
+                'lastPage'    => $articles->lastPage(),
+                'total'       => $articles->total(),
+            ]);
+        }
+
         return view('artikel', compact('articles', 'kategoris', 'banner'));
     }
 
