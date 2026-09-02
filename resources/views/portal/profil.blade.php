@@ -389,6 +389,270 @@
 
 /* ── FIELD FOCUS GLOW ────────────────────────────────── */
 .field-input:focus + .field-hint { color: #00521f; }
+
+/* ── RIWAYAT POLIKLINIK ──────────────────────────────── */
+/* Topbar */
+.rw-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+.rw-btn-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #00521f;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 9px 16px;
+    border-radius: 11px;
+    text-decoration: none;
+    transition: background .15s;
+}
+.rw-btn-new:hover { background: #003d17; }
+
+/* Section label separator */
+.rw-section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
+.rw-count-badge {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+.rw-batal-toggle {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: inherit;
+    transition: color .15s, background .15s;
+}
+.rw-batal-toggle:hover { color: #374151; background: #f3f4f6; }
+
+/* Booking card aktif */
+.rw-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e8ede9;
+    box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    overflow: hidden;
+    margin-bottom: 12px;
+    transition: box-shadow .2s;
+}
+.rw-card:hover { box-shadow: 0 4px 20px rgba(0,82,31,.1); }
+.rw-card-aktif { border-left: 3px solid #2563eb; }
+
+.rw-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px 10px;
+    border-bottom: 1px solid #f3f4f6;
+    flex-wrap: wrap;
+}
+.rw-kode {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #4b5563;
+    background: #f3f4f6;
+    padding: 3px 9px;
+    border-radius: 6px;
+}
+.rw-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid;
+}
+.rw-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.rw-btn-batal {
+    font-size: 11px;
+    font-weight: 700;
+    color: #dc2626;
+    background: #fff;
+    border: 1.5px solid #fca5a5;
+    padding: 5px 11px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background .15s;
+}
+.rw-btn-batal:hover { background: #fef2f2; }
+
+.rw-card-body {
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 10px 14px;
+    align-items: start;
+}
+.rw-field-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #9ca3af;
+    margin-bottom: 2px;
+}
+.rw-field-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.3;
+}
+.rw-field-sub { font-size: 11px; color: #9ca3af; }
+.rw-antrian {
+    font-size: 32px;
+    font-weight: 900;
+    color: #00521f;
+    line-height: 1;
+    font-family: 'Lora', serif;
+}
+.rw-keluhan {
+    margin: 0 16px 12px;
+    padding: 9px 12px;
+    background: #f9fafb;
+    border-left: 3px solid #d1fae5;
+    border-radius: 0 9px 9px 0;
+    font-size: 12px;
+    color: #374151;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* ── GRID ICON SPESIALIS ─────────────────────────────── */
+.rw-sp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.rw-sp-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 14px 8px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color .2s, background .2s, transform .15s;
+    position: relative;
+}
+.rw-sp-btn:hover {
+    border-color: #00b04f;
+    background: #f0fdf4;
+    transform: translateY(-2px);
+}
+.rw-sp-btn.active {
+    border-color: #00521f;
+    background: #00521f;
+}
+.rw-sp-btn.active .rw-sp-icon { background: rgba(255,255,255,.2); }
+.rw-sp-btn.active .rw-sp-icon i { color: #fff; }
+.rw-sp-btn.active .rw-sp-label { color: #fff; }
+.rw-sp-btn.active .rw-sp-count { background: rgba(255,255,255,.25); color: #fff; }
+
+.rw-sp-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #f0fdf4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .2s;
+}
+.rw-sp-icon i { font-size: 18px; color: #00521f; transition: color .2s; }
+.rw-sp-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #374151;
+    text-align: center;
+    line-height: 1.3;
+    transition: color .2s;
+}
+.rw-sp-count {
+    font-size: 10px;
+    font-weight: 800;
+    background: #dcfce7;
+    color: #166534;
+    padding: 1px 7px;
+    border-radius: 999px;
+    transition: background .2s, color .2s;
+}
+
+/* Panel riwayat selesai */
+.rw-sp-panel {
+    background: #fff;
+    border: 1.5px solid #d1fae5;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    animation: panel-in .25s ease;
+}
+@keyframes panel-in {
+    from { opacity:0; transform:translateY(-8px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+.rw-sp-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #00521f;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0fdf4;
+}
+
+.rw-history-item {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 12px 14px;
+    border: 1px solid #f0f0f0;
+    transition: box-shadow .15s;
+}
+.rw-history-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+
+@media (max-width: 480px) {
+    .rw-card-body { grid-template-columns: 1fr 1fr; }
+    .rw-sp-grid { grid-template-columns: repeat(3, 1fr); }
+}
 </style>
 @endpush
 
@@ -599,76 +863,214 @@
     ══════════════════════════════════════════════════ --}}
     @elseif($activeTab === 'riwayat')
     @php
-        $bookings = \App\Models\JanjiTemu::with(['jadwalDokter.dokter.spesialisasi'])
+        $allBookings = \App\Models\JanjiTemu::with(['jadwalDokter.dokter.spesialisasi'])
             ->where('pasien_id', $pasien?->id ?? 0)
             ->orderByDesc('tanggal_booking')
-            ->paginate(10);
-    @endphp
+            ->get();
 
-    <div class="fade-section" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <p style="font-size:13px;color:#9ca3af">Semua riwayat janji temu kamu</p>
-        <a href="{{ route('portal.booking.create') }}"
-           style="display:inline-flex;align-items:center;gap:6px;background:#00521f;color:#fff;font-size:12px;font-weight:700;padding:9px 16px;border-radius:11px;text-decoration:none;transition:background .15s"
-           onmouseover="this.style.background='#003d17'"
-           onmouseout="this.style.background='#00521f'">
-            <i class="fas fa-plus" style="font-size:10px"></i> Buat Janji Baru
-        </a>
-    </div>
+        // Pisah: aktif = belum selesai/dibatalkan, selesai = completed
+        $bookingsAktif    = $allBookings->whereIn('status', ['pending','approved']);
+        $bookingsSelesai  = $allBookings->where('status', 'completed');
+        $bookingsBatal    = $allBookings->where('status', 'cancelled');
 
-    @forelse($bookings as $bi => $b)
-    @php
+        // Group selesai by spesialisasi
+        $bySpesialis = $bookingsSelesai->groupBy(function($b) {
+            return $b->jadwalDokter?->dokter?->spesialisasi?->nama_spesialis ?? 'Lainnya';
+        });
+        // Icon per spesialis (fallback ke stethoscope)
+        $spIcon = function(string $nama): string {
+            $map = [
+                'penyakit dalam'  => 'fa-stethoscope',
+                'anak'            => 'fa-baby',
+                'kandungan'       => 'fa-person-pregnant',
+                'bedah'           => 'fa-scalpel',
+                'jantung'         => 'fa-heart-pulse',
+                'saraf'           => 'fa-brain',
+                'mata'            => 'fa-eye',
+                'tht'             => 'fa-ear-deaf',
+                'kulit'           => 'fa-hand-dots',
+                'gigi'            => 'fa-tooth',
+                'paru'            => 'fa-lungs',
+                'ortopedi'        => 'fa-bone',
+                'urologi'         => 'fa-droplet',
+                'gizi'            => 'fa-apple-whole',
+                'psikiatri'       => 'fa-brain',
+                'rehabilitasi'    => 'fa-person-walking',
+                'umum'            => 'fa-user-doctor',
+            ];
+            $lower = strtolower($nama);
+            foreach ($map as $key => $icon) {
+                if (str_contains($lower, $key)) return $icon;
+            }
+            return 'fa-stethoscope';
+        };
         $sMap = [
             'pending'   => ['Menunggu',     '#b45309','#fffbeb','#fde68a'],
             'approved'  => ['Dikonfirmasi', '#1d4ed8','#eff6ff','#bfdbfe'],
             'completed' => ['Selesai',      '#166534','#f0fdf4','#bbf7d0'],
             'cancelled' => ['Dibatalkan',   '#991b1b','#fef2f2','#fecaca'],
         ];
-        [$sl,$sc,$sbg,$sbd] = $sMap[$b->status] ?? [$b->status,'#4b5563','#f9fafb','#e5e7eb'];
     @endphp
-    <div class="section-card fade-section" style="padding:0;transition-delay:{{ $bi * 60 }}ms">
-        {{-- Header --}}
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px 10px;border-bottom:1px solid #f3f4f6;gap:10px;flex-wrap:wrap">
-            <span style="font-family:'Courier New',monospace;font-size:11px;font-weight:700;color:#4b5563;background:#f3f4f6;padding:3px 10px;border-radius:7px">{{ $b->kode_booking }}</span>
-            <span style="font-size:11px;font-weight:800;padding:3px 11px;border-radius:999px;color:{{ $sc }};background:{{ $sbg }};border:1px solid {{ $sbd }}">{{ $sl }}</span>
+
+    {{-- ── Header + tombol buat janji ── --}}
+    <div class="fade-section rw-topbar">
+        <p style="font-size:13px;color:#9ca3af">Riwayat semua janji temu kamu</p>
+        <a href="{{ route('portal.booking.create') }}" class="rw-btn-new">
+            <i class="fas fa-plus" style="font-size:10px"></i> Buat Janji Baru
+        </a>
+    </div>
+
+    {{-- ══ BAGIAN 1: BOOKING AKTIF (belum selesai) ══ --}}
+    @if($bookingsAktif->isNotEmpty())
+    <div class="rw-section-label fade-section">
+        <i class="fas fa-clock-rotate-left" style="color:#1d4ed8"></i>
+        Janji Mendatang
+        <span class="rw-count-badge" style="background:#eff6ff;color:#1d4ed8">{{ $bookingsAktif->count() }}</span>
+    </div>
+
+    @foreach($bookingsAktif as $bi => $b)
+    @php [$sl,$sc,$sbg,$sbd] = $sMap[$b->status] ?? [$b->status,'#4b5563','#f9fafb','#e5e7eb']; @endphp
+    <div class="rw-card rw-card-aktif fade-section" style="transition-delay:{{ $bi * 60 }}ms">
+        <div class="rw-card-header">
+            <span class="rw-kode">{{ $b->kode_booking }}</span>
+            <span class="rw-status-badge" style="color:{{ $sc }};background:{{ $sbg }};border-color:{{ $sbd }}">
+                <span class="rw-status-dot" style="background:{{ $sc }}"></span>{{ $sl }}
+            </span>
             @if(in_array($b->status, ['pending','approved']))
             <form method="POST" action="{{ route('portal.booking.cancel', $b) }}"
                   style="margin-left:auto"
-                  onsubmit="return confirm('Batalkan janji temu ini?\nKamu bisa buat baru kapan saja.')">
+                  onsubmit="return confirm('Batalkan janji temu ini?')">
                 @csrf
-                <button type="submit"
-                    style="font-size:11px;font-weight:700;color:#dc2626;background:#fff;border:1.5px solid #fca5a5;padding:5px 12px;border-radius:9px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px"
-                    onmouseover="this.style.background='#fef2f2'"
-                    onmouseout="this.style.background='#fff'">
-                    <i class="fas fa-xmark" style="font-size:10px"></i> Batalkan
+                <button type="submit" class="rw-btn-batal">
+                    <i class="fas fa-xmark" style="font-size:9px"></i> Batalkan
                 </button>
             </form>
             @endif
         </div>
-        {{-- Body --}}
-        <div style="padding:14px 18px;display:grid;grid-template-columns:1fr 1fr auto;gap:10px 16px;align-items:start">
-            <div>
-                <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:2px">Dokter</p>
-                <p style="font-size:13px;font-weight:700;color:#111">{{ $b->jadwalDokter?->dokter?->nama_dokter ?? '-' }}</p>
-                <p style="font-size:11px;color:#9ca3af">{{ $b->jadwalDokter?->dokter?->spesialisasi?->nama_spesialis ?? '-' }}</p>
+        <div class="rw-card-body">
+            <div class="rw-field">
+                <p class="rw-field-label">Dokter</p>
+                <p class="rw-field-val">{{ $b->jadwalDokter?->dokter?->nama_dokter ?? '-' }}</p>
+                <p class="rw-field-sub">{{ $b->jadwalDokter?->dokter?->spesialisasi?->nama_spesialis ?? '-' }}</p>
             </div>
-            <div>
-                <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:2px">Tanggal</p>
-                <p style="font-size:13px;font-weight:700;color:#111">{{ $b->tanggal_booking?->format('d M Y') }}</p>
-                <p style="font-size:11px;color:#9ca3af">{{ $b->jadwalDokter ? substr($b->jadwalDokter->jam_mulai,0,5).' WIB' : '' }}</p>
+            <div class="rw-field">
+                <p class="rw-field-label">Tanggal</p>
+                <p class="rw-field-val">{{ $b->tanggal_booking?->format('d M Y') }}</p>
+                <p class="rw-field-sub">{{ $b->jadwalDokter ? substr($b->jadwalDokter->jam_mulai,0,5).' WIB' : '' }}</p>
             </div>
-            <div style="text-align:center">
-                <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:2px">Antrian</p>
-                <p style="font-size:32px;font-weight:900;color:#00521f;line-height:1;font-family:'Lora',serif">{{ $b->nomor_antrian ?? '-' }}</p>
+            <div class="rw-field" style="text-align:center">
+                <p class="rw-field-label">Antrian</p>
+                <p class="rw-antrian">{{ $b->nomor_antrian ?? '-' }}</p>
             </div>
         </div>
         @if($b->keluhan)
-        <div style="margin:0 18px 14px;padding:9px 13px;background:#f9fafb;border-left:3px solid #d1fae5;border-radius:0 10px 10px 0;font-size:12px;color:#374151">
-            <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:2px">Keluhan</p>
+        <div class="rw-keluhan">
+            <span class="rw-field-label">Keluhan</span>
             {{ $b->keluhan }}
         </div>
         @endif
     </div>
-    @empty
+    @endforeach
+    @endif
+
+    {{-- ══ BAGIAN 2: RIWAYAT SELESAI (by spesialis) ══ --}}
+    @if($bookingsSelesai->isNotEmpty())
+    <div class="rw-section-label fade-section" style="margin-top:24px">
+        <i class="fas fa-circle-check" style="color:#166534"></i>
+        Riwayat Kunjungan
+        <span class="rw-count-badge" style="background:#f0fdf4;color:#166534">{{ $bookingsSelesai->count() }}</span>
+    </div>
+
+    {{-- Grid icon spesialis --}}
+    <div class="rw-sp-grid fade-section">
+        @foreach($bySpesialis as $spNama => $items)
+        @php $ico = $spIcon($spNama); @endphp
+        <button type="button"
+                class="rw-sp-btn"
+                data-sp="{{ Str::slug($spNama) }}"
+                onclick="toggleSpesialis('{{ Str::slug($spNama) }}', this)">
+            <div class="rw-sp-icon">
+                <i class="fas {{ $ico }}"></i>
+            </div>
+            <span class="rw-sp-label">{{ $spNama }}</span>
+            <span class="rw-sp-count">{{ $items->count() }}x</span>
+        </button>
+        @endforeach
+    </div>
+
+    {{-- Panel riwayat per spesialis (hidden by default) --}}
+    @foreach($bySpesialis as $spNama => $items)
+    <div class="rw-sp-panel" id="panel-{{ Str::slug($spNama) }}" style="display:none">
+        <div class="rw-sp-panel-header">
+            <i class="fas {{ $spIcon($spNama) }}" style="color:#00521f"></i>
+            <span>{{ $spNama }}</span>
+            <button type="button" onclick="toggleSpesialis('{{ Str::slug($spNama) }}')"
+                    style="margin-left:auto;background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;padding:4px">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+            @foreach($items->sortByDesc('tanggal_booking') as $b)
+            <div class="rw-history-item">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                    <span class="rw-kode">{{ $b->kode_booking }}</span>
+                    <span class="rw-status-badge" style="color:#166534;background:#f0fdf4;border-color:#bbf7d0">
+                        <span class="rw-status-dot" style="background:#22c55e"></span>Selesai
+                    </span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                    <div>
+                        <p class="rw-field-label">Dokter</p>
+                        <p class="rw-field-val" style="font-size:13px">{{ $b->jadwalDokter?->dokter?->nama_dokter ?? '-' }}</p>
+                    </div>
+                    <div>
+                        <p class="rw-field-label">Tanggal Kunjungan</p>
+                        <p class="rw-field-val" style="font-size:13px">{{ $b->tanggal_booking?->format('d M Y') }}</p>
+                        <p class="rw-field-sub">{{ $b->jadwalDokter ? substr($b->jadwalDokter->jam_mulai,0,5).' WIB' : '' }}</p>
+                    </div>
+                    <div>
+                        <p class="rw-field-label">No. Antrian</p>
+                        <p style="font-size:22px;font-weight:900;color:#00521f;line-height:1;font-family:'Lora',serif">{{ $b->nomor_antrian ?? '-' }}</p>
+                    </div>
+                    @if($b->keluhan)
+                    <div>
+                        <p class="rw-field-label">Keluhan</p>
+                        <p style="font-size:12px;color:#374151">{{ $b->keluhan }}</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endforeach
+    @endif
+
+    {{-- ══ DIBATALKAN (collapse kecil) ══ --}}
+    @if($bookingsBatal->isNotEmpty())
+    <div class="rw-section-label fade-section" style="margin-top:24px">
+        <i class="fas fa-circle-xmark" style="color:#991b1b"></i>
+        Dibatalkan
+        <span class="rw-count-badge" style="background:#fef2f2;color:#991b1b">{{ $bookingsBatal->count() }}</span>
+        <button type="button" onclick="toggleBatal()" class="rw-batal-toggle" id="btn-batal-toggle">
+            Lihat <i class="fas fa-chevron-down" style="font-size:10px"></i>
+        </button>
+    </div>
+    <div id="panel-batal" style="display:none">
+        @foreach($bookingsBatal->sortByDesc('tanggal_booking') as $b)
+        <div class="rw-history-item" style="opacity:.65;margin-bottom:8px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span class="rw-kode">{{ $b->kode_booking }}</span>
+                <span style="font-size:12px;font-weight:700;color:#991b1b">{{ $b->tanggal_booking?->format('d M Y') }}</span>
+                <span style="font-size:12px;color:#9ca3af">— {{ $b->jadwalDokter?->dokter?->nama_dokter ?? '-' }}</span>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @endif
+
+    {{-- Empty state --}}
+    @if($allBookings->isEmpty())
     <div style="background:#fff;border-radius:18px;border:1.5px dashed #d1fae5;padding:56px 24px;text-align:center" class="fade-section">
         <div style="width:64px;height:64px;background:#f0fdf4;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
             <i class="fas fa-calendar-xmark" style="font-size:24px;color:#bbf7d0"></i>
@@ -680,9 +1082,6 @@
             <i class="fas fa-plus" style="font-size:10px"></i> Buat Janji Temu
         </a>
     </div>
-    @endforelse
-    @if($bookings->hasPages())
-    <div style="margin-top:14px">{{ $bookings->appends(['tab' => 'riwayat'])->links() }}</div>
     @endif
 
     {{-- ══════════════════════════════════════════════════
@@ -922,11 +1321,54 @@ document.addEventListener('DOMContentLoaded', function () {
     // Tampilkan toast jika ada session success
     const flashMsg = document.getElementById('flash-msg');
     if (flashMsg) {
-        // Sembunyikan flash inline, ganti ke toast
         const flashEl = document.getElementById('flash-success');
         if (flashEl) flashEl.style.display = 'none';
         showToast(flashMsg.dataset.msg || 'Profil berhasil disimpan!');
     }
 });
+
+/**
+ * Toggle panel riwayat per spesialis.
+ * Klik icon → buka panel di bawah grid, icon jadi solid hijau.
+ * Klik lagi atau klik X → tutup panel.
+ */
+function toggleSpesialis(slug, btnEl) {
+    const panel   = document.getElementById('panel-' + slug);
+    const allBtns = document.querySelectorAll('.rw-sp-btn');
+    const allPanels = document.querySelectorAll('.rw-sp-panel');
+
+    if (!panel) return;
+
+    const isOpen = panel.style.display !== 'none';
+
+    // Tutup semua panel dan reset semua tombol dulu
+    allPanels.forEach(p => { p.style.display = 'none'; });
+    allBtns.forEach(b  => { b.classList.remove('active'); });
+
+    if (!isOpen) {
+        // Buka panel yang diklik
+        panel.style.display = 'block';
+        if (btnEl) btnEl.classList.add('active');
+
+        // Scroll ke panel agar terlihat
+        setTimeout(function () {
+            panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 50);
+    }
+}
+
+/**
+ * Toggle section booking dibatalkan.
+ */
+function toggleBatal() {
+    const panel = document.getElementById('panel-batal');
+    const btn   = document.getElementById('btn-batal-toggle');
+    if (!panel) return;
+    const isOpen = panel.style.display !== 'none';
+    panel.style.display = isOpen ? 'none' : 'block';
+    if (btn) btn.innerHTML = isOpen
+        ? 'Lihat <i class="fas fa-chevron-down" style="font-size:10px"></i>'
+        : 'Sembunyikan <i class="fas fa-chevron-up" style="font-size:10px"></i>';
+}
 </script>
 @endpush
