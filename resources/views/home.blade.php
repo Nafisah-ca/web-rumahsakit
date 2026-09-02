@@ -117,6 +117,162 @@
     transform: translateY(-4px) !important;
 }
 
+/* ── ULASAN REDESIGN ─────────────────────────────────── */
+/* Summary wrapper */
+.ulasan-summary-wrap {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+    background: linear-gradient(135deg,#00521f,#00b04f);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+/* Score block */
+.ulasan-score-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    flex-shrink: 0;
+}
+.ulasan-score-num {
+    font-size: 52px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -3px;
+}
+.ulasan-score-stars {
+    display: flex;
+    gap: 3px;
+    margin: 6px 0 4px;
+}
+.ulasan-score-stars i { font-size: 13px; }
+.ulasan-score-label { font-size: 11px; color: rgba(255,255,255,.7); font-weight: 600; }
+/* Bars */
+.ulasan-bars { flex: 1; min-width: 160px; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+.ulasan-bar-row { display: flex; align-items: center; gap: 7px; }
+.ulasan-bar-num { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.8); width: 12px; text-align: right; flex-shrink: 0; }
+.ulasan-bar-track { flex: 1; height: 7px; background: rgba(255,255,255,.2); border-radius: 999px; overflow: hidden; }
+.ulasan-bar-fill { height: 100%; border-radius: 999px; transition: width 1s cubic-bezier(.4,0,.2,1); }
+.ulasan-bar-count { font-size: 11px; color: rgba(255,255,255,.65); width: 20px; flex-shrink: 0; }
+/* CTA button */
+.ulasan-cta-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.3);
+    color: #fff;
+    border-radius: 14px;
+    padding: 14px 20px;
+    text-decoration: none;
+    transition: background .15s;
+    flex-shrink: 0;
+    text-align: center;
+}
+.ulasan-cta-btn:hover { background: rgba(255,255,255,.25); }
+
+/* Grid kartu */
+.ulasan-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+@media (max-width: 1023px) { .ulasan-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 639px)  {
+    .ulasan-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 14px; padding-bottom: 8px; scrollbar-width: none; }
+    .ulasan-grid::-webkit-scrollbar { display: none; }
+}
+
+/* Kartu individu */
+.ulasan-card-v2 {
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 12px rgba(0,0,0,.05);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .4s ease calc(var(--delay,0ms)),
+                transform .4s ease calc(var(--delay,0ms)),
+                box-shadow .2s ease,
+                border-color .2s ease;
+    min-width: 260px; /* untuk mobile slider */
+    scroll-snap-align: start;
+}
+.ulasan-card-v2.card-visible { opacity: 1; transform: translateY(0); }
+.ulasan-card-v2:hover {
+    box-shadow: 0 10px 30px rgba(0,0,0,.1);
+    border-color: #d1fae5;
+    transform: translateY(-4px);
+}
+/* Quote aksen */
+.ulasan-quote {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 36px;
+    line-height: 1;
+    color: #f0fdf4;
+    font-family: Georgia, serif;
+    pointer-events: none;
+    user-select: none;
+}
+/* Avatar */
+.ulasan-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: -1px;
+}
+/* Head */
+.ulasan-card-head { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 12px; }
+.ulasan-meta { flex: 1; min-width: 0; }
+.ulasan-nama { font-size: 13px; font-weight: 800; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+.ulasan-rbadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.ulasan-stars-row { display: flex; align-items: center; gap: 2px; margin-top: 4px; }
+.ulasan-date { font-size: 10px; color: #9ca3af; margin-left: 6px; }
+/* Body */
+.ulasan-judul { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px; line-height: 1.4; }
+.ulasan-isi {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.75;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 /* ── STAT NUMBER PULSE ───────────────────────────────── */
 @keyframes num-pop {
     0%   { transform: scale(1); }
@@ -506,81 +662,121 @@
 {{-- ===== ULASAN PASIEN ===== --}}
 @if($ulasanHome->count() > 0)
 <div class="section-divider"></div>
-<section class="py-14 bg-white">
+<section class="py-16 bg-white" id="section-ulasan">
     <div class="max-w-screen-xl mx-auto px-4">
-        <div class="flex items-end justify-between mb-8 fade-up">
+
+        {{-- Header --}}
+        <div class="flex items-end justify-between mb-10 fade-up">
             <div>
                 <span class="section-label">Testimoni</span>
-                <h2 class="section-title">Ulasan <span>Pasien</span></h2>
+                <h2 class="section-title">Apa Kata <span>Pasien Kami</span></h2>
+                <p class="text-gray-500 text-sm mt-2">Pengalaman nyata pasien yang telah mempercayakan kesehatan mereka kepada kami.</p>
             </div>
-            <a href="{{ route('ulasan.public') }}" class="btn-outline-green hidden md:inline-flex">
-                Lihat Semua <i class="fas fa-arrow-right"></i>
+            <a href="{{ route('ulasan.public') }}" class="btn-outline-green hidden md:inline-flex flex-shrink-0 ml-8">
+                Semua Ulasan <i class="fas fa-arrow-right"></i>
             </a>
         </div>
 
-        {{-- Rating Summary --}}
+        {{-- Rating summary bar --}}
         @php
-            $avgRating = $ulasanHome->avg('rating');
+            $avgRating   = $ulasanHome->avg('rating');
             $totalUlasan = \App\Models\Ulasan::approved()->count();
+            // Warna bar per bintang
+            $barColors = [5=>'#22c55e',4=>'#84cc16',3=>'#eab308',2=>'#f97316',1=>'#ef4444'];
         @endphp
-        <div class="flex items-center gap-6 mb-8 p-5 bg-green-50 rounded-2xl border border-green-100 fade-up">
-            <div class="text-center flex-shrink-0">
-                <div class="text-5xl font-black text-green-600">{{ number_format($avgRating, 1) }}</div>
-                <div class="flex justify-center gap-0.5 my-1">
-                    @for($i = 1; $i <= 5; $i++)
-                    <i class="fas fa-star text-sm {{ $i <= round($avgRating) ? 'text-yellow-400' : 'text-gray-200' }}"></i>
+        <div class="ulasan-summary-wrap fade-up">
+            {{-- Score besar --}}
+            <div class="ulasan-score-block">
+                <div class="ulasan-score-num">{{ number_format($avgRating, 1) }}</div>
+                <div class="ulasan-score-stars">
+                    @for($i=1;$i<=5;$i++)
+                    <i class="fas fa-star" style="color:{{ $i<=round($avgRating)?'#fbbf24':'rgba(255,255,255,.3)' }}"></i>
                     @endfor
                 </div>
-                <div class="text-xs text-gray-500">{{ $totalUlasan }} ulasan</div>
+                <div class="ulasan-score-label">{{ $totalUlasan }} ulasan</div>
             </div>
-            <div class="flex-1">
-                @for($star = 5; $star >= 1; $star--)
-                @php $count = \App\Models\Ulasan::approved()->where('rating', $star)->count(); $pct = $totalUlasan > 0 ? ($count/$totalUlasan)*100 : 0; @endphp
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="text-xs text-gray-500 w-3">{{ $star }}</span>
-                    <i class="fas fa-star text-yellow-400 text-xs"></i>
-                    <div class="flex-1 bg-gray-200 rounded-full h-1.5">
-                        <div class="bg-yellow-400 h-1.5 rounded-full" style="width:{{ $pct }}%"></div>
+            {{-- Bar breakdown --}}
+            <div class="ulasan-bars">
+                @for($s=5;$s>=1;$s--)
+                @php
+                    $cnt = \App\Models\Ulasan::approved()->where('rating',$s)->count();
+                    $pct = $totalUlasan>0 ? round(($cnt/$totalUlasan)*100) : 0;
+                @endphp
+                <div class="ulasan-bar-row">
+                    <span class="ulasan-bar-num">{{ $s }}</span>
+                    <i class="fas fa-star" style="font-size:10px;color:{{ $barColors[$s] }}"></i>
+                    <div class="ulasan-bar-track">
+                        <div class="ulasan-bar-fill"
+                             data-pct="{{ $pct }}"
+                             style="background:{{ $barColors[$s] }};width:0%"></div>
                     </div>
-                    <span class="text-xs text-gray-400 w-5">{{ $count }}</span>
+                    <span class="ulasan-bar-count">{{ $cnt }}</span>
                 </div>
                 @endfor
             </div>
-            <a href="{{ route('kontak') }}#ulasan-form" class="hidden md:flex flex-col items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-sm transition-colors flex-shrink-0">
-                <i class="fas fa-star text-lg"></i> Tulis Ulasan
+            {{-- CTA --}}
+            <a href="{{ route('kontak') }}#ulasan-form" class="ulasan-cta-btn">
+                <i class="fas fa-pen-to-square" style="font-size:20px"></i>
+                <span style="font-size:12px;font-weight:800">Tulis<br>Ulasan</span>
             </a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 fade-up">
-            @foreach($ulasanHome as $u)
-            <div class="ulasan-card-home bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col">
-                <div class="flex items-start justify-between mb-3">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                            <span class="text-green-700 font-black text-base">{{ strtoupper(substr($u->nama, 0, 1)) }}</span>
-                        </div>
-                        <div>
-                            <p class="font-bold text-gray-900 text-sm">{{ $u->nama }}</p>
-                            <p class="text-gray-400 text-xs">{{ $u->created_tm?->format('d M Y') }}</p>
-                        </div>
+        {{-- Grid kartu --}}
+        <div class="ulasan-grid fade-up" id="ulasan-home-grid">
+            @foreach($ulasanHome as $idx => $u)
+            @php
+                $palettes = [
+                    ['#dcfce7','#166534','#86efac'],
+                    ['#dbeafe','#1d4ed8','#93c5fd'],
+                    ['#fce7f3','#be185d','#f9a8d4'],
+                    ['#fef9c3','#854d0e','#fde047'],
+                    ['#f3e8ff','#7e22ce','#d8b4fe'],
+                    ['#ffedd5','#c2410c','#fdba74'],
+                    ['#ccfbf1','#0f766e','#5eead4'],
+                    ['#e0e7ff','#3730a3','#a5b4fc'],
+                ];
+                [$abg,$atxt,$aring] = $palettes[$idx % count($palettes)];
+                $rbadge = match(true){
+                    $u->rating>=5 => ['#f0fdf4','#16a34a','#86efac'],
+                    $u->rating>=4 => ['#f0fdf4','#15803d','#bbf7d0'],
+                    $u->rating>=3 => ['#fefce8','#a16207','#fde047'],
+                    $u->rating>=2 => ['#fff7ed','#c2410c','#fdba74'],
+                    default       => ['#fef2f2','#dc2626','#fca5a5'],
+                };
+            @endphp
+            <div class="ulasan-card-v2" style="--delay:{{ $idx * 80 }}ms">
+                {{-- Quote aksen --}}
+                <span class="ulasan-quote">&ldquo;</span>
+                {{-- Header --}}
+                <div class="ulasan-card-head">
+                    <div class="ulasan-avatar" style="background:{{ $abg }};border-color:{{ $aring }};color:{{ $atxt }}">
+                        {{ strtoupper(substr($u->nama,0,1)) }}
                     </div>
-                    <div class="flex gap-0.5 flex-shrink-0">
-                        @for($i = 1; $i <= 5; $i++)
-                        <i class="fas fa-star text-xs {{ $i <= $u->rating ? 'text-yellow-400' : 'text-gray-200' }}"></i>
-                        @endfor
+                    <div class="ulasan-meta">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+                            <p class="ulasan-nama">{{ $u->nama }}</p>
+                            <span class="ulasan-rbadge" style="background:{{ $rbadge[0] }};color:{{ $rbadge[1] }};border-color:{{ $rbadge[2] }}">
+                                <i class="fas fa-star" style="font-size:9px"></i> {{ $u->rating }}.0
+                            </span>
+                        </div>
+                        <div class="ulasan-stars-row">
+                            @for($i=1;$i<=5;$i++)
+                            <i class="fas fa-star" style="font-size:10px;color:{{ $i<=$u->rating?'#f59e0b':'#e5e7eb' }}"></i>
+                            @endfor
+                            <span class="ulasan-date">{{ $u->created_tm?->format('d M Y') }}</span>
+                        </div>
                     </div>
                 </div>
-                @if($u->judul)
-                <p class="font-bold text-gray-800 text-sm mb-1">{{ $u->judul }}</p>
-                @endif
-                <p class="text-gray-600 text-xs leading-relaxed flex-1 line-clamp-4">{{ $u->isi }}</p>
+                {{-- Body --}}
+                @if($u->judul)<p class="ulasan-judul">{{ $u->judul }}</p>@endif
+                <p class="ulasan-isi">{{ $u->isi }}</p>
             </div>
             @endforeach
         </div>
 
-        <div class="mt-6 text-center fade-up">
-            <a href="{{ route('ulasan.public') }}" class="btn-outline-green md:hidden">
-                Lihat Semua <i class="fas fa-arrow-right"></i>
+        <div class="mt-8 text-center fade-up md:hidden">
+            <a href="{{ route('ulasan.public') }}" class="btn-outline-green">
+                Semua Ulasan <i class="fas fa-arrow-right"></i>
             </a>
         </div>
     </div>
@@ -671,45 +867,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // ── 6. ULASAN CARD STAGGERED ENTRANCE ──────────────────────────
-    const ulasanCards = document.querySelectorAll('.ulasan-card-home');
+    const ulasanCards = document.querySelectorAll('.ulasan-card-v2');
     if (ulasanCards.length) {
         const obs = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
                 if (entry.isIntersecting) {
-                    const cards = entry.target.querySelectorAll('.ulasan-card-home');
-                    cards.forEach(function (c, i) {
-                        setTimeout(() => c.classList.add('visible'), i * 120);
+                    entry.target.querySelectorAll('.ulasan-card-v2').forEach(function (c) {
+                        c.classList.add('card-visible');
                     });
                     obs.unobserve(entry.target);
                 }
             });
         }, { threshold: 0.1 });
-
-        const grid = ulasanCards[0]?.closest('.grid');
+        const grid = document.getElementById('ulasan-home-grid');
         if (grid) obs.observe(grid);
     }
 
-
-    // ── 7. RATING BAR ANIMASI LEBAR ────────────────────────────────
-    const ratingBars = document.querySelectorAll('.rating-bar-fill');
-    if (ratingBars.length) {
-        const obs2 = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                    entry.target.querySelectorAll('.rating-bar-fill').forEach(function (bar) {
-                        const target = bar.dataset.width || '0';
-                        bar.style.width = '0%';
-                        setTimeout(() => { bar.style.transition = 'width 1s ease'; bar.style.width = target + '%'; }, 100);
-                    });
-                    obs2.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.3 });
-        ratingBars.forEach(b => {
-            const container = b.closest('.fade-up');
-            if (container) obs2.observe(container);
+    // ── 7. RATING BAR ANIMASI ───────────────────────────────────────
+    const barObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.querySelectorAll('.ulasan-bar-fill').forEach(function (bar) {
+                    setTimeout(function () { bar.style.width = bar.dataset.pct + '%'; }, 150);
+                });
+                barObs.unobserve(entry.target);
+            }
         });
-    }
+    }, { threshold: 0.3 });
+    const summaryWrap = document.querySelector('.ulasan-summary-wrap');
+    if (summaryWrap) barObs.observe(summaryWrap);
 
 
     // ── 8. SPESIALISASI PILL STAGGER ────────────────────────────────

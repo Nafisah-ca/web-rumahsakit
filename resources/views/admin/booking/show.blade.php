@@ -4,11 +4,25 @@
 <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start">
 
     {{-- Info Booking --}}
-    <div class="card card-body">
+    <div class="card card-body" style="
+        @if($janjiTemu->status === 'pending') border-left: 4px solid #f59e0b;background:linear-gradient(180deg,#fffdf0,#fff);
+        @elseif($janjiTemu->status === 'completed') border-left: 4px solid #22c55e;background:linear-gradient(180deg,#f0fdf4,#fff);
+        @elseif($janjiTemu->status === 'cancelled') border-left: 4px solid #ef4444;background:linear-gradient(180deg,#fff5f5,#fff);opacity:.95;
+        @else border-left: 4px solid #3b82f6;background:linear-gradient(180deg,#eff6ff,#fff);
+        @endif
+    ">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px">
             <div>
                 <p style="font-size:11px;color:#94a3b8;font-weight:600;margin-bottom:4px">KODE BOOKING</p>
-                <p style="font-size:20px;font-weight:800;color:#0f172a;font-family:monospace">{{ $janjiTemu->kode_booking }}</p>
+                @php
+                $kodeStyle = match($janjiTemu->status) {
+                    'pending'   => 'color:#92400e;background:#fef3c7',
+                    'completed' => 'color:#166534;background:#dcfce7',
+                    'cancelled' => 'color:#991b1b;background:#fee2e2;text-decoration:line-through',
+                    default     => 'color:#0f172a;background:#f1f5f9',
+                };
+                @endphp
+                <p style="font-size:20px;font-weight:800;font-family:monospace;padding:4px 12px;border-radius:8px;display:inline-block;{{ $kodeStyle }}">{{ $janjiTemu->kode_booking }}</p>
                 <p style="font-size:12px;color:#94a3b8;margin-top:4px">Dibuat {{ $janjiTemu->created_tm?->format('d M Y H:i') }}</p>
             </div>
             @php
@@ -33,7 +47,7 @@
                 ['fas fa-stethoscope',  'Spesialisasi',     $janjiTemu->jadwalDokter?->dokter?->spesialisasi?->nama_spesialis ?? '-'],
                 ['fas fa-calendar',     'Tanggal Booking',  $janjiTemu->tanggal_booking?->format('d M Y') ?? '-'],
                 ['fas fa-clock',        'Jam Praktik',      $janjiTemu->jadwalDokter ? substr($janjiTemu->jadwalDokter->jam_mulai,0,5).' – '.substr($janjiTemu->jadwalDokter->jam_selesai,0,5).' WIB' : '-'],
-                ['fas fa-hashtag',      'No. Antrian',      $janjiTemu->nomor_antrian ?? '-'],
+                ['fas fa-hashtag', 'No. Antrian', $janjiTemu->nomor_antrian ?? '-'],
                 ['fas fa-calendar-day', 'Hari Praktek',     $janjiTemu->jadwalDokter?->hari ?? '-'],
             ] as [$ico, $lbl, $val])
             <div style="display:flex;align-items:flex-start;gap:10px;background:#f8fafc;border-radius:10px;padding:12px">

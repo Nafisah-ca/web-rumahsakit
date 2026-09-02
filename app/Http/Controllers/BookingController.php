@@ -130,7 +130,13 @@ class BookingController extends Controller
             );
         }
 
-        $nomor = $terisi + 1;
+        // Hitung nomor antrian: max dari nomor yang sudah ada hari itu + 1
+        // (bukan count, agar tidak duplikat jika ada yang dibatalkan di tengah)
+        $maxNomor = JanjiTemu::where('jadwal_dokter_id', $jadwal->id)
+            ->whereDate('tanggal_booking', $tanggal)
+            ->max('nomor_antrian') ?? 0;
+
+        $nomor = $maxNomor + 1;
 
         JanjiTemu::create([
             'pasien_id'         => $pasien->id,
