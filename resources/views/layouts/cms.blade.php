@@ -20,7 +20,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: #f8fafc
 /* ===== LAYOUT ===== */
 .app-shell      { display: flex; height: 100vh; overflow: hidden; }
 .sidebar        { width: 240px; background: #0f172a; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; transition: transform .25s ease, width .25s ease; }
-.main-wrap      { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.main-wrap      { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; max-width: 100%; }
 .main-content   { flex: 1; overflow-y: auto; padding: 24px; }
 
 /* ===== SIDEBAR ===== */
@@ -208,6 +208,7 @@ tr:last-child td { border-bottom: none; }
 
 /* ===== STATS GRID ===== */
 .stats-grid     { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.cms-stats-5    { grid-template-columns: repeat(5, 1fr) !important; }
 .stat-card      { background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #f1f5f9; }
 .stat-icon      { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 14px; }
 .stat-value     { font-size: 24px; font-weight: 800; color: #0f172a; }
@@ -226,6 +227,210 @@ nav[role="navigation"] span[aria-current="page"] span { background: #2563eb; col
 nav[role="navigation"] a { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 8px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #475569; text-decoration: none; border: 1px solid #e2e8f0; transition: all .15s; }
 nav[role="navigation"] a:hover { background: #f1f5f9; }
 @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr 1fr; } .form-row { grid-template-columns: 1fr; } }
+
+/* ===== GLOBAL MOBILE RESPONSIVE — CMS ===== */
+@media (max-width: 767px) {
+
+    /* Paksa main-content tidak overflow ke kanan */
+    .main-content {
+        padding: 12px !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Semua elemen langsung di main-content tidak boleh lebih lebar dari 100% */
+    .main-content > * {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Card tidak overflow */
+    .card, .card-body {
+        border-radius: 10px !important;
+        overflow: hidden !important;
+    }
+
+    /* Card header: selalu wrap + padding kecil */
+    .card-header {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        padding: 12px 14px !important;
+        align-items: flex-start !important;
+    }
+
+    /* Form filter di card-header: wrap + full width */
+    .card-header form,
+    .card-header > div[style*="display:flex"] {
+        flex-wrap: wrap !important;
+        width: 100% !important;
+        gap: 6px !important;
+    }
+    .card-header form input,
+    .card-header form select {
+        flex: 1 1 120px !important;
+        min-width: 0 !important;
+        width: auto !important;
+        max-width: 100% !important;
+    }
+    .card-header .btn,
+    .card-header a.btn {
+        flex-shrink: 0 !important;
+    }
+
+    /* Table: di mobile ubah jadi card list per baris */
+    .table-wrap {
+        overflow-x: visible !important;
+    }
+    table, tbody, td, tr {
+        display: block !important;
+        width: 100% !important;
+    }
+    thead {
+        display: none !important;
+    }
+    table {
+        min-width: 0 !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+    }
+    tbody tr {
+        margin-bottom: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        background: #fff !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,.05) !important;
+    }
+    tbody td {
+        padding: 9px 14px !important;
+        border: none !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        font-size: 13px !important;
+        text-align: left !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        min-height: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        overflow: hidden !important;
+    }
+    tbody td:last-child {
+        border-bottom: none !important;
+        justify-content: flex-end !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+    /* Semua anak langsung td tidak boleh overflow */
+    tbody td > * {
+        max-width: 100% !important;
+        min-width: 0 !important;
+        flex-shrink: 1 !important;
+    }
+    tbody td > div {
+        overflow: hidden !important;
+        word-break: break-word !important;
+        max-width: 100% !important;
+    }
+    /* Image di dalam td tetap proporsional */
+    tbody td img {
+        max-width: 60px !important;
+        height: auto !important;
+        flex-shrink: 0 !important;
+    }
+    /* Label dari data-label */
+    tbody td[data-label]::before {
+        content: attr(data-label);
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        color: #94a3b8 !important;
+        text-transform: uppercase !important;
+        letter-spacing: .06em !important;
+        flex-shrink: 0 !important;
+        margin-right: 4px !important;
+    }
+    /* Kolom yang hanya berisi badge/aksi: justify normal */
+    tbody td > .badge,
+    tbody td > form,
+    tbody td > a.btn {
+        flex-shrink: 0 !important;
+    }
+    /* Inner flex di td jangan overflow */
+    td > div[style*="display:flex"] {
+        flex-wrap: wrap !important;
+        max-width: 100% !important;
+        gap: 6px !important;
+    }
+
+    /* Hapus white-space:nowrap apa pun */
+    td, td * {
+        white-space: normal !important;
+    }
+
+    /* Inline grid style dipaksa jadi 2 kolom (untuk stats bar) atau 1 kolom */
+    [style*="grid-template-columns:repeat(5"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    [style*="grid-template-columns:1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+    [style*="grid-template-columns:1fr 300px"],
+    [style*="grid-template-columns: 1fr 300px"],
+    [style*="grid-template-columns:220px 1fr"],
+    [style*="grid-template-columns: 220px 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Stats grid */
+    .stats-grid,
+    .dash-stats {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+    }
+    .stat-card  { padding: 14px 12px !important; }
+    .stat-value { font-size: 20px !important; }
+
+    /* Form row: 1 kolom */
+    .form-row,
+    .form-row-3 {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Kategori layanan grid: 2 kolom desktop, 1 kolom mobile */
+    .cms-kat-grid { grid-template-columns: 1fr 380px; }
+
+    /* Form tambah kategori: tidak sticky di mobile (akan jatuh ke bawah) */
+
+    /* Inline grid 380px */
+    [style*="grid-template-columns:1fr 380px"],
+    [style*="grid-template-columns: 1fr 380px"],
+    .cms-kat-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Form sticky di kategori-layanan: lepas sticky di mobile */
+    [style*="position:sticky"],
+    [style*="position: sticky"] {
+        position: relative !important;
+        top: auto !important;
+    }
+
+    /* Topbar */
+    .topbar { padding: 10px 12px !important; }
+    .topbar-left h1 { font-size: 14px !important; }
+    .topbar-name { display: none !important; }
+
+    /* Alert */
+    .alert { margin: 8px 12px 0 !important; padding: 10px 12px !important; }
+
+    /* Pagination */
+    nav[role="navigation"] {
+        justify-content: center !important;
+        gap: 4px !important;
+    }
+}
 </style>
 @stack('styles')
 </head>

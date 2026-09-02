@@ -39,7 +39,7 @@
                         @php $bc=['baru'=>'badge-amber','dibaca'=>'badge-blue','selesai'=>'badge-green'][$p->status]??'badge-slate'; @endphp
                         <span class="badge {{ $bc }}">{{ ucfirst($p->status) }}</span>
                     </td>
-                    <td style="font-size:12px;color:#94a3b8;white-space:nowrap">{{ $p->created_tm->format('d M Y H:i') }}</td>
+                    <td style="font-size:12px;color:#94a3b8">{{ $p->created_tm->format('d M Y H:i') }}</td>
                     <td>
                         <div style="display:flex;gap:6px;flex-wrap:wrap">
                             <a href="{{ route('cms.guest-book.show',$p) }}" class="btn btn-sm btn-secondary"><i class="fas fa-eye"></i> Detail</a>

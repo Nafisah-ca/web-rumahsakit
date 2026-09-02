@@ -5,10 +5,10 @@
 <div class="card">
     <div class="card-header">
         <h3>Daftar Promo</h3>
-        <div style="display:flex;gap:10px">
-            <form style="display:flex;gap:8px" method="GET">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari promo..." class="form-input" style="width:180px">
-                <select name="status" class="form-input" style="width:150px" onchange="this.form.submit()">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <form style="display:flex;gap:8px;flex-wrap:wrap" method="GET">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari promo..." class="form-input" style="min-width:120px;flex:1">
+                <select name="status" class="form-input" style="min-width:120px;flex:1" onchange="this.form.submit()">
                     <option value="">Semua Status</option>
                     <option value="aktif"       {{ request('status')==='aktif'       ? 'selected':'' }}>Aktif</option>
                     <option value="nonaktif"    {{ request('status')==='nonaktif'    ? 'selected':'' }}>Nonaktif</option>
@@ -36,17 +36,11 @@
                 @forelse($promos as $promo)
                 @php
                     $isExpired  = $promo->tanggal_selesai && $promo->tanggal_selesai->isPast();
-                    // Badge: expired tampil kuning-oranye biar admin langsung tahu
-                    $statusBadge = $isExpired
-                        ? 'badge-amber'
-                        : ($promo->status === 'aktif' ? 'badge-green' : 'badge-slate');
-                    $statusLabel = $isExpired
-                        ? 'Kedaluwarsa'
-                        : ($promo->status === 'aktif' ? 'Aktif' : 'Nonaktif');
+                    $statusBadge = $isExpired ? 'badge-amber' : ($promo->status === 'aktif' ? 'badge-green' : 'badge-slate');
+                    $statusLabel = $isExpired ? 'Kedaluwarsa' : ($promo->status === 'aktif' ? 'Aktif' : 'Nonaktif');
                 @endphp
                 <tr>
-                    {{-- Judul --}}
-                    <td>
+                    <td data-label="Promo">
                         <div style="display:flex;align-items:center;gap:10px">
                             <div style="width:40px;height:40px;border-radius:10px;flex-shrink:0;overflow:hidden;background:#16a34a;display:flex;align-items:center;justify-content:center">
                                 @if($promo->gambar)
@@ -59,19 +53,14 @@
                         </div>
                     </td>
 
-                    {{-- Tanggal Mulai --}}
-                    <td style="font-size:12px;color:#64748b;white-space:nowrap">
+                    <td style="font-size:12px;color:#64748b">
                         {{ $promo->tanggal_mulai?->format('d M Y') ?? '-' }}
                     </td>
-
-                    {{-- Tanggal Selesai --}}
-                    <td style="font-size:12px;white-space:nowrap;color:{{ $isExpired ? '#ef4444' : '#64748b' }};font-weight:{{ $isExpired ? '700' : '400' }}">
+                    <td style="font-size:12px;color:{{ $isExpired ? '#ef4444' : '#64748b' }};font-weight:{{ $isExpired ? '700' : '400' }}">
                         {{ $promo->tanggal_selesai?->format('d M Y') ?? 'Tidak terbatas' }}
                         @if($isExpired)<span style="font-size:10px;background:#fee2e2;color:#ef4444;padding:1px 6px;border-radius:20px;margin-left:4px">Berakhir</span>@endif
                     </td>
-
-                    {{-- Sisa Waktu --}}
-                    <td style="font-size:12px;color:#64748b;white-space:nowrap">
+                    <td style="font-size:12px;color:#64748b">
                         @if(!$promo->tanggal_selesai)
                             <span style="color:#94a3b8">Tidak terbatas</span>
                         @elseif($isExpired)

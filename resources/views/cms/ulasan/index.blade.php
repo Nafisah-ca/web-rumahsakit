@@ -4,7 +4,7 @@
 @section('content')
 
 {{-- Stats bar --}}
-<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px">
+<div class="cms-stats-5 stats-grid" style="margin-bottom:24px">
     @foreach([
         ['Total',      $stats['total'],    'fa-star',        '#6366f1','#eef2ff'],
         ['Menunggu',   $stats['pending'],  'fa-clock',       '#f59e0b','#fffbeb'],
@@ -12,13 +12,13 @@
         ['Ditolak',    $stats['rejected'], 'fa-times-circle','#dc2626','#fef2f2'],
         ['Rata-rata',  $stats['avg'].'★',  'fa-star-half-alt','#f59e0b','#fffbeb'],
     ] as [$lbl,$val,$ico,$color,$bg])
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;border-radius:10px;background:{{ $bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <i class="fas {{ $ico }}" style="color:{{ $color }};font-size:16px"></i>
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px;display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:{{ $bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="fas {{ $ico }}" style="color:{{ $color }};font-size:14px"></i>
         </div>
-        <div>
-            <p style="font-size:20px;font-weight:800;color:#0f172a;line-height:1">{{ $val }}</p>
-            <p style="font-size:11px;color:#64748b;margin-top:2px">{{ $lbl }}</p>
+        <div style="min-width:0">
+            <p style="font-size:18px;font-weight:800;color:#0f172a;line-height:1">{{ $val }}</p>
+            <p style="font-size:11px;color:#64748b;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ $lbl }}</p>
         </div>
     </div>
     @endforeach
@@ -105,7 +105,7 @@
                             {{ $u->status_label }}
                         </span>
                     </td>
-                    <td style="color:#64748b;font-size:12px;white-space:nowrap">
+                    <td style="color:#64748b;font-size:12px">
                         {{ $u->created_tm?->format('d M Y') }}
                     </td>
                     <td>

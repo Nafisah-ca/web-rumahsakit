@@ -2,7 +2,7 @@
 @php $pageTitle = 'Kategori Layanan'; $breadcrumb = 'CMS / Kategori Layanan'; @endphp
 @section('content')
 
-<div style="display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start">
+<div class="cms-kat-grid" style="display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start">
 
     {{-- ── Daftar Kategori ── --}}
     <div class="card">

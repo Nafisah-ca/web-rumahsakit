@@ -4,10 +4,10 @@
 <div class="card">
     <div class="card-header">
         <h3>Daftar FAQ</h3>
-        <div style="display:flex;gap:10px">
-            <form style="display:flex;gap:8px" method="GET">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari pertanyaan..." class="form-input" style="width:220px">
-                <select name="status" class="form-input" style="width:130px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <form style="display:flex;gap:8px;flex-wrap:wrap" method="GET">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari pertanyaan..." class="form-input" style="min-width:140px;flex:1">
+                <select name="status" class="form-input" style="min-width:110px;flex:1">
                     <option value="">Semua Status</option>
                     <option value="aktif"    {{ request('status')==='aktif'    ? 'selected' : '' }}>Aktif</option>
                     <option value="nonaktif" {{ request('status')==='nonaktif' ? 'selected' : '' }}>Nonaktif</option>
@@ -37,8 +37,8 @@
                     <td style="color:#94a3b8;font-size:12px">{{ $faqs->firstItem() + $loop->index }}</td>
                     <td>
                         <p style="font-weight:600;font-size:13px;color:#0f172a;margin-bottom:4px">{{ $f->pertanyaan }}</p>
-                        <p style="font-size:11px;color:#94a3b8;max-width:500px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                            {{ strip_tags($f->jawaban) }}
+                        <p style="font-size:11px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:normal;max-width:100%">
+                            {{ Str::limit(strip_tags($f->jawaban), 80) }}
                         </p>
                     </td>
                     <td>
