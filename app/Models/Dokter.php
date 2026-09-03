@@ -45,7 +45,13 @@ class Dokter extends Model
     {
         return $this->jadwalDokters()
                     ->where('status', 'aktif')
-                    ->whereDate('tanggal_praktek', '>=', today())
+                    ->where(function ($q) {
+                        // Jadwal mingguan (berulang): tanggal_praktek NULL
+                        // Jadwal spesifik: tanggal_praktek >= hari ini
+                        $q->whereNull('tanggal_praktek')
+                          ->orWhereDate('tanggal_praktek', '>=', today());
+                    })
+                    ->orderByRaw('CASE WHEN tanggal_praktek IS NULL THEN 0 ELSE 1 END') // mingguan dulu
                     ->orderBy('tanggal_praktek')
                     ->orderBy('jam_mulai');
     }
