@@ -44,4 +44,9 @@ class WebsiteSetting extends Model
             'email'   => '-',
         ]);
     }
+
+    public function getJadwalSholatConfigAttribute(): array
+    {
+        return \App\Services\JadwalSholatService::getSettingConfig();
+    }
 }

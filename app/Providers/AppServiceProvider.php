@@ -46,10 +46,9 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        // Share spesialisasi & kategori layanan ke layout public (navbar dinamis)
+        // Share spesialisasi, kategori layanan & jadwal sholat ke layout public
         View::composer('layouts.app', function ($view) {
             $view->with('nav_spesialisasi', Spesialisasi::orderBy('nama_spesialis')->get());
-
 
             // Kategori layanan untuk dropdown Pelayanan — guard jika tabel belum ada
             try {
@@ -67,6 +66,22 @@ class AppServiceProvider extends ServiceProvider
             }
 
             $view->with('nav_kategori_layanan', $nav_kategori_layanan);
+
+            // Jadwal Sholat (API / Database fallback)
+            try {
+                $jadwalSholat = \App\Services\JadwalSholatService::getJadwal();
+            } catch (\Throwable $e) {
+                $jadwalSholat = [
+                    'status' => false,
+                    'times' => \App\Services\JadwalSholatService::DEFAULT_FALLBACK,
+                    'lokasi' => 'Indonesia',
+                    'tanggal_label' => now()->translatedFormat('l, d/m/Y'),
+                    'sumber' => 'database',
+                    'sumber_label' => 'Fallback Sistem',
+                    'sholat_berikutnya' => \App\Services\JadwalSholatService::hitungSholatBerikutnya(\App\Services\JadwalSholatService::DEFAULT_FALLBACK),
+                ];
+            }
+            $view->with('jadwal_sholat_data', $jadwalSholat);
         });
     }
 }

@@ -515,11 +515,56 @@ class AdminController extends Controller
 
     public function jadwalDokter(Request $request)
     {
+        $today = today()->toDateString();
+        $tab   = $request->get('tab', 'mendatang'); // 'mendatang' (default), 'riwayat', 'semua'
+
         $query = JadwalDokter::with(['dokter', 'spesialisasi']);
-        if ($request->dokter_id) $query->where('dokter_id', $request->dokter_id);
-        $jadwals = $query->orderBy('hari')->paginate(20)->withQueryString();
+
+        if ($request->dokter_id) {
+            $query->where('dokter_id', $request->dokter_id);
+        }
+
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('tanggal_praktek', '>=', $request->tanggal_dari);
+        }
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('tanggal_praktek', '<=', $request->tanggal_sampai);
+        }
+
+        // Hitung total counter untuk tab
+        $countQuery = JadwalDokter::query();
+        if ($request->dokter_id) {
+            $countQuery->where('dokter_id', $request->dokter_id);
+        }
+        
+        $totalMendatang = (clone $countQuery)->whereDate('tanggal_praktek', '>=', $today)->count();
+        $totalRiwayat   = (clone $countQuery)->whereDate('tanggal_praktek', '<', $today)->count();
+        $totalSemua     = (clone $countQuery)->count();
+
+        // Terapkan filter tab
+        if ($tab === 'riwayat') {
+            // Hanya tanggal yang sudah lewat
+            $query->whereDate('tanggal_praktek', '<', $today)
+                  ->orderBy('tanggal_praktek', 'desc')
+                  ->orderBy('jam_mulai', 'asc');
+        } elseif ($tab === 'semua') {
+            // Semua jadwal
+            $query->orderBy('tanggal_praktek', 'desc')
+                  ->orderBy('jam_mulai', 'asc');
+        } else {
+            // Default 'mendatang': hanya jadwal mulai hari ini ke depan (tanggal lewat tidak ditampilkan)
+            $tab = 'mendatang';
+            $query->whereDate('tanggal_praktek', '>=', $today)
+                  ->orderBy('tanggal_praktek', 'asc')
+                  ->orderBy('jam_mulai', 'asc');
+        }
+
+        $jadwals = $query->paginate(20)->withQueryString();
         $dokters = Dokter::where('status', 'aktif')->orderBy('nama_dokter')->get();
-        return view('admin.jadwal.index', compact('jadwals', 'dokters'));
+
+        return view('admin.jadwal.index', compact(
+            'jadwals', 'dokters', 'tab', 'totalMendatang', 'totalRiwayat', 'totalSemua'
+        ));
     }
 
     public function createJadwal()

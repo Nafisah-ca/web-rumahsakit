@@ -43,9 +43,15 @@ class BookingController extends Controller
         $hariMap     = [0 => 'Minggu', 1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu'];
         $hariPilihan = $hariMap[\Carbon\Carbon::parse($tanggal)->dayOfWeek];
 
+        // Ambil jadwal aktif dokter yang sesuai dengan tanggal dipilih
         $jadwals = JadwalDokter::where('dokter_id', $request->dokter_id)
             ->where('status', 'aktif')
-            ->where('hari', $hariPilihan)
+            ->where(function ($q) use ($tanggal, $hariPilihan) {
+                $q->whereDate('tanggal_praktek', $tanggal)
+                  ->orWhere(function ($sub) use ($hariPilihan) {
+                      $sub->whereNull('tanggal_praktek')->where('hari', $hariPilihan);
+                  });
+            })
             ->get()
             ->map(function ($j) use ($tanggal) {
                 $terisi = JanjiTemu::where('jadwal_dokter_id', $j->id)

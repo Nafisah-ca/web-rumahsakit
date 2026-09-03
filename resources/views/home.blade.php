@@ -178,25 +178,21 @@
 }
 .ulasan-cta-btn:hover { background: rgba(255,255,255,.25); }
 
-/* Grid kartu */
+/* Banyak kartu ukuran sama, tidak terlalu tinggi */
 .ulasan-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-}
-@media (max-width: 1023px) { .ulasan-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 639px)  {
-    .ulasan-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 14px; padding-bottom: 8px; scrollbar-width: none; }
-    .ulasan-grid::-webkit-scrollbar { display: none; }
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+    align-items: stretch;
 }
 
 /* Kartu individu */
 .ulasan-card-v2 {
     background: #fff;
-    border-radius: 18px;
+    border-radius: 16px;
     border: 1px solid #f0f0f0;
     box-shadow: 0 2px 12px rgba(0,0,0,.05);
-    padding: 20px;
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -207,8 +203,8 @@
                 transform .4s ease calc(var(--delay,0ms)),
                 box-shadow .2s ease,
                 border-color .2s ease;
-    min-width: 260px; /* untuk mobile slider */
-    scroll-snap-align: start;
+    width: 100%;
+    height: 148px;
 }
 .ulasan-card-v2.card-visible { opacity: 1; transform: translateY(0); }
 .ulasan-card-v2:hover {
@@ -243,7 +239,7 @@
     letter-spacing: -1px;
 }
 /* Head */
-.ulasan-card-head { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 12px; }
+.ulasan-card-head { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 8px; }
 .ulasan-meta { flex: 1; min-width: 0; }
 .ulasan-nama { font-size: 13px; font-weight: 800; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
 .ulasan-rbadge {
@@ -261,14 +257,15 @@
 .ulasan-stars-row { display: flex; align-items: center; gap: 2px; margin-top: 4px; }
 .ulasan-date { font-size: 10px; color: #9ca3af; margin-left: 6px; }
 /* Body */
-.ulasan-judul { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px; line-height: 1.4; }
+.ulasan-judul { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 4px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ulasan-isi {
     font-size: 12px;
     color: #6b7280;
-    line-height: 1.75;
+    line-height: 1.55;
     flex: 1;
+    min-height: 0;
     display: -webkit-box;
-    -webkit-line-clamp: 4;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -404,6 +401,74 @@
         </a>
     </div>
 </div>
+
+{{-- ===== JADWAL SHOLAT SECTION ===== --}}
+@if(!empty($jadwal_sholat_data['times']))
+<section class="py-5 bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-950 text-white relative overflow-hidden border-y border-emerald-800/40 shadow-inner">
+    <div class="max-w-screen-xl mx-auto px-4 relative z-10">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-5">
+
+            {{-- Header info --}}
+            <div class="flex items-center gap-3.5 text-center lg:text-left">
+                <div class="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center flex-shrink-0 text-emerald-300 text-xl shadow-inner">
+                    <i class="fas fa-kaaba"></i>
+                </div>
+                <div>
+                    <div class="flex items-center justify-center lg:justify-start gap-2">
+                        <h3 class="text-sm font-extrabold text-white tracking-tight">Jadwal Waktu Sholat</h3>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold {{ ($jadwal_sholat_data['sumber'] ?? '') === 'api' ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40' : 'bg-amber-500/30 text-amber-200 border border-amber-400/40' }}">
+                            {{ ($jadwal_sholat_data['sumber'] ?? '') === 'api' ? '● Kemenag RI' : '● Database' }}
+                        </span>
+                    </div>
+                    <p class="text-xs text-emerald-100/80 mt-0.5 flex items-center justify-center lg:justify-start gap-1.5">
+                        <i class="fas fa-location-dot text-emerald-400 text-[10px]"></i>
+                        <span>{{ $jadwal_sholat_data['lokasi'] ?? 'Indonesia' }}</span>
+                        <span class="opacity-50">•</span>
+                        <span>{{ $jadwal_sholat_data['tanggal_label'] ?? now()->translatedFormat('l, d M Y') }}</span>
+                    </p>
+                </div>
+            </div>
+
+            {{-- Grid Waktu Sholat --}}
+            <div class="grid grid-cols-4 sm:grid-cols-7 gap-2 w-full lg:w-auto">
+                @php
+                    $prayers = [
+                        'imsak'   => ['label' => 'Imsak',   'icon' => 'fa-moon'],
+                        'subuh'   => ['label' => 'Subuh',   'icon' => 'fa-cloud-sun'],
+                        'dhuha'   => ['label' => 'Dhuha',   'icon' => 'fa-sun'],
+                        'dzuhur'  => ['label' => 'Dzuhur',  'icon' => 'fa-sun'],
+                        'ashar'   => ['label' => 'Ashar',   'icon' => 'fa-cloud-sun'],
+                        'maghrib' => ['label' => 'Maghrib', 'icon' => 'fa-moon'],
+                        'isya'    => ['label' => 'Isya',    'icon' => 'fa-star-and-crescent'],
+                    ];
+                    $nextPrayer = $jadwal_sholat_data['sholat_berikutnya']['nama'] ?? '';
+                @endphp
+
+                @foreach($prayers as $key => $p)
+                @php
+                    $isNext = strtolower($nextPrayer) === $key;
+                    $jam    = $jadwal_sholat_data['times'][$key] ?? '-';
+                @endphp
+                <div class="relative px-3 py-2 rounded-xl text-center transition-all duration-200 {{ $isNext ? 'bg-emerald-500/30 border border-emerald-300 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-400/50' : 'bg-white/10 hover:bg-white/15 border border-white/10' }}">
+                    @if($isNext)
+                    <span class="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-950 text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider shadow">
+                        Berikutnya
+                    </span>
+                    @endif
+                    <div class="text-[10px] font-semibold {{ $isNext ? 'text-emerald-200 font-bold' : 'text-emerald-100/70' }} flex items-center justify-center gap-1">
+                        <i class="fas {{ $p['icon'] }} text-[8px]"></i> {{ $p['label'] }}
+                    </div>
+                    <div class="text-xs font-extrabold tracking-tight mt-0.5 font-mono text-white">
+                        {{ $jam }}
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+        </div>
+    </div>
+</section>
+@endif
 
 {{-- ===== SPESIALISASI ===== --}}
 <div class="section-divider"></div>

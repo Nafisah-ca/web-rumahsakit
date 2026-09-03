@@ -2,6 +2,7 @@
 @section('content')
 
 @push('styles')
+@include('_partials.ulasan-styles')
 <style>
 .bounce-btn {
     transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
@@ -315,34 +316,50 @@
                 <h2 class="section-title mb-6">Ulasan <span>Terkini</span></h2>
 
                 @if($ulasanPublic->count() > 0)
-                <div class="space-y-4">
-                    @foreach($ulasanPublic as $u)
-                    <div class="ulasan-card-kontak bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-                        <div class="flex items-start justify-between mb-2">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                                    <span class="text-green-700 font-black text-sm">{{ strtoupper(substr($u->nama, 0, 1)) }}</span>
-                                </div>
-                                <div>
-                                    <p class="font-bold text-gray-900 text-sm">{{ $u->nama }}</p>
-                                    <p class="text-gray-400 text-xs">{{ $u->created_tm?->format('d M Y') }}</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-0.5">
-                                @for($i = 1; $i <= 5; $i++)
-                                <i class="fas fa-star text-xs {{ $i <= $u->rating ? 'text-yellow-400' : 'text-gray-200' }}"></i>
-                                @endfor
-                            </div>
+                {{-- Summary bar --}}
+                @php
+                    $avgK   = $ulasanPublic->avg('rating');
+                    $totalK = \App\Models\Ulasan::approved()->count();
+                    $countK = \App\Models\Ulasan::approved()->selectRaw('rating,count(*) as total')->groupBy('rating')->pluck('total','rating');
+                    $barsK  = [5=>'#22c55e',4=>'#84cc16',3=>'#eab308',2=>'#f97316',1=>'#ef4444'];
+                @endphp
+                <div class="ulasan-summary-wrap mb-6">
+                    <div class="ulasan-score-block">
+                        <div class="ulasan-score-num">{{ number_format($avgK,1) }}</div>
+                        <div class="ulasan-score-stars">
+                            @for($i=1;$i<=5;$i++)
+                            <i class="fas fa-star" style="color:{{ $i<=round($avgK)?'#fde047':'rgba(255,255,255,.3)' }}"></i>
+                            @endfor
                         </div>
-                        @if($u->judul)
-                        <p class="font-bold text-gray-800 text-sm mb-1">{{ $u->judul }}</p>
-                        @endif
-                        <p class="text-gray-600 text-xs leading-relaxed line-clamp-3">{{ $u->isi }}</p>
+                        <div class="ulasan-score-label">{{ $totalK }} ulasan</div>
                     </div>
+                    <div class="ulasan-bars">
+                        @for($s=5;$s>=1;$s--)
+                        @php $c=$countK[$s]??0; $p=$totalK>0?round(($c/$totalK)*100):0; @endphp
+                        <div class="ulasan-bar-row">
+                            <span class="ulasan-bar-num">{{ $s }}</span>
+                            <i class="fas fa-star" style="font-size:10px;color:{{ $barsK[$s] }}"></i>
+                            <div class="ulasan-bar-track">
+                                <div class="ulasan-bar-fill" data-pct="{{ $p }}" style="background:{{ $barsK[$s] }};width:0%"></div>
+                            </div>
+                            <span class="ulasan-bar-count">{{ $c }}</span>
+                        </div>
+                        @endfor
+                    </div>
+                    <a href="{{ route('kontak') }}#ulasan-form" class="ulasan-cta-btn">
+                        <i class="fas fa-pen-to-square" style="font-size:18px"></i>
+                        <span style="font-size:11px;font-weight:800">Tulis<br>Ulasan</span>
+                    </a>
+                </div>
+
+                {{-- Grid kartu --}}
+                <div class="ulasan-grid">
+                    @foreach($ulasanPublic as $idx => $u)
+                    @include('_partials.ulasan-card-v2', ['u'=>$u,'idx'=>$idx])
                     @endforeach
                 </div>
-                <div class="mt-4 text-center">
-                    <a href="{{ route('ulasan.public') }}" class="bounce-btn btn-outline-green inline-flex">
+                <div class="mt-5 text-center">
+                    <a href="{{ route('ulasan.public') }}" class="btn-outline-green inline-flex">
                         Lihat Semua Ulasan <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
@@ -365,17 +382,12 @@
 @if(session('success_ulasan'))
 document.addEventListener('DOMContentLoaded', function () {
     const el = document.getElementById('ulasan-form');
-    if (el) {
-        setTimeout(function () {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-    }
+    if (el) setTimeout(function () { el.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100);
 });
 @endif
 
 // Star rating interaction
-document.addEventListener('DOMContentLoaded', function () {
-    const stars = document.querySelectorAll('#star-rating label');
+document.addEventListener('DOMContentLoaded', function () {    const stars = document.querySelectorAll('#star-rating label');
     stars.forEach(function (label, idx) {
         const icon = label.querySelector('i');
         const input = label.querySelector('input');
@@ -409,8 +421,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 {{-- ===== PROFESSIONAL ENHANCEMENT JS ===== --}}
 <script>
-(function () {
-    'use strict';
+(function () {    'use strict';
 
     /* ═══════════════════════════════════════════════════════════
        KEYFRAMES & GLOBAL STYLES
@@ -861,4 +872,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
 })();
 </script>
+@include('_partials.ulasan-scripts')
 @endpush

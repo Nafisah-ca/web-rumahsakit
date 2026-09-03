@@ -43,7 +43,11 @@ class Dokter extends Model
 
     public function jadwalAktif(): HasMany
     {
-        return $this->jadwalDokters()->where('status', 'aktif')->orderBy('hari');
+        return $this->jadwalDokters()
+                    ->where('status', 'aktif')
+                    ->whereDate('tanggal_praktek', '>=', today())
+                    ->orderBy('tanggal_praktek')
+                    ->orderBy('jam_mulai');
     }
 
     public function janjiTemus(): HasMany

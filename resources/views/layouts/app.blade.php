@@ -250,6 +250,53 @@ html, body { overflow-x: hidden; max-width: 100%; }
                 <a href="{{ route('live.antrian') }}" class="flex items-center gap-2 hover:text-green-600 transition-colors font-semibold">
                     <span class="live-badge">Live</span> Live Antrian
                 </a>
+
+                @if(!empty($jadwal_sholat_data['times']))
+                {{-- WIDGET JADWAL SHOLAT TOPBAR --}}
+                <div class="relative group" id="sholat-dropdown-wrap">
+                    <button type="button" class="flex items-center gap-1.5 hover:text-green-700 transition-colors font-semibold text-gray-700 focus:outline-none"
+                            onclick="document.getElementById('sholat-popover')?.classList.toggle('hidden')">
+                        <i class="fas fa-kaaba text-emerald-600"></i>
+                        <span>
+                            @if(!empty($jadwal_sholat_data['sholat_berikutnya']))
+                                {{ $jadwal_sholat_data['sholat_berikutnya']['nama'] }}: 
+                                <strong class="text-emerald-700 font-bold">{{ $jadwal_sholat_data['sholat_berikutnya']['jam'] }}</strong>
+                            @else
+                                Jadwal Sholat
+                            @endif
+                        </span>
+                        <span class="text-[10px] text-gray-400">({{ Str::limit($jadwal_sholat_data['lokasi'] ?? 'Jakarta', 14) }})</span>
+                        <i class="fas fa-chevron-down text-[8px] opacity-60 ml-0.5"></i>
+                    </button>
+
+                    {{-- Popover Dropdown Jadwal 5 Waktu --}}
+                    <div id="sholat-popover" 
+                         class="hidden group-hover:block absolute left-0 top-full mt-1.5 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 p-3 z-[9999]">
+                        <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 text-xs">
+                            <div class="flex items-center gap-1.5 font-bold text-gray-800">
+                                <i class="fas fa-mosque text-emerald-600"></i>
+                                <span>{{ $jadwal_sholat_data['lokasi'] ?? 'Jadwal Sholat' }}</span>
+                            </div>
+                            <span class="text-[10px] font-semibold text-gray-400">{{ $jadwal_sholat_data['tanggal_label'] ?? '' }}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 text-xs">
+                            @foreach(['subuh'=>'Subuh', 'dhuha'=>'Dhuha', 'dzuhur'=>'Dzuhur', 'ashar'=>'Ashar', 'maghrib'=>'Maghrib', 'isya'=>'Isya'] as $key => $lbl)
+                            @php
+                                $isNext = ($jadwal_sholat_data['sholat_berikutnya']['nama'] ?? '') === $lbl;
+                            @endphp
+                            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg {{ $isNext ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-200' : 'bg-gray-50 text-gray-700' }}">
+                                <span>{{ $lbl }}</span>
+                                <span class="font-mono font-semibold">{{ $jadwal_sholat_data['times'][$key] ?? '-' }}</span>
+                            </div>
+                            @endforeach
+                        </div>
+                        <div class="mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+                            <span>Imsak: <strong>{{ $jadwal_sholat_data['times']['imsak'] ?? '-' }}</strong></span>
+                            <span class="text-emerald-600 font-semibold">{{ ($jadwal_sholat_data['sumber'] ?? '') === 'api' ? '● API Kemenag' : '● Database' }}</span>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
             <div class="flex items-center gap-4">
                 <div class="w-px h-4 bg-gray-200"></div>

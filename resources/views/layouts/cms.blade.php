@@ -474,6 +474,9 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
             <a href="{{ route('cms.footer') }}" class="sidebar-link {{ request()->routeIs('cms.footer*') ? 'active' : '' }}">
                 <i class="fas fa-align-left icon"></i> Footer
             </a>
+            <a href="{{ route('cms.jadwal-sholat') }}" class="sidebar-link {{ request()->routeIs('cms.jadwal-sholat*') ? 'active' : '' }}">
+                <i class="fas fa-kaaba icon"></i> Jadwal Sholat
+            </a>
 
             <div class="sidebar-group">Konten Website</div>
             <a href="{{ route('cms.page-banner') }}" class="sidebar-link {{ request()->routeIs('cms.page-banner*') ? 'active' : '' }}">

@@ -39,6 +39,7 @@ Route::post('/medical-checkup/daftar',[McuController::class, 'store'])->name('mc
 Route::get('/medical-checkup/sukses', [McuController::class, 'sukses'])->name('mcu.sukses');
 Route::get('/live-antrian',    [HospitalController::class, 'liveAntrian'])->name('live.antrian');
 Route::get('/api/live-antrian',[HospitalController::class, 'liveAntrianJson'])->name('live.antrian.json');
+Route::get('/api/jadwal-sholat', fn() => response()->json(\App\Services\JadwalSholatService::getJadwal()))->name('jadwal-sholat.json');
 
 // Halaman Legal
 Route::get('/kebijakan-privasi', [HospitalController::class, 'kebijakanPrivasi'])->name('kebijakan-privasi');
@@ -313,6 +314,11 @@ Route::middleware(['auth', 'cms.verified', 'last.activity'])->prefix('cms')->nam
     Route::get('/jadwal/{jadwalDokter}/edit',    [CmsController::class, 'editJadwal'])->name('jadwal.edit');
     Route::put('/jadwal/{jadwalDokter}',         [CmsController::class, 'updateJadwal'])->name('jadwal.update');
     Route::delete('/jadwal/{jadwalDokter}',      [CmsController::class, 'destroyJadwal'])->name('jadwal.destroy');
+
+    // Jadwal Sholat
+    Route::get('/jadwal-sholat',           [CmsController::class, 'jadwalSholat'])->name('jadwal-sholat');
+    Route::put('/jadwal-sholat',           [CmsController::class, 'updateJadwalSholat'])->name('jadwal-sholat.update');
+    Route::get('/jadwal-sholat/cari-kota', [CmsController::class, 'cariKotaSholat'])->name('jadwal-sholat.cari-kota');
 
     // Profile & Password
     Route::get('/profile',                  [CmsController::class, 'profile'])->name('profile');
