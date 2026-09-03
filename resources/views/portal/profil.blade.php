@@ -1307,6 +1307,9 @@ function showToast(msg, dur = 3500) {
     const m = document.getElementById('profil-toast-msg');
     if (!t || !m) return;
     m.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), dur);
+}
 
 // ── MODAL BATALKAN BOOKING ────────────────────────────────
 let _batalId = null;
@@ -1356,9 +1359,6 @@ document.getElementById('modal-batal-overlay')?.addEventListener('click', functi
     if (e.target === this) closeBatalModal();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBatalModal(); });
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), dur);
-}
 
 /**
  * ── 2. SECTION ENTRANCE ANIMATION ────────────────────────
