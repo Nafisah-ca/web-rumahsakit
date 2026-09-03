@@ -59,6 +59,14 @@ class AuthController extends Controller
             ]);
         }
 
+        // Sinkronisasi lokasi jadwal sholat jika pasien memiliki alamat di profilnya
+        if ($user->role === 'pasien' && $user->pasien?->alamat) {
+            $matchedCity = \App\Services\JadwalSholatService::detectCityFromAddress($user->pasien->alamat);
+            if ($matchedCity) {
+                session(['user_sholat_city' => $matchedCity]);
+            }
+        }
+
         $request->session()->regenerate();
 
         return $this->redirectByRole($user);

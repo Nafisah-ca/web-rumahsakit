@@ -23,6 +23,99 @@ class JadwalSholatService
         'isya'    => '19:08',
     ];
 
+    /** Pemetaan Provinsi & Wilayah Indonesia ke Kota Utama/Ibu Kota */
+    public const PROVINCE_CITY_MAP = [
+        // Kalimantan
+        'kalimantan timur'           => 'Samarinda',
+        'kaltim'                     => 'Samarinda',
+        'east kalimantan'            => 'Samarinda',
+        'kalimantan selatan'         => 'Banjarmasin',
+        'kalsel'                     => 'Banjarmasin',
+        'south kalimantan'           => 'Banjarmasin',
+        'kalimantan barat'           => 'Pontianak',
+        'kalbar'                     => 'Pontianak',
+        'west kalimantan'            => 'Pontianak',
+        'kalimantan tengah'          => 'Palangkaraya',
+        'kalteng'                    => 'Palangkaraya',
+        'central kalimantan'         => 'Palangkaraya',
+        'kalimantan utara'           => 'Tarakan',
+        'kaltara'                    => 'Tarakan',
+        'north kalimantan'           => 'Tarakan',
+        'kalimantan'                 => 'Samarinda',
+        'borneo'                     => 'Samarinda',
+
+        // Jawa
+        'dki jakarta'                => 'Jakarta',
+        'jakarta'                    => 'Jakarta',
+        'jawa barat'                 => 'Bandung',
+        'jabar'                      => 'Bandung',
+        'west java'                  => 'Bandung',
+        'jawa tengah'                => 'Semarang',
+        'jateng'                     => 'Semarang',
+        'central java'               => 'Semarang',
+        'jawa timur'                 => 'Surabaya',
+        'jatim'                      => 'Surabaya',
+        'east java'                  => 'Surabaya',
+        'di yogyakarta'              => 'Yogyakarta',
+        'daerah istimewa yogyakarta' => 'Yogyakarta',
+        'jogja'                      => 'Yogyakarta',
+        'yogyakarta'                 => 'Yogyakarta',
+        'banten'                     => 'Serang',
+
+        // Sumatera
+        'sumatera barat'             => 'Padang',
+        'sumbar'                     => 'Padang',
+        'west sumatra'               => 'Padang',
+        'sumatera utara'             => 'Medan',
+        'sumut'                      => 'Medan',
+        'north sumatra'              => 'Medan',
+        'sumatera selatan'           => 'Palembang',
+        'sumsel'                     => 'Palembang',
+        'south sumatra'              => 'Palembang',
+        'aceh'                       => 'Banda Aceh',
+        'nanggroe aceh darussalam'   => 'Banda Aceh',
+        'riau'                       => 'Pekanbaru',
+        'kepulauan riau'             => 'Batam',
+        'kepri'                      => 'Batam',
+        'jambi'                      => 'Jambi',
+        'bengkulu'                   => 'Bengkulu',
+        'lampung'                    => 'Bandar Lampung',
+        'bangka belitung'            => 'Pangkal Pinang',
+        'babel'                      => 'Pangkal Pinang',
+
+        // Bali & Nusa Tenggara
+        'bali'                       => 'Denpasar',
+        'nusa tenggara barat'        => 'Mataram',
+        'ntb'                        => 'Mataram',
+        'nusa tenggara timur'        => 'Kupang',
+        'ntt'                        => 'Kupang',
+
+        // Sulawesi
+        'sulawesi selatan'           => 'Makassar',
+        'sulsel'                     => 'Makassar',
+        'south sulawesi'             => 'Makassar',
+        'sulawesi utara'             => 'Manado',
+        'sulut'                      => 'Manado',
+        'north sulawesi'             => 'Manado',
+        'sulawesi tengah'            => 'Palu',
+        'sulteng'                    => 'Palu',
+        'sulawesi tenggara'          => 'Kendari',
+        'sultra'                     => 'Kendari',
+        'gorontalo'                  => 'Gorontalo',
+        'sulawesi barat'             => 'Mamuju',
+        'sulbar'                     => 'Mamuju',
+
+        // Maluku & Papua
+        'maluku'                     => 'Ambon',
+        'maluku utara'               => 'Ternate',
+        'papua'                      => 'Jayapura',
+        'papua barat'                => 'Sorong',
+        'papua selatan'              => 'Merauke',
+        'papua tengah'               => 'Nabire',
+        'papua pegunungan'           => 'Jayawijaya',
+        'papua barat daya'           => 'Sorong',
+    ];
+
     /**
      * Ambil data pengaturan jadwal sholat dari website_setting
      */
@@ -144,13 +237,148 @@ class JadwalSholatService
     }
 
     /**
-     * Resolusi nama kota/kabupaten hasil Geolocation ke ID kota MyQuran
+     * Ambil jadwal sholat otomatis mendeteksi lokasi user dari HTTP Request
+     * (Query Parameter -> Session -> Cookie -> User Profile -> IP Geolocation -> Default Fallback)
+     */
+    public static function getJadwalForCurrentRequest(?\Illuminate\Http\Request $request = null, ?string $date = null): array
+    {
+        $request = $request ?? request();
+
+        // 1. Cek query parameter URL (misal: ?city=Samarinda atau ?kota_id=2310)
+        $queryCity   = $request?->query('city') ?? $request?->query('kota');
+        $queryKotaId = $request?->query('kota_id');
+        if ($queryKotaId || $queryCity) {
+            return self::getJadwalByLocation($queryCity, $queryKotaId, $date);
+        }
+
+        // 2. Cek Session login user
+        $sessionCity = session('user_sholat_city');
+        if ($sessionCity) {
+            $res = self::getJadwalByLocation($sessionCity, null, $date);
+            if (!empty($res['status'])) return $res;
+        }
+
+        // 3. Cek Cookie browser user
+        $cookieCity = $request?->cookie('user_sholat_city');
+        if ($cookieCity) {
+            $res = self::getJadwalByLocation($cookieCity, null, $date);
+            if (!empty($res['status'])) return $res;
+        }
+
+        // 4. Jika user sedang login (role: pasien), cek alamat di profilnya
+        if (auth()->check()) {
+            $alamat = auth()->user()->pasien?->alamat;
+            if ($alamat) {
+                $cityFromAddr = self::detectCityFromAddress($alamat);
+                if ($cityFromAddr) {
+                    $res = self::getJadwalByLocation($cityFromAddr, null, $date);
+                    if (!empty($res['status'])) return $res;
+                }
+            }
+        }
+
+        // 5. Cek lokasi via IP Geolocation client
+        $ip = $request?->ip();
+        if ($ip) {
+            $ipCity = self::resolveLocationFromIp($ip);
+            if ($ipCity) {
+                $res = self::getJadwalByLocation($ipCity, null, $date);
+                if (!empty($res['status'])) return $res;
+            }
+        }
+
+        // 6. Default fallback
+        return self::getJadwal($date);
+    }
+
+    /**
+     * Deteksi nama kota/provinsi dari teks alamat pasien
+     */
+    public static function detectCityFromAddress(?string $address): ?string
+    {
+        if (empty(trim($address ?? ''))) {
+            return null;
+        }
+
+        $lower = strtolower($address);
+
+        // Cek nama provinsi / regional
+        foreach (self::PROVINCE_CITY_MAP as $prov => $targetCity) {
+            if (str_contains($lower, $prov)) {
+                return $targetCity;
+            }
+        }
+
+        // Cek daftar kota populer di Indonesia
+        $popularCities = [
+            'samarinda', 'balikpapan', 'banjarmasin', 'pontianak', 'palangkaraya', 'tarakan',
+            'kutai kartanegara', 'banjarbaru', 'singkawang', 'bontang', 'sampit', 'pangkalan bun',
+            'padang', 'bukittinggi', 'payakumbuh', 'pariaman', 'solok', 'surabaya', 'malang',
+            'bandung', 'bogor', 'bekasi', 'depok', 'tangerang', 'semarang', 'solo', 'surakarta',
+            'yogyakarta', 'sleman', 'bantul', 'medan', 'palembang', 'pekanbaru', 'batam',
+            'makassar', 'manado', 'palu', 'kendari', 'denpasar', 'mataram', 'kupang', 'jayapura', 'jakarta'
+        ];
+
+        foreach ($popularCities as $city) {
+            if (preg_match('/\b' . preg_quote($city, '/') . '\b/i', $lower)) {
+                return ucfirst($city);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolusi nama kota/daerah dari IP Pengunjung
+     */
+    public static function resolveLocationFromIp(?string $ip): ?string
+    {
+        if (empty($ip) || in_array($ip, ['127.0.0.1', '::1']) || str_starts_with($ip, '192.168.') || str_starts_with($ip, '10.')) {
+            return null;
+        }
+
+        $cacheKey = 'ip_geo_loc_' . md5($ip);
+        return Cache::remember($cacheKey, now()->addHours(24), function () use ($ip) {
+            try {
+                $response = Http::timeout(2.5)->get("http://ip-api.com/json/{$ip}?fields=status,city,regionName,country");
+                if ($response->successful()) {
+                    $json = $response->json();
+                    if (($json['status'] ?? '') === 'success') {
+                        $city = $json['city'] ?? null;
+                        $region = $json['regionName'] ?? null;
+                        return $city ?: $region;
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::debug("IP Geolocation failed for {$ip}: " . $e->getMessage());
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Resolusi nama kota/kabupaten/provinsi hasil Geolocation ke ID kota MyQuran
      */
     public static function resolveKotaByName(string $query): ?array
     {
         $query = trim($query);
         if (empty($query)) {
             return null;
+        }
+
+        $lowerQuery = strtolower($query);
+
+        // Cek apakah query merupakan nama provinsi / alias (misal: "Kalimantan Timur", "Kaltim", "Kalimantan")
+        if (isset(self::PROVINCE_CITY_MAP[$lowerQuery])) {
+            $query = self::PROVINCE_CITY_MAP[$lowerQuery];
+        } else {
+            // Cek frasa kata utuh jika mengandung nama provinsi (gunakan word boundary agar tidak bentrok misal 'bali' di 'balikpapan')
+            foreach (self::PROVINCE_CITY_MAP as $alias => $mappedCity) {
+                if (preg_match('/\b' . preg_quote($alias, '/') . '\b/i', $lowerQuery)) {
+                    $query = $mappedCity;
+                    break;
+                }
+            }
         }
 
         $cacheKey = 'sholat_resolve_kota_' . md5(strtolower($query));

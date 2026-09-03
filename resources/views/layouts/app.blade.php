@@ -1143,52 +1143,71 @@ function toggleMobileAcc(id) {
     } catch (e) {}
 
     // Jalankan deteksi lokasi via browser
-    if (!navigator.geolocation) return;
-
     window.addEventListener('load', function () {
         setTimeout(function () {
-            navigator.geolocation.getCurrentPosition(
-                function (pos) {
-                    var lat = pos.coords.latitude;
-                    var lng = pos.coords.longitude;
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (pos) {
+                        var lat = pos.coords.latitude;
+                        var lng = pos.coords.longitude;
 
-                    // Reverse geocoding via Nominatim
-                    fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng, {
-                        headers: { 'Accept-Language': 'id' }
-                    })
-                    .then(function (r) { return r.json(); })
-                    .then(function (geo) {
-                        var addr    = geo.address || {};
-                        var city    = addr.city || addr.town || addr.county || addr.city_district || addr.state_district || null;
-                        var region  = addr.state || null;
-                        var country = addr.country || null;
+                        // Reverse geocoding via Nominatim
+                        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng, {
+                            headers: { 'Accept-Language': 'id' }
+                        })
+                        .then(function (r) { return r.json(); })
+                        .then(function (geo) {
+                            var addr    = geo.address || {};
+                            var city    = addr.city || addr.town || addr.county || addr.city_district || addr.state_district || addr.state || null;
+                            var region  = addr.state || null;
+                            var country = addr.country || null;
 
-                        // 1. Catat statistik kunjungan jika belum sesi ini
-                        sendLocationTrack(lat, lng, city, region, country);
+                            // 1. Catat statistik kunjungan jika belum sesi ini
+                            sendLocationTrack(lat, lng, city, region, country);
 
-                        // 2. Ambil jadwal sholat kota user
-                        if (city) {
-                            fetchJadwalSholat(city, lat, lng);
-                        }
-                    })
-                    .catch(function () {
-                        // Nominatim gagal, kirim koordinat saja
-                        sendLocationTrack(lat, lng, null, null, null);
-                    });
-                },
-                function () { /* user tolak izin — gunakan default database/setting */ },
-                { timeout: 8000, maximumAge: 300000 }
-            );
-        }, 1200);
+                            // 2. Ambil jadwal sholat kota user
+                            if (city) {
+                                fetchJadwalSholat(city, lat, lng);
+                            }
+                        })
+                        .catch(function () {
+                            sendLocationTrack(lat, lng, null, null, null);
+                            // Fallback fetch via IP API
+                            fetchJadwalSholat(null, lat, lng);
+                        });
+                    },
+                    function () {
+                        // User tolak izin browser — panggil API untuk deteksi via IP backend
+                        fetchJadwalSholat(null, null, null);
+                    },
+                    { timeout: 8000, maximumAge: 300000 }
+                );
+            } else {
+                fetchJadwalSholat(null, null, null);
+            }
+        }, 1000);
     });
 
     function fetchJadwalSholat(city, lat, lng) {
-        fetch('/api/jadwal-sholat?city=' + encodeURIComponent(city) + '&lat=' + lat + '&lng=' + lng)
+        var url = '/api/jadwal-sholat';
+        var params = [];
+        if (city) params.push('city=' + encodeURIComponent(city));
+        if (lat && lng) {
+            params.push('lat=' + lat);
+            params.push('lng=' + lng);
+        }
+        if (params.length > 0) url += '?' + params.join('&');
+
+        fetch(url)
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data && data.status) {
                     try {
                         localStorage.setItem('user_jadwal_sholat', JSON.stringify(data));
+                        // Set cookie agar server-side render berikutnya langsung sesuai
+                        if (data.lokasi) {
+                            document.cookie = "user_sholat_city=" + encodeURIComponent(data.lokasi) + "; path=/; max-age=2592000; SameSite=Lax";
+                        }
                     } catch (e) {}
                     window.applyJadwalSholatToUI(data);
                 }
