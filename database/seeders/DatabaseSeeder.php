@@ -233,5 +233,18 @@ class DatabaseSeeder extends Seeder
         $this->call(AkreditasiSeeder::class);
         $this->command->info('   CMS:    cms@sarisehat.test / password');
         $this->command->info('   Pasien: pasien@sarisehat.test / password');
+
+        
+        // ARTIKEL (10 artikel asli)    
+        $this->call(ArtikelSeeder::class);
+
+        // FAQ (2 FAQ asli)
+        $this->call(FaqSeeder::class);
+
+        // EVENT (8 event asli)
+        $this->call(EventSeeder::class);
+
+        // ULASAN (8 ulasan asli)
+        $this->call(UlasanSeeder::class);
     }
 }

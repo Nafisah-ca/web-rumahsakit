@@ -156,6 +156,7 @@
 /* ── Sidebar ─────────────────────────────────────────────────── */
 .artikel-sidebar {
     position:sticky; top:88px;
+    align-self:start;
     animation:fadeRight .6s cubic-bezier(.22,1,.36,1) .3s both;
 }
 .sidebar-card {
@@ -272,7 +273,11 @@
 }
 @media(max-width:1023px) {
     .artikel-layout { grid-template-columns:1fr; }
-    .artikel-sidebar { position:static; animation:fadeUp .5s ease .2s both; }
+    .artikel-sidebar {
+        position:static;
+        animation:fadeUp .5s ease .2s both;
+        order:-1; /* Naik ke atas artikel di mobile/tablet */
+    }
 }
 
 /* Header artikel — judul kiri, tombol kanan */
@@ -569,6 +574,19 @@
 
     // Expose
     window._addRipple = addRipple;
+
+    // ── Scroll helper: geser ke atas #art-grid dengan offset navbar ──
+    window._scrollKeGrid = function(delay) {
+        setTimeout(function() {
+            var grid = document.getElementById('art-grid');
+            if (!grid) return;
+            // Offset: tinggi navbar (~80px) + sedikit ruang napas (16px)
+            var offset = 96;
+            var rect   = grid.getBoundingClientRect();
+            var top    = rect.top + window.pageYOffset - offset;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+        }, delay || 0);
+    };
 })();
 
 // ── TAMPILKAN SEMUA ───────────────────────────────────────────────────────
@@ -620,6 +638,9 @@ function tampilkanSemua() {
             if (allShown)   allShown.classList.add('show');
             if (btnSedikit) btnSedikit.classList.add('show');
         }, 300);
+
+        // Scroll otomatis ke area card artikel setelah animasi mulai berjalan
+        window._scrollKeGrid(200);
     }, 160);
 }
 
@@ -755,6 +776,7 @@ function filterKategori(kategoriId, el) {
                 }, 10);
             });
         });
+
     })
     .catch(err => {
         if (err.name === 'AbortError') return;

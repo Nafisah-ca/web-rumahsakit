@@ -1,5 +1,5 @@
 <a href="{{ route('event.detail', $ev) }}"
-   class="event-card group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm {{ $lewat ? 'opacity-70 hover:opacity-100' : '' }}"
+   class="event-card group flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm {{ $lewat ? 'opacity-70 hover:opacity-100' : '' }}"
    data-index="{{ $index ?? 0 }}">
 
     {{-- Gambar --}}
@@ -43,6 +43,7 @@
         <p class="text-gray-500 text-sm leading-relaxed line-clamp-3 flex-1">
             {{ Str::limit(strip_tags($ev->deskripsi ?? ''), 120) }}
         </p>
+        <div class="mt-auto">
         <div class="mt-4 space-y-1.5 text-xs text-gray-500">
             <div class="flex items-center gap-2">
                 <i class="fas fa-calendar-days text-purple-500 w-3 flex-shrink-0"></i>
@@ -69,6 +70,7 @@
             <span class="inline-flex items-center gap-1.5 text-xs font-bold text-purple-700">
                 Lihat Detail <i class="fas fa-arrow-right text-[10px] event-arrow"></i>
             </span>
+        </div>
         </div>
     </div>
 </a>

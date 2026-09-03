@@ -287,6 +287,19 @@
     transform:translateY(-3px) !important;
     box-shadow:0 8px 24px rgba(22,163,74,.5);
 }
+
+/* ── Sidebar sticky (desktop only) ─────────────────────────── */
+.art-detail-sidebar {
+    position: sticky;
+    top: 96px;
+    align-self: start;
+}
+
+@media (max-width: 1023px) {
+    .art-detail-sidebar {
+        position: static;
+    }
+}
 </style>
 @endpush
 
@@ -321,7 +334,7 @@
 
 <section class="py-12 bg-gray-50">
     <div class="max-w-screen-xl mx-auto px-4">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:items-start">
 
             {{-- ── KONTEN UTAMA ─────────────────────────────── --}}
             <div class="lg:col-span-2 space-y-6">
@@ -385,7 +398,7 @@
             </div>
 
             {{-- ── SIDEBAR ──────────────────────────────────── --}}
-            <div class="space-y-5">
+            <div class="space-y-5 art-detail-sidebar">
 
                 {{-- Artikel Terkait --}}
                 <div class="sidebar-related">
@@ -435,24 +448,40 @@
 
                 {{-- Konsultasi Dokter CTA --}}
                 <div class="dokter-cta">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-                        <i class="fas fa-calendar-check text-green-300 text-xl"></i>
+                    {{-- Judul --}}
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                        <i class="fas fa-user-md text-green-300 text-xl"></i>
                         <h4 style="font-weight:800;font-size:15px">Konsultasi Dokter</h4>
                     </div>
 
                     @if(isset($dokterJanji) && $dokterJanji)
-                    @php $dok = $dokterJanji; @endphp
+                    @php
+                        $dok          = $dokterJanji;
+                        $spNama       = $dok->spesialisasi?->nama_spesialis
+                                        ?? $artikel->kategori?->spesialisasi?->nama_spesialis
+                                        ?? null;
+                        $spId         = $artikel->kategori?->spesialis_id;
+                        $fotoUrl      = null;
+                        if ($dok->foto) {
+                            $fotoUrl = str_starts_with($dok->foto, 'images/')
+                                ? asset($dok->foto)
+                                : Storage::url($dok->foto);
+                        }
+                    @endphp
+
+                    {{-- Sub-judul --}}
+                    <p style="font-size:11px;color:rgba(255,255,255,.6);font-weight:600;
+                               letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px">
+                        Rekomendasi untuk Anda
+                    </p>
+                    <p style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:10px;line-height:1.5">
+                        Berdasarkan topik artikel ini, kami merekomendasikan dokter berikut:
+                    </p>
+
+                    {{-- Card dokter --}}
                     <div style="display:flex;align-items:center;gap:12px;
                                 background:rgba(255,255,255,.12);border-radius:14px;
                                 padding:12px;margin-bottom:12px">
-                        @php
-                            $fotoUrl = null;
-                            if ($dok->foto) {
-                                $fotoUrl = str_starts_with($dok->foto,'images/')
-                                    ? asset($dok->foto)
-                                    : Storage::url($dok->foto);
-                            }
-                        @endphp
                         <div class="dokter-foto-ring" style="flex-shrink:0">
                             @if($fotoUrl)
                             <img src="{{ $fotoUrl }}" alt="{{ $dok->nama_dokter }}"
@@ -476,7 +505,7 @@
                                 {{ $dok->nama_dokter }}
                             </p>
                             <p style="font-size:11px;color:rgba(255,255,255,.75);margin-top:2px">
-                                {{ $dok->spesialisasi?->nama_spesialis ?? 'Spesialis' }}
+                                {{ $spNama ?? 'Spesialis' }}
                             </p>
                             @if($dok->jadwalAktif->isNotEmpty())
                             <p style="font-size:10px;color:rgba(255,255,255,.6);margin-top:3px;
@@ -487,21 +516,65 @@
                             @endif
                         </div>
                     </div>
-                    <p style="font-size:12px;color:rgba(255,255,255,.75);margin-bottom:12px">
-                        Buat janji langsung dengan dokter yang menangani topik ini.
-                    </p>
+
+                    {{-- Tombol Buat Janji Temu --}}
                     <a href="{{ route('portal.booking.create', ['dokter_id' => $dok->id]) }}"
-                       class="dokter-cta-btn">
+                       class="dokter-cta-btn" style="margin-bottom:10px">
                         <i class="fas fa-calendar-check mr-2 text-green-600"></i> Buat Janji Temu
                     </a>
 
+                    {{-- Catatan rekomendasi --}}
+                    <p style="font-size:10px;color:rgba(255,255,255,.55);line-height:1.5;
+                               margin-top:10px;margin-bottom:10px;font-style:italic">
+                        Dokter di atas merupakan rekomendasi. Anda juga dapat memilih dokter spesialis lainnya.
+                    </p>
+
+                    {{-- Tombol Lihat Semua Dokter [Nama Spesialis] --}}
+                    @if($spId && $spNama)
+                    <a href="{{ route('dokter.by-spesialis', $spId) }}"
+                       style="display:flex;align-items:center;justify-content:center;gap:7px;
+                              width:100%;padding:8px 14px;border-radius:10px;
+                              background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+                              font-size:11px;font-weight:700;color:#fff;text-decoration:none;
+                              transition:background .2s,border-color .2s;text-align:center"
+                       onmouseover="this.style.background='rgba(255,255,255,.25)'"
+                       onmouseout="this.style.background='rgba(255,255,255,.15)'">
+                        <i class="fas fa-users" style="font-size:10px;opacity:.8"></i>
+                        Lihat Semua Dokter {{ $spNama }}
+                    </a>
                     @else
+                    <a href="{{ route('dokter') }}"
+                       style="display:flex;align-items:center;justify-content:center;gap:7px;
+                              width:100%;padding:8px 14px;border-radius:10px;
+                              background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+                              font-size:11px;font-weight:700;color:#fff;text-decoration:none;
+                              transition:background .2s;text-align:center"
+                       onmouseover="this.style.background='rgba(255,255,255,.25)'"
+                       onmouseout="this.style.background='rgba(255,255,255,.15)'">
+                        <i class="fas fa-users" style="font-size:10px;opacity:.8"></i>
+                        Lihat Semua Dokter
+                    </a>
+                    @endif
+
+                    @else
+                    {{-- Fallback: tidak ada dokter terkait spesialisasi --}}
+                    @php
+                        $spNamaFallback = $artikel->kategori?->spesialisasi?->nama_spesialis ?? null;
+                        $spIdFallback   = $artikel->kategori?->spesialis_id ?? null;
+                    @endphp
                     <p style="font-size:13px;color:rgba(255,255,255,.8);margin-bottom:14px;line-height:1.6">
                         Konsultasikan keluhan Anda dengan dokter spesialis kami.
                     </p>
+                    @if($spIdFallback && $spNamaFallback)
+                    <a href="{{ route('dokter.by-spesialis', $spIdFallback) }}" class="dokter-cta-btn">
+                        <i class="fas fa-users mr-2 text-green-600"></i>
+                        Lihat Dokter {{ $spNamaFallback }}
+                    </a>
+                    @else
                     <a href="{{ route('dokter') }}" class="dokter-cta-btn">
                         <i class="fas fa-user-md mr-2 text-green-600"></i> Lihat Dokter Kami
                     </a>
+                    @endif
                     @endif
                 </div>
             </div>

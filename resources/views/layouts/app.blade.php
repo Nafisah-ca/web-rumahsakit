@@ -106,7 +106,8 @@ body {
 /* ===== GLOBAL MOBILE RESPONSIVE FIXES ===== */
 
 /* Prevent any horizontal overflow globally */
-html, body { overflow-x: hidden; max-width: 100%; }
+html { overflow-x: clip; max-width: 100%; }
+body { max-width: 100%; }
 *, *::before, *::after { box-sizing: border-box; }
 
 /* --- STAT/CARD GRID: 2 kolom di mobile, tidak overflow --- */
