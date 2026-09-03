@@ -233,11 +233,6 @@
                    style="color:#16a34a;width:12px;flex-shrink:0"></i>
                 <span>SIP: {{ $d->sip }}</span>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#64748b">
-                <i class="fas fa-phone"
-                   style="color:#16a34a;width:12px;flex-shrink:0"></i>
-                <span>{{ $d->no_hp }}</span>
-            </div>
         </div>
 
         {{-- Tombol Buat Janji --}}

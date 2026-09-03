@@ -178,25 +178,21 @@
 }
 .ulasan-cta-btn:hover { background: rgba(255,255,255,.25); }
 
-/* Grid kartu */
+/* Banyak kartu compact, wrap ke bawah */
 .ulasan-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-}
-@media (max-width: 1023px) { .ulasan-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 639px)  {
-    .ulasan-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 14px; padding-bottom: 8px; scrollbar-width: none; }
-    .ulasan-grid::-webkit-scrollbar { display: none; }
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+    align-items: start;
 }
 
 /* Kartu individu */
 .ulasan-card-v2 {
     background: #fff;
-    border-radius: 18px;
+    border-radius: 16px;
     border: 1px solid #f0f0f0;
     box-shadow: 0 2px 12px rgba(0,0,0,.05);
-    padding: 20px;
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -207,8 +203,8 @@
                 transform .4s ease calc(var(--delay,0ms)),
                 box-shadow .2s ease,
                 border-color .2s ease;
-    min-width: 260px; /* untuk mobile slider */
-    scroll-snap-align: start;
+    width: 100%;
+    height: auto;
 }
 .ulasan-card-v2.card-visible { opacity: 1; transform: translateY(0); }
 .ulasan-card-v2:hover {
@@ -265,10 +261,9 @@
 .ulasan-isi {
     font-size: 12px;
     color: #6b7280;
-    line-height: 1.75;
-    flex: 1;
+    line-height: 1.6;
     display: -webkit-box;
-    -webkit-line-clamp: 4;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }

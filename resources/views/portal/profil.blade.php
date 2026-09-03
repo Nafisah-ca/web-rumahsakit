@@ -563,40 +563,34 @@
     flex-direction: column;
     align-items: center;
     gap: 7px;
-    background: #fff;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 14px 8px 12px;
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 8px;
     cursor: pointer;
     font-family: inherit;
-    transition: border-color .2s, background .2s, transform .15s;
-    position: relative;
+    transition: transform .15s;
 }
-.rw-sp-btn:hover {
-    border-color: #00b04f;
-    background: #f0fdf4;
-    transform: translateY(-2px);
-}
-.rw-sp-btn.active {
-    border-color: #00521f;
+.rw-sp-btn:hover { transform: translateY(-3px); }
+.rw-sp-btn.active .rw-sp-icon {
     background: #00521f;
+    box-shadow: 0 6px 18px rgba(0,82,31,.35);
 }
-.rw-sp-btn.active .rw-sp-icon { background: rgba(255,255,255,.2); }
 .rw-sp-btn.active .rw-sp-icon i { color: #fff; }
-.rw-sp-btn.active .rw-sp-label { color: #fff; }
-.rw-sp-btn.active .rw-sp-count { background: rgba(255,255,255,.25); color: #fff; }
+.rw-sp-btn.active .rw-sp-label { color: #00521f; font-weight: 800; }
+.rw-sp-btn.active .rw-sp-count { background: #dcfce7; color: #166534; }
 
 .rw-sp-icon {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
-    background: #f0fdf4;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background .2s;
+    transition: background .2s, box-shadow .2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
-.rw-sp-icon i { font-size: 18px; color: #00521f; transition: color .2s; }
+.rw-sp-icon i { font-size: 20px; transition: color .2s; }
 .rw-sp-label {
     font-size: 11px;
     font-weight: 700;
@@ -988,6 +982,7 @@
         <button type="button"
                 class="rw-sp-btn"
                 data-sp="{{ Str::slug($spNama) }}"
+                data-index="{{ $loop->index }}"
                 onclick="toggleSpesialis('{{ Str::slug($spNama) }}', this)">
             <div class="rw-sp-icon">
                 <i class="fas {{ $ico }}"></i>
@@ -1328,29 +1323,81 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 /**
+ * Assign warna berbeda per icon spesialis saat halaman load.
+ * Palet: bg + icon color — kontras jelas, tidak semuanya hijau.
+ */
+(function initSpesialisColors() {
+    var palettes = [
+        { bg: '#dbeafe', icon: '#1d4ed8' },  // biru
+        { bg: '#fce7f3', icon: '#be185d' },  // pink
+        { bg: '#fef9c3', icon: '#a16207' },  // kuning
+        { bg: '#f3e8ff', icon: '#7e22ce' },  // ungu
+        { bg: '#ffedd5', icon: '#c2410c' },  // oranye
+        { bg: '#ccfbf1', icon: '#0f766e' },  // teal
+        { bg: '#e0e7ff', icon: '#3730a3' },  // indigo
+        { bg: '#fee2e2', icon: '#b91c1c' },  // merah
+        { bg: '#dcfce7', icon: '#166534' },  // hijau
+    ];
+
+    document.querySelectorAll('.rw-sp-btn').forEach(function (btn) {
+        var idx   = parseInt(btn.dataset.index || 0);
+        var pal   = palettes[idx % palettes.length];
+        var icon  = btn.querySelector('.rw-sp-icon');
+        var iEl   = btn.querySelector('.rw-sp-icon i');
+        var count = btn.querySelector('.rw-sp-count');
+
+        if (icon) { icon.style.background = pal.bg; }
+        if (iEl)  { iEl.style.color       = pal.icon; }
+        if (count){ count.style.background = pal.bg; count.style.color = pal.icon; }
+
+        // Simpan warna asal untuk restore saat non-aktif
+        btn.dataset.bgOrig    = pal.bg;
+        btn.dataset.iconOrig  = pal.icon;
+    });
+})();
+
+/**
  * Toggle panel riwayat per spesialis.
  * Klik icon → buka panel di bawah grid, icon jadi solid hijau.
  * Klik lagi atau klik X → tutup panel.
  */
 function toggleSpesialis(slug, btnEl) {
-    const panel   = document.getElementById('panel-' + slug);
-    const allBtns = document.querySelectorAll('.rw-sp-btn');
-    const allPanels = document.querySelectorAll('.rw-sp-panel');
+    var panel    = document.getElementById('panel-' + slug);
+    var allBtns  = document.querySelectorAll('.rw-sp-btn');
+    var allPanels= document.querySelectorAll('.rw-sp-panel');
 
     if (!panel) return;
+    var isOpen = panel.style.display !== 'none';
 
-    const isOpen = panel.style.display !== 'none';
-
-    // Tutup semua panel dan reset semua tombol dulu
-    allPanels.forEach(p => { p.style.display = 'none'; });
-    allBtns.forEach(b  => { b.classList.remove('active'); });
+    // Reset semua
+    allPanels.forEach(function (p) { p.style.display = 'none'; });
+    allBtns.forEach(function (b) {
+        b.classList.remove('active');
+        // Kembalikan warna asal
+        var icon  = b.querySelector('.rw-sp-icon');
+        var iEl   = b.querySelector('.rw-sp-icon i');
+        var count = b.querySelector('.rw-sp-count');
+        if (icon)  { icon.style.background  = b.dataset.bgOrig   || ''; }
+        if (iEl)   { iEl.style.color        = b.dataset.iconOrig || ''; }
+        if (count) { count.style.background = b.dataset.bgOrig   || ''; count.style.color = b.dataset.iconOrig || ''; }
+        var lbl = b.querySelector('.rw-sp-label');
+        if (lbl) { lbl.style.color = ''; lbl.style.fontWeight = ''; }
+    });
 
     if (!isOpen) {
-        // Buka panel yang diklik
         panel.style.display = 'block';
-        if (btnEl) btnEl.classList.add('active');
-
-        // Scroll ke panel agar terlihat
+        if (btnEl) {
+            btnEl.classList.add('active');
+            // Aktif: icon jadi hijau solid
+            var icon  = btnEl.querySelector('.rw-sp-icon');
+            var iEl   = btnEl.querySelector('.rw-sp-icon i');
+            var count = btnEl.querySelector('.rw-sp-count');
+            var lbl   = btnEl.querySelector('.rw-sp-label');
+            if (icon)  { icon.style.background  = '#00521f'; icon.style.boxShadow = '0 4px 14px rgba(0,82,31,.35)'; }
+            if (iEl)   { iEl.style.color        = '#fff'; }
+            if (count) { count.style.background = 'rgba(0,82,31,.15)'; count.style.color = '#00521f'; }
+            if (lbl)   { lbl.style.color = '#00521f'; lbl.style.fontWeight = '800'; }
+        }
         setTimeout(function () {
             panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 50);
