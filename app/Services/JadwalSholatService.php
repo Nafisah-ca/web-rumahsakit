@@ -43,11 +43,12 @@ class JadwalSholatService
 
     /**
      * Ambil jadwal sholat hari ini (atau tanggal tertentu).
+     * Dapat menerima $kotaId dan $kotaNama secara spesifik (misal dari hasil deteksi lokasi user).
      * Sesuai kondisi:
      * a. Default baca via API MyQuran per lokasi dan per hari
      * b. Jika API Off/Gagal, otomatis fallback baca ke Database/Manual
      */
-    public static function getJadwal(?string $date = null): array
+    public static function getJadwal(?string $date = null, ?string $kotaId = null, ?string $kotaNama = null): array
     {
         $config  = self::getSettingConfig();
         $dateObj = $date ? \Carbon\Carbon::parse($date) : now();
@@ -56,13 +57,16 @@ class JadwalSholatService
         $bulan   = $dateObj->format('m');
         $hari    = $dateObj->format('d');
 
-        // Jika mode diset manual oleh admin
-        if ($config['mode'] === 'manual') {
+        $targetKotaId   = $kotaId ?? $config['kota_id'];
+        $targetKotaNama = $kotaNama ?? ($kotaId ? null : $config['kota_nama']);
+
+        // Jika mode diset manual oleh admin dan tidak ada custom kota yang diminta
+        if ($config['mode'] === 'manual' && empty($kotaId)) {
             return self::buildManualResponse($config, $dateStr, 'Pengaturan manual aktif');
         }
 
         // Mode API: coba ambil dari Cache terlebih dahulu
-        $cacheKey = "jadwal_sholat_{$config['kota_id']}_{$dateStr}";
+        $cacheKey = "jadwal_sholat_{$targetKotaId}_{$dateStr}";
         $cached   = Cache::get($cacheKey);
         if ($cached && is_array($cached)) {
             return $cached;
@@ -70,19 +74,21 @@ class JadwalSholatService
 
         // Panggil API Publik MyQuran
         try {
-            $apiUrl   = self::API_BASE_URL . "/jadwal/{$config['kota_id']}/{$tahun}/{$bulan}/{$hari}";
+            $apiUrl   = self::API_BASE_URL . "/jadwal/{$targetKotaId}/{$tahun}/{$bulan}/{$hari}";
             $response = Http::timeout(3)->get($apiUrl);
 
             if ($response->successful()) {
                 $json = $response->json();
                 if (!empty($json['status']) && !empty($json['data']['jadwal'])) {
                     $jadwalApi = $json['data']['jadwal'];
+                    $lokasiNama = $json['data']['lokasi'] ?? ($targetKotaNama ?? $config['kota_nama']);
 
                     $result = [
                         'status'            => true,
                         'sumber'            => 'api',
                         'sumber_label'      => 'API MyQuran (Kemenag RI)',
-                        'lokasi'            => $json['data']['lokasi'] ?? $config['kota_nama'],
+                        'kota_id'           => $targetKotaId,
+                        'lokasi'            => $lokasiNama,
                         'daerah'            => $json['data']['daerah'] ?? '',
                         'tanggal_label'     => $jadwalApi['tanggal'] ?? $dateObj->translatedFormat('l, d/m/Y'),
                         'date'              => $dateStr,
@@ -107,11 +113,107 @@ class JadwalSholatService
                 }
             }
         } catch (\Throwable $e) {
-            Log::warning("Gagal memanggil API Jadwal Sholat: " . $e->getMessage());
+            Log::warning("Gagal memanggil API Jadwal Sholat (kotaId: {$targetKotaId}): " . $e->getMessage());
         }
 
         // Fallback otomatis ke database jika API offline/gagal
-        return self::buildManualResponse($config, $dateStr, 'API offline, beralih ke data database');
+        $fallback = self::buildManualResponse($config, $dateStr, 'API offline, beralih ke data database');
+        if ($targetKotaNama) {
+            $fallback['lokasi'] = $targetKotaNama;
+        }
+        return $fallback;
+    }
+
+    /**
+     * Ambil jadwal sholat berdasarkan nama lokasi / kota user secara dinamis
+     */
+    public static function getJadwalByLocation(?string $cityName = null, ?string $kotaId = null, ?string $date = null): array
+    {
+        if (!empty($kotaId)) {
+            return self::getJadwal($date, $kotaId);
+        }
+
+        if (!empty($cityName)) {
+            $resolved = self::resolveKotaByName($cityName);
+            if ($resolved && !empty($resolved['id'])) {
+                return self::getJadwal($date, $resolved['id'], $resolved['lokasi']);
+            }
+        }
+
+        return self::getJadwal($date);
+    }
+
+    /**
+     * Resolusi nama kota/kabupaten hasil Geolocation ke ID kota MyQuran
+     */
+    public static function resolveKotaByName(string $query): ?array
+    {
+        $query = trim($query);
+        if (empty($query)) {
+            return null;
+        }
+
+        $cacheKey = 'sholat_resolve_kota_' . md5(strtolower($query));
+        return Cache::remember($cacheKey, now()->addDays(7), function () use ($query) {
+            // Bersihkan prefix umum administratif
+            $cleaned = trim(preg_replace('/^(kota administrasi|kota|kabupaten|kab\.|daerah khusus ibukota|dki)\s+/i', '', $query));
+            
+            // Cari dari API
+            $results = self::cariKota($cleaned);
+            if (empty($results) && str_contains($cleaned, ' ')) {
+                $firstWord = explode(' ', $cleaned)[0];
+                $results = self::cariKota($firstWord);
+            }
+
+            if (empty($results)) {
+                return null;
+            }
+
+            $normalize = fn(string $s) => preg_replace('/[^A-Z0-9]/', '', strtoupper($s));
+            $qNorm  = $normalize($query);
+            $cNorm  = $normalize($cleaned);
+            $isKota = (bool)preg_match('/^(kota|dki|daerah)/i', $query);
+            $isKab  = (bool)preg_match('/^(kabupaten|kab\.)/i', $query);
+
+            // 1. Exact match normalisasi query (misal: "KOTAPADANGPANJANG" === "KOTAPADANGPANJANG")
+            foreach ($results as $item) {
+                $lokNorm = $normalize($item['lokasi'] ?? '');
+                if ($lokNorm === $qNorm) {
+                    return $item;
+                }
+            }
+
+            // 2. Jika user query 'Kota ...', prioritaskan "KOTA..."
+            if ($isKota) {
+                foreach ($results as $item) {
+                    $lokNorm = $normalize($item['lokasi'] ?? '');
+                    if ($lokNorm === "KOTA{$cNorm}" || str_starts_with($lokNorm, "KOTA{$cNorm}")) {
+                        return $item;
+                    }
+                }
+            }
+
+            // 3. Jika user query 'Kabupaten ...', prioritaskan "KAB..."
+            if ($isKab) {
+                foreach ($results as $item) {
+                    $lokNorm = $normalize($item['lokasi'] ?? '');
+                    if ($lokNorm === "KAB{$cNorm}" || str_starts_with($lokNorm, "KAB{$cNorm}")) {
+                        return $item;
+                    }
+                }
+            }
+
+            // 4. Exact match dengan nama cleaned
+            foreach ($results as $item) {
+                $lokNorm = $normalize($item['lokasi'] ?? '');
+                if ($lokNorm === "KOTA{$cNorm}" || $lokNorm === "KAB{$cNorm}" || $lokNorm === $cNorm) {
+                    return $item;
+                }
+            }
+
+            // 5. Fallback ke item pertama yang ditemukan
+            return $results[0] ?? null;
+        });
     }
 
     /**
@@ -137,6 +239,7 @@ class JadwalSholatService
             'status'            => true,
             'sumber'            => 'database',
             'sumber_label'      => 'Database / Manual (' . $keterangan . ')',
+            'kota_id'           => $config['kota_id'] ?? '1301',
             'lokasi'            => $config['kota_nama'] ?? 'KOTA JAKARTA',
             'daerah'            => 'Indonesia',
             'tanggal_label'     => $dateObj->translatedFormat('l, d/m/Y'),

@@ -259,7 +259,7 @@ body { max-width: 100%; }
                     <button type="button" class="flex items-center gap-1.5 hover:text-green-700 transition-colors font-semibold text-gray-700 focus:outline-none"
                             onclick="document.getElementById('sholat-popover')?.classList.toggle('hidden')">
                         <i class="fas fa-kaaba text-emerald-600"></i>
-                        <span>
+                        <span id="topbar-sholat-text">
                             @if(!empty($jadwal_sholat_data['sholat_berikutnya']))
                                 {{ $jadwal_sholat_data['sholat_berikutnya']['nama'] }}: 
                                 <strong class="text-emerald-700 font-bold">{{ $jadwal_sholat_data['sholat_berikutnya']['jam'] }}</strong>
@@ -267,7 +267,7 @@ body { max-width: 100%; }
                                 Jadwal Sholat
                             @endif
                         </span>
-                        <span class="text-[10px] text-gray-400">({{ Str::limit($jadwal_sholat_data['lokasi'] ?? 'Jakarta', 14) }})</span>
+                        <span id="topbar-sholat-lokasi" class="text-[10px] text-gray-400">({{ Str::limit($jadwal_sholat_data['lokasi'] ?? 'Jakarta', 14) }})</span>
                         <i class="fas fa-chevron-down text-[8px] opacity-60 ml-0.5"></i>
                     </button>
 
@@ -277,24 +277,24 @@ body { max-width: 100%; }
                         <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 text-xs">
                             <div class="flex items-center gap-1.5 font-bold text-gray-800">
                                 <i class="fas fa-mosque text-emerald-600"></i>
-                                <span>{{ $jadwal_sholat_data['lokasi'] ?? 'Jadwal Sholat' }}</span>
+                                <span id="topbar-popover-lokasi">{{ $jadwal_sholat_data['lokasi'] ?? 'Jadwal Sholat' }}</span>
                             </div>
-                            <span class="text-[10px] font-semibold text-gray-400">{{ $jadwal_sholat_data['tanggal_label'] ?? '' }}</span>
+                            <span id="topbar-popover-date" class="text-[10px] font-semibold text-gray-400">{{ $jadwal_sholat_data['tanggal_label'] ?? '' }}</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-1.5 text-xs">
+                        <div id="topbar-popover-grid" class="grid grid-cols-2 gap-1.5 text-xs">
                             @foreach(['subuh'=>'Subuh', 'dhuha'=>'Dhuha', 'dzuhur'=>'Dzuhur', 'ashar'=>'Ashar', 'maghrib'=>'Maghrib', 'isya'=>'Isya'] as $key => $lbl)
                             @php
                                 $isNext = ($jadwal_sholat_data['sholat_berikutnya']['nama'] ?? '') === $lbl;
                             @endphp
-                            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg {{ $isNext ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-200' : 'bg-gray-50 text-gray-700' }}">
+                            <div data-sholat-card="{{ $key }}" class="flex items-center justify-between px-2.5 py-1.5 rounded-lg {{ $isNext ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-200' : 'bg-gray-50 text-gray-700' }}">
                                 <span>{{ $lbl }}</span>
-                                <span class="font-mono font-semibold">{{ $jadwal_sholat_data['times'][$key] ?? '-' }}</span>
+                                <span class="font-mono font-semibold" data-sholat-time="{{ $key }}">{{ $jadwal_sholat_data['times'][$key] ?? '-' }}</span>
                             </div>
                             @endforeach
                         </div>
                         <div class="mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
-                            <span>Imsak: <strong>{{ $jadwal_sholat_data['times']['imsak'] ?? '-' }}</strong></span>
-                            <span class="text-emerald-600 font-semibold">{{ ($jadwal_sholat_data['sumber'] ?? '') === 'api' ? '● API Kemenag' : '● Database' }}</span>
+                            <span>Imsak: <strong id="topbar-popover-imsak">{{ $jadwal_sholat_data['times']['imsak'] ?? '-' }}</strong></span>
+                            <span id="topbar-popover-sumber" class="text-emerald-600 font-semibold">{{ ($jadwal_sholat_data['sumber'] ?? '') === 'api' ? '● API Kemenag' : '● Database' }}</span>
                         </div>
                     </div>
                 </div>
@@ -1041,56 +1041,169 @@ function toggleMobileAcc(id) {
 </script>
 @stack('scripts')
 
-{{-- ===== GEOLOCATION TRACKER ===== --}}
-{{-- Minta izin lokasi browser, kirim ke /track-location untuk disimpan di page_visits --}}
+{{-- ===== GEOLOCATION & JADWAL SHOLAT SYNC ===== --}}
+{{-- Minta izin lokasi browser, sinkronkan jadwal sholat sesuai lokasi user, dan catat lokasi kunjungan --}}
 <script>
 (function () {
-    // Hanya jalan di halaman publik (bukan admin/cms/portal)
-    var path = window.location.pathname;
-    if (/^\/(admin|cms|portal|sign-in|daftar)/.test(path)) return;
+    // Fungsi reaktif untuk mengupdate UI Topbar & Home Section jadwal sholat
+    window.applyJadwalSholatToUI = function (data) {
+        if (!data || !data.times) return;
 
-    // Kunci per user_id (atau 'guest') agar beda akun dari browser yang sama tetap bisa request
-    var userId = '{{ auth()->id() ?? "guest" }}';
-    var storageKey = '_geo_sent_' + userId;
+        var nextName = (data.sholat_berikutnya && data.sholat_berikutnya.nama) ? data.sholat_berikutnya.nama : '';
+        var nextJam  = (data.sholat_berikutnya && data.sholat_berikutnya.jam) ? data.sholat_berikutnya.jam : '';
 
-    // Jangan minta ulang dalam sesi browser yang sama untuk akun/user yang sama
-    if (sessionStorage.getItem(storageKey)) return;
+        // 1. UPDATE TOPBAR WIDGET
+        var topbarText = document.getElementById('topbar-sholat-text');
+        if (topbarText) {
+            if (nextName && nextJam) {
+                topbarText.innerHTML = nextName + ': <strong class="text-emerald-700 font-bold">' + nextJam + '</strong>';
+            }
+        }
 
+        var topbarLokasi = document.getElementById('topbar-sholat-lokasi');
+        if (topbarLokasi && data.lokasi) {
+            var shortLok = data.lokasi.length > 14 ? data.lokasi.substring(0, 14) + '…' : data.lokasi;
+            topbarLokasi.textContent = '(' + shortLok + ')';
+        }
+
+        var popLokasi = document.getElementById('topbar-popover-lokasi');
+        if (popLokasi && data.lokasi) popLokasi.textContent = data.lokasi;
+
+        var popDate = document.getElementById('topbar-popover-date');
+        if (popDate && data.tanggal_label) popDate.textContent = data.tanggal_label;
+
+        var popImsak = document.getElementById('topbar-popover-imsak');
+        if (popImsak && data.times.imsak) popImsak.textContent = data.times.imsak;
+
+        var popSumber = document.getElementById('topbar-popover-sumber');
+        if (popSumber) popSumber.textContent = data.sumber === 'api' ? '● API Kemenag' : '● Database';
+
+        // Update cards di popover
+        ['subuh', 'dhuha', 'dzuhur', 'ashar', 'maghrib', 'isya'].forEach(function (key) {
+            var timeEl = document.querySelector('#topbar-popover-grid [data-sholat-time="' + key + '"]');
+            if (timeEl && data.times[key]) timeEl.textContent = data.times[key];
+
+            var cardEl = document.querySelector('#topbar-popover-grid [data-sholat-card="' + key + '"]');
+            if (cardEl) {
+                var isNext = nextName.toLowerCase() === key.toLowerCase();
+                if (isNext) {
+                    cardEl.className = 'flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 font-bold border border-emerald-200';
+                } else {
+                    cardEl.className = 'flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-gray-50 text-gray-700';
+                }
+            }
+        });
+
+        // 2. UPDATE HOME SECTION
+        var homeLokasi = document.getElementById('home-sholat-lokasi');
+        if (homeLokasi && data.lokasi) homeLokasi.textContent = data.lokasi;
+
+        var homeDate = document.getElementById('home-sholat-tanggal');
+        if (homeDate && data.tanggal_label) homeDate.textContent = data.tanggal_label;
+
+        var homeSumber = document.getElementById('home-sholat-sumber');
+        if (homeSumber) {
+            homeSumber.textContent = data.sumber === 'api' ? '● Kemenag RI' : '● Database';
+            homeSumber.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ' + 
+                (data.sumber === 'api' ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40' : 'bg-amber-500/30 text-amber-200 border border-amber-400/40');
+        }
+
+        ['imsak', 'subuh', 'dhuha', 'dzuhur', 'ashar', 'maghrib', 'isya'].forEach(function (key) {
+            var homeTimeEl = document.querySelector('#home-sholat-grid [data-home-time="' + key + '"]');
+            if (homeTimeEl && data.times[key]) homeTimeEl.textContent = data.times[key];
+
+            var homeCardEl = document.querySelector('#home-sholat-grid [data-home-prayer="' + key + '"]');
+            var homeBadgeEl = document.querySelector('#home-sholat-grid [data-home-badge="' + key + '"]');
+            var isNext = nextName.toLowerCase() === key.toLowerCase();
+
+            if (homeCardEl) {
+                if (isNext) {
+                    homeCardEl.className = 'relative px-3 py-2 rounded-xl text-center transition-all duration-200 bg-emerald-500/30 border border-emerald-300 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-400/50';
+                } else {
+                    homeCardEl.className = 'relative px-3 py-2 rounded-xl text-center transition-all duration-200 bg-white/10 hover:bg-white/15 border border-white/10';
+                }
+            }
+            if (homeBadgeEl) {
+                if (isNext) homeBadgeEl.classList.remove('hidden');
+                else homeBadgeEl.classList.add('hidden');
+            }
+        });
+    };
+
+    // Cek cache lokal hari ini
+    var todayStr = new Date().toISOString().slice(0, 10);
+    try {
+        var cachedSholat = localStorage.getItem('user_jadwal_sholat');
+        if (cachedSholat) {
+            var parsed = JSON.parse(cachedSholat);
+            if (parsed && parsed.date === todayStr) {
+                window.applyJadwalSholatToUI(parsed);
+            }
+        }
+    } catch (e) {}
+
+    // Jalankan deteksi lokasi via browser
     if (!navigator.geolocation) return;
 
-    // Tunggu sampai halaman selesai load agar tidak ganggu performa
     window.addEventListener('load', function () {
-        // Tunda 2 detik agar tidak muncul bersamaan dengan hal lain
         setTimeout(function () {
             navigator.geolocation.getCurrentPosition(
                 function (pos) {
                     var lat = pos.coords.latitude;
                     var lng = pos.coords.longitude;
 
-                    // Reverse-geocode pakai Nominatim (gratis, tanpa API key)
+                    // Reverse geocoding via Nominatim
                     fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng, {
                         headers: { 'Accept-Language': 'id' }
                     })
                     .then(function (r) { return r.json(); })
                     .then(function (geo) {
                         var addr    = geo.address || {};
-                        var city    = addr.city || addr.town || addr.village || addr.county || null;
+                        var city    = addr.city || addr.town || addr.county || addr.city_district || addr.state_district || null;
                         var region  = addr.state || null;
                         var country = addr.country || null;
-                        sendLocation(lat, lng, city, region, country);
+
+                        // 1. Catat statistik kunjungan jika belum sesi ini
+                        sendLocationTrack(lat, lng, city, region, country);
+
+                        // 2. Ambil jadwal sholat kota user
+                        if (city) {
+                            fetchJadwalSholat(city, lat, lng);
+                        }
                     })
                     .catch(function () {
-                        // Nominatim gagal — kirim koordinat saja tanpa nama kota
-                        sendLocation(lat, lng, null, null, null);
+                        // Nominatim gagal, kirim koordinat saja
+                        sendLocationTrack(lat, lng, null, null, null);
                     });
                 },
-                function () { /* user tolak izin — tidak apa-apa */ },
+                function () { /* user tolak izin — gunakan default database/setting */ },
                 { timeout: 8000, maximumAge: 300000 }
             );
-        }, 2000);
+        }, 1200);
     });
 
-    function sendLocation(lat, lng, city, region, country) {
+    function fetchJadwalSholat(city, lat, lng) {
+        fetch('/api/jadwal-sholat?city=' + encodeURIComponent(city) + '&lat=' + lat + '&lng=' + lng)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.status) {
+                    try {
+                        localStorage.setItem('user_jadwal_sholat', JSON.stringify(data));
+                    } catch (e) {}
+                    window.applyJadwalSholatToUI(data);
+                }
+            })
+            .catch(function () {});
+    }
+
+    function sendLocationTrack(lat, lng, city, region, country) {
+        var path = window.location.pathname;
+        if (/^\/(admin|cms|portal|sign-in|daftar)/.test(path)) return;
+
+        var userId = '{{ auth()->id() ?? "guest" }}';
+        var storageKey = '_geo_sent_' + userId;
+        if (sessionStorage.getItem(storageKey)) return;
+
         var token = document.querySelector('meta[name="csrf-token"]');
         if (!token) return;
 
@@ -1112,7 +1225,7 @@ function toggleMobileAcc(id) {
         .then(function (r) {
             if (r.ok) sessionStorage.setItem(storageKey, '1');
         })
-        .catch(function () { /* silent fail */ });
+        .catch(function () {});
     }
 })();
 </script>
