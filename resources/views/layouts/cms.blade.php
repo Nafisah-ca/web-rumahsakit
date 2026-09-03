@@ -511,9 +511,6 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
             <a href="{{ route('cms.dokter') }}" class="sidebar-link {{ request()->routeIs('cms.dokter*') ? 'active' : '' }}">
                 <i class="fas fa-user-doctor icon"></i> <span class="link-label">Dokter</span>
             </a>
-            <a href="{{ route('cms.jadwal') }}" class="sidebar-link {{ request()->routeIs('cms.jadwal*') ? 'active' : '' }}">
-                <i class="fas fa-calendar-check icon"></i> <span class="link-label">Jadwal Praktik</span>
-            </a>
             <a href="{{ route('cms.antrian-poli') }}" class="sidebar-link {{ request()->routeIs('cms.antrian-poli*') ? 'active' : '' }}">
                 <i class="fas fa-list-ol icon"></i> <span class="link-label">Pengaturan Antrian</span>
             </a>

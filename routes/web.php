@@ -307,14 +307,6 @@ Route::middleware(['auth', 'cms.verified', 'last.activity'])->prefix('cms')->nam
     Route::put('/dokter/{dokter}',         [CmsController::class, 'updateDokter'])->name('dokter.update');
     Route::delete('/dokter/{dokter}',      [CmsController::class, 'destroyDokter'])->name('dokter.destroy');
 
-    // Jadwal Dokter (CMS)
-    Route::get('/jadwal',                        [CmsController::class, 'jadwalDokter'])->name('jadwal');
-    Route::get('/jadwal/create',                 [CmsController::class, 'createJadwal'])->name('jadwal.create');
-    Route::post('/jadwal',                       [CmsController::class, 'storeJadwal'])->name('jadwal.store');
-    Route::get('/jadwal/{jadwalDokter}/edit',    [CmsController::class, 'editJadwal'])->name('jadwal.edit');
-    Route::put('/jadwal/{jadwalDokter}',         [CmsController::class, 'updateJadwal'])->name('jadwal.update');
-    Route::delete('/jadwal/{jadwalDokter}',      [CmsController::class, 'destroyJadwal'])->name('jadwal.destroy');
-
     // Jadwal Sholat
     Route::get('/jadwal-sholat',           [CmsController::class, 'jadwalSholat'])->name('jadwal-sholat');
     Route::put('/jadwal-sholat',           [CmsController::class, 'updateJadwalSholat'])->name('jadwal-sholat.update');
