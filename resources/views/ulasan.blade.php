@@ -18,25 +18,25 @@
 .ulasan-cta-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:14px;padding:14px 20px;text-decoration:none;transition:background .2s,transform .2s;flex-shrink:0;text-align:center}
 .ulasan-cta-btn:hover{background:rgba(255,255,255,.28);transform:translateY(-2px)}
 
-/* Banyak kartu compact, wrap ke bawah */
-.ulasan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;align-items:start}
+/* Banyak kartu ukuran sama, tidak terlalu tinggi */
+.ulasan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;align-items:stretch}
 
 /* Kartu */
-.ulasan-card-v2{background:#fff;border-radius:16px;border:1px solid #f0f0f0;box-shadow:0 2px 12px rgba(0,0,0,.05);padding:14px 16px;display:flex;flex-direction:column;position:relative;overflow:hidden;opacity:0;transform:translateY(20px);transition:opacity .45s ease calc(var(--delay,0ms)),transform .45s cubic-bezier(.34,1.2,.64,1) calc(var(--delay,0ms)),box-shadow .2s,border-color .2s;width:100%;height:auto}
+.ulasan-card-v2{background:#fff;border-radius:16px;border:1px solid #f0f0f0;box-shadow:0 2px 12px rgba(0,0,0,.05);padding:14px 16px;display:flex;flex-direction:column;position:relative;overflow:hidden;opacity:0;transform:translateY(20px);transition:opacity .45s ease calc(var(--delay,0ms)),transform .45s cubic-bezier(.34,1.2,.64,1) calc(var(--delay,0ms)),box-shadow .2s,border-color .2s;width:100%;height:148px}
 .ulasan-card-v2.card-visible{opacity:1;transform:translateY(0)}
 .ulasan-card-v2:hover{box-shadow:0 12px 32px rgba(0,82,31,.12);border-color:#d1fae5;transform:translateY(-5px)}
 .ulasan-quote{position:absolute;top:10px;right:14px;font-size:40px;line-height:1;color:#f0fdf4;font-family:Georgia,serif;pointer-events:none;user-select:none;transition:color .3s}
 .ulasan-card-v2:hover .ulasan-quote{color:#dcfce7}
 .ulasan-avatar{width:42px;height:42px;border-radius:12px;border:2px solid;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;font-weight:900;letter-spacing:-1px;transition:transform .2s}
 .ulasan-card-v2:hover .ulasan-avatar{transform:scale(1.08)}
-.ulasan-card-head{display:flex;align-items:flex-start;gap:11px;margin-bottom:12px}
+.ulasan-card-head{display:flex;align-items:flex-start;gap:11px;margin-bottom:8px}
 .ulasan-meta{flex:1;min-width:0}
 .ulasan-nama{font-size:13px;font-weight:800;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
 .ulasan-rbadge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;border:1px solid;white-space:nowrap;flex-shrink:0}
 .ulasan-stars-row{display:flex;align-items:center;gap:2px;margin-top:4px}
 .ulasan-date{font-size:10px;color:#9ca3af;margin-left:6px}
-.ulasan-judul{font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px;line-height:1.4}
-.ulasan-isi{font-size:12px;color:#6b7280;line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ulasan-judul{font-size:13px;font-weight:700;color:#1e293b;margin-bottom:4px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ulasan-isi{font-size:12px;color:#6b7280;line-height:1.55;flex:1;min-height:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
 /* Filter pills */
 .u-filter-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;text-decoration:none;border:1.5px solid;transition:transform .15s cubic-bezier(.34,1.56,.64,1),box-shadow .15s,opacity .15s}

@@ -40,12 +40,12 @@
 }
 .ulasan-cta-btn:hover { background:rgba(255,255,255,.25); }
 
-/* Banyak kartu compact, wrap ke bawah */
+/* Banyak kartu ukuran sama, tidak terlalu tinggi */
 .ulasan-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 14px;
-    align-items: start;
+    align-items: stretch;
 }
 
 /* Kartu */
@@ -58,7 +58,7 @@
                transform .4s ease calc(var(--delay,0ms)),
                box-shadow .2s ease, border-color .2s ease;
     width: 100%;
-    height: auto;
+    height: 148px;
 }
 .ulasan-card-v2.card-visible { opacity:1;transform:translateY(0); }
 .ulasan-card-v2:hover { box-shadow:0 10px 30px rgba(0,0,0,.1);border-color:#d1fae5;transform:translateY(-4px); }
@@ -72,7 +72,7 @@
     display:flex;align-items:center;justify-content:center;
     flex-shrink:0;font-size:17px;font-weight:900;letter-spacing:-1px;
 }
-.ulasan-card-head { display:flex;align-items:flex-start;gap:11px;margin-bottom:12px; }
+.ulasan-card-head { display:flex;align-items:flex-start;gap:11px;margin-bottom:8px; }
 .ulasan-meta      { flex:1;min-width:0; }
 .ulasan-nama      { font-size:13px;font-weight:800;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px; }
 .ulasan-rbadge {
@@ -82,9 +82,9 @@
 }
 .ulasan-stars-row { display:flex;align-items:center;gap:2px;margin-top:4px; }
 .ulasan-date      { font-size:10px;color:#9ca3af;margin-left:6px; }
-.ulasan-judul     { font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px;line-height:1.4; }
+.ulasan-judul     { font-size:13px;font-weight:700;color:#1e293b;margin-bottom:4px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .ulasan-isi {
-    font-size:12px;color:#6b7280;line-height:1.6;
-    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+    font-size:12px;color:#6b7280;line-height:1.55;flex:1;min-height:0;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
 }
 </style>
