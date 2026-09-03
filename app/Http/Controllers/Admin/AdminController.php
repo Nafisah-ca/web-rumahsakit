@@ -515,55 +515,30 @@ class AdminController extends Controller
 
     public function jadwalDokter(Request $request)
     {
-        $today = today()->toDateString();
-        $tab   = $request->get('tab', 'mendatang'); // 'mendatang' (default), 'riwayat', 'semua'
-
-        $query = JadwalDokter::with(['dokter', 'spesialisasi']);
+        $query = JadwalDokter::with(['dokter.spesialisasi', 'spesialisasi']);
 
         if ($request->dokter_id) {
             $query->where('dokter_id', $request->dokter_id);
         }
 
-        if ($request->filled('tanggal_dari')) {
-            $query->whereDate('tanggal_praktek', '>=', $request->tanggal_dari);
-        }
-        if ($request->filled('tanggal_sampai')) {
-            $query->whereDate('tanggal_praktek', '<=', $request->tanggal_sampai);
-        }
+        // Tampilkan: jadwal recurring (tanggal_praktek NULL) + jadwal mendatang
+        $query->where(function ($q) {
+            $q->whereNull('tanggal_praktek')
+              ->orWhereDate('tanggal_praktek', '>=', today());
+        });
 
-        // Hitung total counter untuk tab
-        $countQuery = JadwalDokter::query();
-        if ($request->dokter_id) {
-            $countQuery->where('dokter_id', $request->dokter_id);
-        }
-        
-        $totalMendatang = (clone $countQuery)->whereDate('tanggal_praktek', '>=', $today)->count();
-        $totalRiwayat   = (clone $countQuery)->whereDate('tanggal_praktek', '<', $today)->count();
-        $totalSemua     = (clone $countQuery)->count();
+        $query->orderByRaw("FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu')")
+              ->orderBy('jam_mulai');
 
-        // Terapkan filter tab
-        if ($tab === 'riwayat') {
-            // Hanya tanggal yang sudah lewat
-            $query->whereDate('tanggal_praktek', '<', $today)
-                  ->orderBy('tanggal_praktek', 'desc')
-                  ->orderBy('jam_mulai', 'asc');
-        } elseif ($tab === 'semua') {
-            // Semua jadwal
-            $query->orderBy('tanggal_praktek', 'desc')
-                  ->orderBy('jam_mulai', 'asc');
-        } else {
-            // Default 'mendatang': hanya jadwal mulai hari ini ke depan (tanggal lewat tidak ditampilkan)
-            $tab = 'mendatang';
-            $query->whereDate('tanggal_praktek', '>=', $today)
-                  ->orderBy('tanggal_praktek', 'asc')
-                  ->orderBy('jam_mulai', 'asc');
-        }
+        $totalMendatang = JadwalDokter::whereNull('tanggal_praktek')->orWhereDate('tanggal_praktek','>=',today())->count();
+        $totalRiwayat   = JadwalDokter::whereDate('tanggal_praktek','<',today())->count();
+        $totalSemua     = JadwalDokter::count();
 
-        $jadwals = $query->paginate(20)->withQueryString();
+        $jadwals = $query->paginate(50)->withQueryString();
         $dokters = Dokter::where('status', 'aktif')->orderBy('nama_dokter')->get();
 
         return view('admin.jadwal.index', compact(
-            'jadwals', 'dokters', 'tab', 'totalMendatang', 'totalRiwayat', 'totalSemua'
+            'jadwals', 'dokters', 'totalMendatang', 'totalRiwayat', 'totalSemua'
         ));
     }
 
@@ -580,19 +555,20 @@ class AdminController extends Controller
         $request->validate([
             'dokter_id'       => 'required|exists:dokter,id',
             'spesialis_id'    => 'required|exists:spesialis,id',
-            'tanggal_praktek' => 'required|date',
+            'tanggal_praktek' => 'nullable|date',   // nullable — recurring tidak butuh tanggal
             'hari'            => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
             'jam_mulai'       => 'required',
-            'jam_selesai'     => 'required',
-            'kuota'           => 'required|integer|min:1',
+            'jam_selesai'     => 'required|after:jam_mulai',
+            'kuota'           => 'required|integer|min:1|max:200',
             'status'          => 'nullable|in:aktif,nonaktif',
         ]);
 
         JadwalDokter::create(array_merge(
             $request->except('_token'),
             [
-                'status'     => $request->status ?? 'aktif',
-                'created_by' => Auth::id(),
+                'tanggal_praktek' => $request->tanggal_praktek ?: null,
+                'status'          => $request->status ?? 'aktif',
+                'created_by'      => Auth::id(),
             ]
         ));
 
@@ -612,17 +588,20 @@ class AdminController extends Controller
         $request->validate([
             'dokter_id'       => 'required|exists:dokter,id',
             'spesialis_id'    => 'required|exists:spesialis,id',
-            'tanggal_praktek' => 'required|date',
+            'tanggal_praktek' => 'nullable|date',
             'hari'            => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
             'jam_mulai'       => 'required',
-            'jam_selesai'     => 'required',
-            'kuota'           => 'required|integer|min:1',
+            'jam_selesai'     => 'required|after:jam_mulai',
+            'kuota'           => 'required|integer|min:1|max:200',
             'status'          => 'nullable|in:aktif,nonaktif',
         ]);
 
         $jadwalDokter->update(array_merge(
             $request->except(['_token', '_method']),
-            ['updated_by' => Auth::id()]
+            [
+                'tanggal_praktek' => $request->tanggal_praktek ?: null,
+                'updated_by'      => Auth::id(),
+            ]
         ));
 
         return redirect()->route('admin.jadwal')->with('success', 'Jadwal berhasil diperbarui.');

@@ -24,59 +24,75 @@ class BookingController extends Controller
         return view('portal.booking.create', compact('dokter', 'dokters', 'pasien'));
     }
 
-    /** API: Ambil jadwal dokter berdasarkan dokter dan tanggal */
+    /** API: Ambil jadwal dokter — recurring weekly, tampilkan slot mendatang */
     public function jadwal(Request $request)
     {
-        $tanggal = $request->tanggal_kunjungan ?: today()->toDateString();
+        $dokterId = $request->dokter_id;
+        if (!$dokterId) return response()->json([]);
 
-        // Dapatkan nama hari dari tanggal yang dipilih — pakai mapping integer agar konsisten
-        $hariMap     = [0=>'Minggu',1=>'Senin',2=>'Selasa',3=>'Rabu',4=>'Kamis',5=>'Jumat',6=>'Sabtu'];
-        $hariPilihan = $hariMap[\Carbon\Carbon::parse($tanggal)->dayOfWeek];
-
-        // Ambil jadwal aktif dokter yang sesuai dengan tanggal dipilih
-        $jadwals = JadwalDokter::where('dokter_id', $request->dokter_id)
+        // Ambil semua jadwal aktif dokter (recurring — tanggal_praktek bisa NULL)
+        $jadwals = JadwalDokter::where('dokter_id', $dokterId)
             ->where('status', 'aktif')
-            ->where(function ($q) use ($tanggal, $hariPilihan) {
-                $q->whereDate('tanggal_praktek', $tanggal)
-                  ->orWhere(function ($sub) use ($hariPilihan) {
-                      $sub->whereNull('tanggal_praktek')->where('hari', $hariPilihan);
-                  });
-            })
-            ->get()
-            ->map(function ($j) use ($tanggal) {
-                $terisi = JanjiTemu::where('jadwal_dokter_id', $j->id)
-                    ->whereDate('tanggal_booking', $tanggal)
-                    ->whereNotIn('status', ['cancelled'])
-                    ->count();
+            ->orderByRaw("FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu')")
+            ->get();
 
-                // Cek apakah jadwal sudah lewat untuk tanggal yang dipilih
-                $today    = now()->toDateString();
-                $nowTime  = now()->format('H:i:s');
+        if ($jadwals->isEmpty()) return response()->json([]);
 
-                $sudahSelesai = false;
-                // Jadwal selesai hanya jika tanggal YANG DIPILIH pasien sudah lewat,
-                // atau tanggal yang dipilih = hari ini DAN jam_selesai sudah lewat.
-                // tanggal_praktek di DB tidak dipakai untuk cek ini karena satu jadwal
-                // bisa berlaku berulang di hari yang sama setiap minggu.
-                if ($tanggal < $today) {
-                    $sudahSelesai = true;
-                } elseif ($tanggal === $today && $nowTime >= $j->jam_selesai) {
-                    $sudahSelesai = true;
+        $hariMap  = ['Senin'=>1,'Selasa'=>2,'Rabu'=>3,'Kamis'=>4,'Jumat'=>5,'Sabtu'=>6,'Minggu'=>0];
+        $hariMapR = [0=>'Minggu',1=>'Senin',2=>'Selasa',3=>'Rabu',4=>'Kamis',5=>'Jumat',6=>'Sabtu'];
+        $today    = now()->toDateString();
+        $nowTime  = now()->format('H:i:s');
+
+        $result = [];
+
+        foreach ($jadwals as $j) {
+            $hariInt = $hariMap[$j->hari] ?? null;
+            if ($hariInt === null) continue;
+
+            // Cari tanggal berikutnya yang sesuai hari, mulai hari ini
+            // Jika jadwal memiliki tanggal_praktek spesifik, gunakan itu
+            if ($j->tanggal_praktek) {
+                $targetDate = $j->tanggal_praktek->toDateString();
+                if ($targetDate < $today) continue; // jadwal spesifik sudah lewat
+            } else {
+                // Recurring: cari hari terdekat ke depan
+                $now     = now();
+                $todayDow = $now->dayOfWeek; // 0=Minggu
+                $diff     = ($hariInt - $todayDow + 7) % 7;
+
+                // Jika hari ini dan jam belum selesai → pakai hari ini
+                // Jika hari ini tapi jam sudah selesai → minggu depan
+                if ($diff === 0 && $nowTime >= $j->jam_selesai) {
+                    $diff = 7;
                 }
 
-                return [
-                    'id'            => $j->id,
-                    'hari'          => $j->hari,
-                    'hari_label'    => $j->hari,
-                    'jam_mulai'     => substr($j->jam_mulai, 0, 5),
-                    'jam_selesai'   => substr($j->jam_selesai, 0, 5),
-                    'kuota'         => $j->kuota,
-                    'sisa_kuota'    => max(0, $j->kuota - $terisi),
-                    'sudah_selesai' => $sudahSelesai,
-                ];
-            });
+                $targetDate = now()->addDays($diff)->toDateString();
+            }
 
-        return response()->json($jadwals);
+            // Hitung kuota terpakai di tanggal target
+            $terisi = JanjiTemu::where('jadwal_dokter_id', $j->id)
+                ->whereDate('tanggal_booking', $targetDate)
+                ->whereNotIn('status', ['cancelled'])
+                ->count();
+
+            $sisaKuota    = max(0, $j->kuota - $terisi);
+            $sudahSelesai = ($targetDate === $today && $nowTime >= $j->jam_selesai);
+
+            $result[] = [
+                'id'            => $j->id,
+                'hari'          => $j->hari,
+                'tanggal'       => $targetDate,
+                'tanggal_label' => \Carbon\Carbon::parse($targetDate)->translatedFormat('d M Y'),
+                'jam_mulai'     => substr($j->jam_mulai, 0, 5),
+                'jam_selesai'   => substr($j->jam_selesai, 0, 5),
+                'kuota'         => $j->kuota,
+                'sisa_kuota'    => $sisaKuota,
+                'sudah_selesai' => $sudahSelesai,
+                'kuota_habis'   => $sisaKuota <= 0 && !$sudahSelesai,
+            ];
+        }
+
+        return response()->json($result);
     }
 
 
@@ -93,7 +109,6 @@ class BookingController extends Controller
             'jadwal_dokter_id.required' => 'Pilih jadwal dokter terlebih dahulu.',
             'tanggal_kunjungan.required'=> 'Tanggal kunjungan wajib diisi.',
             'keluhan.required'          => 'Keluhan wajib diisi.',
-            'keluhan.min'               => 'Keluhan minimal 3 karakter.',
         ]);
 
         $pasien = Auth::user()->pasien;

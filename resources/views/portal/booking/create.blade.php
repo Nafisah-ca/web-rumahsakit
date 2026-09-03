@@ -67,24 +67,16 @@
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                 <h3 class="font-extrabold text-gray-900 mb-4 flex items-center gap-2">
                     <span class="w-7 h-7 bg-green-600 text-white rounded-full flex items-center justify-center text-xs font-black">2</span>
-                    Pilih Tanggal & Jadwal
+                    Pilih Jadwal
                 </h3>
-                {{-- Tanggal selalu tampil --}}
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-gray-700 mb-1.5">Tanggal Kunjungan <span class="text-red-500">*</span></label>
-                    <input type="date" name="tanggal_kunjungan" id="tanggal_kunjungan"
-                        min="{{ date('Y-m-d') }}" value="{{ old('tanggal_kunjungan', date('Y-m-d')) }}"
-                        class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none" required>
-                    <p class="text-xs text-gray-400 mt-1">
-                        Pilih dokter terlebih dahulu, lalu pilih tanggal untuk melihat jadwal yang tersedia.
-                    </p>
-                    <p class="text-xs font-semibold text-green-700 mt-1" id="hari-label"></p>
-                </div>
-                {{-- Jadwal muncul setelah dokter dipilih --}}
+
                 <div id="jadwal-container">
-                    <p class="text-gray-400 text-sm italic">Pilih dokter terlebih dahulu untuk melihat jadwal.</p>
+                    <p class="text-gray-400 text-sm italic">Pilih dokter terlebih dahulu untuk melihat jadwal tersedia.</p>
                 </div>
+
+                {{-- Hidden fields yang dikirim ke server --}}
                 <input type="hidden" name="jadwal_dokter_id" id="jadwal_dokter_id">
+                <input type="hidden" name="tanggal_kunjungan" id="tanggal_kunjungan">
             </div>
 
             {{-- Detail Kunjungan --}}
@@ -144,88 +136,103 @@
 const dokterSel       = document.getElementById('dokter_id');
 const dokterNilaiAwal = dokterSel?.value;
 const jadwalCont      = document.getElementById('jadwal-container');
-const tglCont         = document.getElementById('tanggal-container');
 const jadwalHid       = document.getElementById('jadwal_dokter_id');
+const tanggalHid      = document.getElementById('tanggal_kunjungan');
 
 function loadJadwal() {
-    const dokterId  = dokterSel.value;
+    const dokterId  = dokterSel?.value;
     const btnSubmit = document.getElementById('btn-submit');
 
     if (!dokterId) {
-        jadwalCont.innerHTML = '<p class="text-gray-400 text-sm italic">Pilih dokter terlebih dahulu.</p>';
-        jadwalHid.value = '';
+        jadwalCont.innerHTML = '<p class="text-gray-400 text-sm italic">Pilih dokter terlebih dahulu untuk melihat jadwal tersedia.</p>';
+        jadwalHid.value  = '';
+        tanggalHid.value = '';
         if (btnSubmit) btnSubmit.disabled = true;
         return;
     }
 
     jadwalCont.innerHTML = '<p class="text-gray-400 text-sm"><i class="fas fa-spinner fa-spin mr-1"></i>Memuat jadwal...</p>';
     if (btnSubmit) btnSubmit.disabled = true;
-    jadwalHid.value = '';
+    jadwalHid.value  = '';
+    tanggalHid.value = '';
 
-    const tglInput = document.getElementById('tanggal_kunjungan');
-    const tanggal  = tglInput ? tglInput.value : '{{ date("Y-m-d") }}';
-
-    const hariId     = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-    const tglDate    = new Date(tanggal);
-    const dayName    = hariId[tglDate.getDay()];
-    const tglDisplay = tglDate.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
-
-    fetch(`{{ route('portal.booking.jadwal') }}?dokter_id=${dokterId}&tanggal_kunjungan=${tanggal}`)
+    fetch(`{{ route('portal.booking.jadwal') }}?dokter_id=${dokterId}`)
         .then(r => r.json())
         .then(data => {
-            // Tidak ada jadwal di hari itu
             if (!data.length) {
                 jadwalCont.innerHTML = `<div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-700 text-sm">
                     <i class="fas fa-calendar-xmark mr-1"></i>
-                    Dokter tidak memiliki jadwal pada hari <strong>${dayName}</strong> (${tglDisplay}). Silakan pilih tanggal lain.
+                    Dokter ini belum memiliki jadwal aktif.
                 </div>`;
                 return;
             }
 
-            let html = '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">';
-            let adaYangBisa = false;
+            /* ── Header tabel ── */
+            let html = `
+            <div style="overflow:hidden;border-radius:14px;border:1px solid #e5e7eb">
+                <table style="width:100%;border-collapse:collapse">
+                    <thead>
+                        <tr style="background:#00521f">
+                            <th style="padding:11px 16px;text-align:left;color:#fff;font-size:12px;font-weight:700;letter-spacing:.05em">Hari</th>
+                            <th style="padding:11px 16px;text-align:left;color:#fff;font-size:12px;font-weight:700;letter-spacing:.05em">Jam Praktek</th>
+                            <th style="padding:11px 16px;text-align:left;color:#fff;font-size:12px;font-weight:700;letter-spacing:.05em">Tanggal Terdekat</th>
+                            <th style="padding:11px 16px;text-align:left;color:#fff;font-size:12px;font-weight:700;letter-spacing:.05em">Kuota</th>
+                            <th style="padding:11px 16px;text-align:center;color:#fff;font-size:12px;font-weight:700;letter-spacing:.05em">Pilih</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jadwal-tbody">`;
 
-            data.forEach(j => {
-                const sudahSelesai = j.sudah_selesai === true;
-                const kuotaHabis  = j.sisa_kuota <= 0;
-                const disabled    = sudahSelesai || kuotaHabis;
-                if (!disabled) adaYangBisa = true;
+            data.forEach((j, idx) => {
+                const disabled  = j.sudah_selesai || j.sisa_kuota <= 0;
+                const rowBg     = idx % 2 === 0 ? '#fff' : '#f9fafb';
 
-                let statusHtml;
-                if (sudahSelesai) {
-                    statusHtml = '<p class="text-xs text-gray-400 font-semibold mt-1"><i class="fas fa-clock mr-0.5"></i>Jam praktek selesai</p>';
-                } else if (kuotaHabis) {
-                    statusHtml = '<p class="text-xs text-red-500 font-semibold mt-1"><i class="fas fa-users-slash mr-0.5"></i>Kuota penuh</p>';
+                let kuotaHtml;
+                if (j.sudah_selesai) {
+                    kuotaHtml = `<span style="font-size:11px;color:#9ca3af;font-weight:600"><i class="fas fa-clock mr-1"></i>Jam selesai</span>`;
+                } else if (j.sisa_kuota <= 0) {
+                    kuotaHtml = `<span style="font-size:11px;color:#ef4444;font-weight:700"><i class="fas fa-users-slash mr-1"></i>Penuh</span>`;
                 } else {
-                    statusHtml = `<p class="text-xs text-green-600 font-semibold mt-1"><i class="fas fa-circle-check mr-0.5"></i>Sisa: ${j.sisa_kuota} kuota</p>`;
+                    kuotaHtml = `<span style="font-size:11px;color:#16a34a;font-weight:700"><i class="fas fa-circle-check mr-1"></i>Sisa ${j.sisa_kuota}</span>`;
+                }
+
+                let btnHtml;
+                if (disabled) {
+                    btnHtml = `<button type="button" disabled
+                        style="padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;background:#f1f5f9;color:#9ca3af;border:none;cursor:not-allowed">
+                        Tidak Tersedia
+                    </button>`;
+                } else {
+                    btnHtml = `<button type="button"
+                        onclick="pilihJadwal(${j.id},'${j.tanggal}','${j.hari}','${j.jam_mulai}','${j.jam_selesai}',this)"
+                        class="jadwal-pick-btn"
+                        data-id="${j.id}"
+                        style="padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;background:#00521f;color:#fff;border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px">
+                        <i class="fas fa-calendar-check" style="font-size:11px"></i> Daftar Poliklinik
+                    </button>`;
                 }
 
                 html += `
-                <label class="cursor-pointer ${disabled ? 'opacity-50 pointer-events-none' : ''}">
-                    <input type="radio" name="_jadwal_pick" value="${j.id}" class="sr-only peer"
-                        onchange="pickJadwal(${j.id})" ${disabled ? 'disabled' : ''}>
-                    <div class="p-3 rounded-xl border-2 ${disabled ? 'border-gray-100 bg-gray-50' : 'border-gray-200 hover:border-green-300'} peer-checked:border-green-500 peer-checked:bg-green-50 transition-all text-center">
-                        <p class="font-bold text-sm ${disabled ? 'text-gray-400' : 'text-gray-800'}">${j.hari}</p>
-                        <p class="text-xs ${disabled ? 'text-gray-400' : 'text-gray-500'}">${j.jam_mulai} – ${j.jam_selesai}</p>
-                        ${statusHtml}
-                    </div>
-                </label>`;
+                <tr style="background:${rowBg};border-top:1px solid #f3f4f6;transition:background .1s"
+                    onmouseover="if(!this.classList.contains('selected'))this.style.background='#f0fdf4'"
+                    onmouseout="if(!this.classList.contains('selected'))this.style.background='${rowBg}'"
+                    id="row-${j.id}">
+                    <td style="padding:12px 16px;font-size:13px;font-weight:700;color:#111">${j.hari}</td>
+                    <td style="padding:12px 16px;font-size:13px;color:#374151">${j.jam_mulai} – ${j.jam_selesai}</td>
+                    <td style="padding:12px 16px">
+                        <span style="font-size:12px;font-weight:600;color:#374151">${j.tanggal_label}</span>
+                    </td>
+                    <td style="padding:12px 16px">${kuotaHtml}</td>
+                    <td style="padding:12px 16px;text-align:center">${btnHtml}</td>
+                </tr>`;
             });
-            html += '</div>';
 
-            if (!adaYangBisa) {
-                const semuaSelesai = data.every(j => j.sudah_selesai);
-                const semuaPenuh   = !semuaSelesai && data.every(j => j.sisa_kuota <= 0);
-                let pesan;
-                if (semuaSelesai) {
-                    pesan = `<i class="fas fa-clock-rotate-left mr-1"></i>Jam praktik dokter untuk hari <strong>${dayName}</strong> sudah selesai. Silakan pilih tanggal lain.`;
-                } else if (semuaPenuh) {
-                    pesan = `<i class="fas fa-users-slash mr-1"></i>Semua kuota jadwal hari <strong>${dayName}</strong> sudah penuh. Silakan pilih tanggal lain.`;
-                } else {
-                    pesan = `<i class="fas fa-ban mr-1"></i>Tidak ada jadwal tersedia untuk hari <strong>${dayName}</strong>. Silakan pilih tanggal lain.`;
-                }
-                html += `<div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm">${pesan}</div>`;
-            }
+            html += `</tbody></table></div>`;
+
+            /* Info jadwal terpilih */
+            html += `<div id="jadwal-selected-info" style="display:none;margin-top:12px;padding:12px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;font-size:13px;font-weight:600;color:#166534">
+                <i class="fas fa-circle-check mr-2"></i>
+                <span id="jadwal-selected-text"></span>
+            </div>`;
 
             jadwalCont.innerHTML = html;
         })
@@ -234,31 +241,43 @@ function loadJadwal() {
         });
 }
 
-function pickJadwal(id) {
-    jadwalHid.value = id;
-    const btnSubmit = document.getElementById('btn-submit');
-    if (btnSubmit) btnSubmit.disabled = false;
+/* Saat pasien klik "Daftar Poliklinik" di salah satu baris */
+function pilihJadwal(id, tanggal, hari, jamMulai, jamSelesai, btnEl) {
+    /* Reset semua baris */
+    document.querySelectorAll('.jadwal-pick-btn').forEach(function(b) {
+        b.style.background = '#00521f';
+        b.innerHTML = '<i class="fas fa-calendar-check" style="font-size:11px"></i> Daftar Poliklinik';
+        document.getElementById('row-' + b.dataset.id)?.classList.remove('selected');
+        document.getElementById('row-' + b.dataset.id).style.background = '';
+    });
+
+    /* Tandai baris terpilih */
+    btnEl.style.background = '#166534';
+    btnEl.innerHTML = '<i class="fas fa-check-circle" style="font-size:11px"></i> Dipilih';
+    const row = document.getElementById('row-' + id);
+    if (row) { row.classList.add('selected'); row.style.background = '#dcfce7'; }
+
+    /* Isi hidden inputs */
+    jadwalHid.value  = id;
+    tanggalHid.value = tanggal;
+
+    /* Tampilkan info terpilih */
+    const info = document.getElementById('jadwal-selected-info');
+    const text = document.getElementById('jadwal-selected-text');
+    if (info && text) {
+        text.textContent = `Jadwal dipilih: ${hari}, ${tanggal} pukul ${jamMulai}–${jamSelesai}`;
+        info.style.display = 'block';
+    }
+
+    /* Aktifkan tombol submit */
+    const btn = document.getElementById('btn-submit');
+    if (btn) btn.disabled = false;
 }
 
-// Saat tanggal berubah, reload jadwal
+/* Init */
 document.addEventListener('DOMContentLoaded', function () {
-    const tglInput = document.getElementById('tanggal_kunjungan');
-
-    function updateHariLabel() {
-        if (!tglInput || !tglInput.value) return;
-        const hariId = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-        const d = new Date(tglInput.value);
-        const hari = hariId[d.getDay()];
-        const label = document.getElementById('hari-label');
-        if (label) label.textContent = '📅 ' + hari + ', ' + d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
-    }
-
-    if (tglInput) {
-        tglInput.addEventListener('change', function() { updateHariLabel(); loadJadwal(); });
-        updateHariLabel();
-    }
-    if (dokterSel && dokterNilaiAwal) loadJadwal();
     if (dokterSel) dokterSel.addEventListener('change', loadJadwal);
+    if (dokterNilaiAwal) loadJadwal();
 });
 </script>
 @endpush
