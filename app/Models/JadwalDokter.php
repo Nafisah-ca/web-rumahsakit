@@ -82,6 +82,14 @@ class JadwalDokter extends Model
     }
 
     /**
+     * Scope: jadwal mulai hari ini ke depan (tanggal_praktek >= hari ini).
+     */
+    public function scopeMendatang(Builder $query): Builder
+    {
+        return $query->whereDate('tanggal_praktek', '>=', today());
+    }
+
+    /**
      * Scope: jadwal yang belum selesai hari ini.
      * Jadwal dianggap masih bisa didaftari jika:
      *   - tanggal_praktek > hari ini, ATAU

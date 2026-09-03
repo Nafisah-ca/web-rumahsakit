@@ -405,6 +405,74 @@
     </div>
 </div>
 
+{{-- ===== JADWAL SHOLAT SECTION ===== --}}
+@if(!empty($jadwal_sholat_data['times']))
+<section class="py-5 bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-950 text-white relative overflow-hidden border-y border-emerald-800/40 shadow-inner">
+    <div class="max-w-screen-xl mx-auto px-4 relative z-10">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-5">
+
+            {{-- Header info --}}
+            <div class="flex items-center gap-3.5 text-center lg:text-left">
+                <div class="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center flex-shrink-0 text-emerald-300 text-xl shadow-inner">
+                    <i class="fas fa-kaaba"></i>
+                </div>
+                <div>
+                    <div class="flex items-center justify-center lg:justify-start gap-2">
+                        <h3 class="text-sm font-extrabold text-white tracking-tight">Jadwal Waktu Sholat</h3>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold {{ ($jadwal_sholat_data['sumber'] ?? '') === 'api' ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40' : 'bg-amber-500/30 text-amber-200 border border-amber-400/40' }}">
+                            {{ ($jadwal_sholat_data['sumber'] ?? '') === 'api' ? '● Kemenag RI' : '● Database' }}
+                        </span>
+                    </div>
+                    <p class="text-xs text-emerald-100/80 mt-0.5 flex items-center justify-center lg:justify-start gap-1.5">
+                        <i class="fas fa-location-dot text-emerald-400 text-[10px]"></i>
+                        <span>{{ $jadwal_sholat_data['lokasi'] ?? 'Indonesia' }}</span>
+                        <span class="opacity-50">•</span>
+                        <span>{{ $jadwal_sholat_data['tanggal_label'] ?? now()->translatedFormat('l, d M Y') }}</span>
+                    </p>
+                </div>
+            </div>
+
+            {{-- Grid Waktu Sholat --}}
+            <div class="grid grid-cols-4 sm:grid-cols-7 gap-2 w-full lg:w-auto">
+                @php
+                    $prayers = [
+                        'imsak'   => ['label' => 'Imsak',   'icon' => 'fa-moon'],
+                        'subuh'   => ['label' => 'Subuh',   'icon' => 'fa-cloud-sun'],
+                        'dhuha'   => ['label' => 'Dhuha',   'icon' => 'fa-sun'],
+                        'dzuhur'  => ['label' => 'Dzuhur',  'icon' => 'fa-sun'],
+                        'ashar'   => ['label' => 'Ashar',   'icon' => 'fa-cloud-sun'],
+                        'maghrib' => ['label' => 'Maghrib', 'icon' => 'fa-moon'],
+                        'isya'    => ['label' => 'Isya',    'icon' => 'fa-star-and-crescent'],
+                    ];
+                    $nextPrayer = $jadwal_sholat_data['sholat_berikutnya']['nama'] ?? '';
+                @endphp
+
+                @foreach($prayers as $key => $p)
+                @php
+                    $isNext = strtolower($nextPrayer) === $key;
+                    $jam    = $jadwal_sholat_data['times'][$key] ?? '-';
+                @endphp
+                <div class="relative px-3 py-2 rounded-xl text-center transition-all duration-200 {{ $isNext ? 'bg-emerald-500/30 border border-emerald-300 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-400/50' : 'bg-white/10 hover:bg-white/15 border border-white/10' }}">
+                    @if($isNext)
+                    <span class="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-950 text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider shadow">
+                        Berikutnya
+                    </span>
+                    @endif
+                    <div class="text-[10px] font-semibold {{ $isNext ? 'text-emerald-200 font-bold' : 'text-emerald-100/70' }} flex items-center justify-center gap-1">
+                        <i class="fas {{ $p['icon'] }} text-[8px]"></i> {{ $p['label'] }}
+                    </div>
+                    <div class="text-xs font-extrabold tracking-tight mt-0.5 font-mono text-white">
+                        {{ $jam }}
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+        </div>
+    </div>
+</section>
+@endif
+
 {{-- ===== SPESIALISASI ===== --}}
 <div class="section-divider"></div>
 <section class="py-14 bg-white"><div class="max-w-screen-xl mx-auto px-4">

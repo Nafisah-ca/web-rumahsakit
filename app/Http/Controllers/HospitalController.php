@@ -354,9 +354,13 @@ class HospitalController extends Controller
         $hariMap  = [1=>'Senin',2=>'Selasa',3=>'Rabu',4=>'Kamis',5=>'Jumat',6=>'Sabtu',7=>'Minggu'];
         $namaHari = $hariMap[$tanggal->dayOfWeekIso] ?? 'Senin';
 
-        // Semua spesialisasi dengan jadwal aktif pada hari tersebut
+        // Semua spesialisasi dengan jadwal aktif pada tanggal tersebut
         $spesialisasis = Spesialisasi::with([
-            'jadwalDokters' => fn($q) => $q->where('status', 'aktif')->where('hari', $namaHari),
+            'jadwalDokters' => fn($q) => $q->where('status', 'aktif')
+                ->where(function ($sub) use ($tanggalStr, $namaHari) {
+                    $sub->whereDate('tanggal_praktek', $tanggalStr)
+                        ->orWhere(fn($s) => $s->whereNull('tanggal_praktek')->where('hari', $namaHari));
+                }),
         ])->orderBy('nama_spesialis')->get();
 
         // Semua janji temu pada tanggal yang dipilih

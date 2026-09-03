@@ -17,6 +17,7 @@ use App\Models\Faq;
 use App\Models\Akreditasi;
 use App\Models\WebsiteSetting;
 use App\Models\PageBanner;
+use App\Services\JadwalSholatService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -787,6 +788,59 @@ class CmsController extends Controller
             'footer', 'copyright',
         ]), $setting);
         return redirect()->route('cms.footer')->with('success', 'Footer berhasil diperbarui.');
+    }
+
+    // ── Jadwal Sholat ─────────────────────────────────────────────────────────
+
+    public function jadwalSholat()
+    {
+        $setting    = $this->getSettingOrNew();
+        $config     = JadwalSholatService::getSettingConfig();
+        $liveJadwal = JadwalSholatService::getJadwal();
+        $isApiUp    = JadwalSholatService::checkApiHealth();
+
+        return view('cms.pengaturan.jadwal-sholat', compact('setting', 'config', 'liveJadwal', 'isApiUp'));
+    }
+
+    public function updateJadwalSholat(Request $request)
+    {
+        $request->validate([
+            'mode'            => 'required|in:api,manual',
+            'kota_id'         => 'required|string',
+            'kota_nama'       => 'required|string|max:100',
+            'manual.imsak'    => 'required|string',
+            'manual.subuh'    => 'required|string',
+            'manual.terbit'   => 'required|string',
+            'manual.dhuha'    => 'required|string',
+            'manual.dzuhur'   => 'required|string',
+            'manual.ashar'    => 'required|string',
+            'manual.maghrib'  => 'required|string',
+            'manual.isya'     => 'required|string',
+        ]);
+
+        $payload = [
+            'mode'      => $request->mode,
+            'kota_id'   => $request->kota_id,
+            'kota_nama' => $request->kota_nama,
+            'manual'    => $request->manual,
+        ];
+
+        $setting = $this->getSettingOrNew();
+        $this->saveSetting([
+            'jadwal_sholat' => json_encode($payload),
+        ], $setting);
+
+        // Hapus cache agar pembaruan langsung berefek
+        \Illuminate\Support\Facades\Cache::forget("jadwal_sholat_{$request->kota_id}_" . now()->toDateString());
+
+        return redirect()->route('cms.jadwal-sholat')->with('success', 'Pengaturan Jadwal Sholat berhasil diperbarui.');
+    }
+
+    public function cariKotaSholat(Request $request)
+    {
+        $keyword = $request->get('q', '');
+        $results = JadwalSholatService::cariKota($keyword);
+        return response()->json($results);
     }
 
     // ─────────────────────────── KEBIJAKAN PRIVASI ───────────────────

@@ -1,16 +1,20 @@
 @php
-    // Gunakan mapping integer yang pasti konsisten — tidak bergantung locale
+    $todayStr      = now()->toDateString();
     $hariMap       = [1=>'Senin',2=>'Selasa',3=>'Rabu',4=>'Kamis',5=>'Jumat',6=>'Sabtu',7=>'Minggu'];
     $hariSekarang  = $hariMap[now()->dayOfWeekIso];
     $menitSekarang = (int) now()->format('H') * 60 + (int) now()->format('i');
+    
+    // Ambil jadwal aktif mendatang dokter (sudah difilter di model tanggal_praktek >= today())
     $jadwals       = $d->jadwalAktif;
 
-    // (debug dihapus)
+    // Cek apakah ada jadwal aktif HARI INI yang masih buka (belum selesai)
+    $jadwalHariIni = $jadwals->first(function ($j) use ($todayStr, $hariSekarang, $menitSekarang) {
+        $praktek = $j->tanggal_praktek?->toDateString();
+        // Cocok jika tanggal_praktek adalah hari ini atau harinya hari ini
+        $isHariIni = ($praktek && $praktek === $todayStr) || (!$praktek && $j->hari === $hariSekarang);
+        if (!$isHariIni) return false;
 
-    $available = $jadwals->isNotEmpty() && $jadwals->contains(function ($j) use ($hariSekarang, $menitSekarang) {
-        if ($j->hari !== $hariSekarang) return false;
         $jamSelesaiStr = (string) $j->jam_selesai;
-        // Jika format Carbon object, konversi dulu
         if ($j->jam_selesai instanceof \Carbon\Carbon) {
             $selesai = $j->jam_selesai->hour * 60 + $j->jam_selesai->minute;
         } else {
@@ -19,6 +23,11 @@
         }
         return $menitSekarang < $selesai;
     });
+
+    $available = (bool) $jadwalHariIni;
+
+    // Jadwal terdekat yang akan datang jika tidak buka hari ini
+    $jadwalTerdekat = $jadwalHariIni ?: $jadwals->first();
 
     // Overlay hijau sesuai tipe dokter
     $overlayColor = match($d->tipe_dokter ?? 'spesialis') {
@@ -102,10 +111,10 @@
         {{-- Badge status --}}
         <div style="position:absolute;top:10px;right:10px;z-index:20">
             @if($jadwals->isEmpty())
-                <span style="background:rgba(100,116,139,0.85);color:white;font-size:10px;
-                             font-weight:700;padding:3px 10px;border-radius:99px">Hubungi RS</span>
+                <span style="background:rgba(100,116,139,0.88);color:white;font-size:10px;
+                             font-weight:700;padding:3px 10px;border-radius:99px">Belum Ada Jadwal</span>
             @elseif($available)
-                <span style="background:rgba(22,163,74,0.88);color:white;font-size:10px;
+                <span style="background:rgba(22,163,74,0.92);color:white;font-size:10px;
                              font-weight:700;padding:3px 10px;border-radius:99px;
                              display:inline-flex;align-items:center;gap:4px">
                     <span style="width:5px;height:5px;background:white;border-radius:50%;
@@ -113,8 +122,10 @@
                     Tersedia Hari Ini
                 </span>
             @else
-                <span style="background:rgba(202,138,4,0.88);color:white;font-size:10px;
-                             font-weight:700;padding:3px 10px;border-radius:99px">Jadwal Terjadwal</span>
+                <span style="background:rgba(202,138,4,0.92);color:white;font-size:10px;
+                             font-weight:700;padding:3px 10px;border-radius:99px">
+                    {{ $jadwalTerdekat?->hari ? 'Praktek ' . $jadwalTerdekat->hari : 'Terjadwal' }}
+                </span>
             @endif
         </div>
 
@@ -188,7 +199,23 @@
                    style="color:#16a34a;margin-top:1px;width:12px;flex-shrink:0"></i>
                 <span>
                     @if($jadwals->isEmpty())
-                        Hubungi RS
+                        <span style="color:#94a3b8;font-style:italic">Hubungi RS / Belum Ada Jadwal</span>
+                    @elseif($jadwalHariIni)
+                        <strong style="color:#15803d">Hari Ini ({{ $jadwalHariIni->hari }})</strong><br>
+                        <span style="color:#16a34a;font-weight:700">
+                            {{ substr($jadwalHariIni->jam_mulai,0,5) }} – {{ substr($jadwalHariIni->jam_selesai,0,5) }} WIB
+                        </span>
+                    @elseif($jadwalTerdekat)
+                        <span>
+                            @if($jadwalTerdekat->tanggal_praktek)
+                                {{ $jadwalTerdekat->hari }}, {{ $jadwalTerdekat->tanggal_praktek->format('d M Y') }}
+                            @else
+                                {{ $jadwalTerdekat->hari }}
+                            @endif
+                        </span><br>
+                        <span style="color:#16a34a;font-weight:700">
+                            {{ substr($jadwalTerdekat->jam_mulai,0,5) }} – {{ substr($jadwalTerdekat->jam_selesai,0,5) }} WIB
+                        </span>
                     @else
                         @php
                             $hariList = $jadwals->pluck('hari')->unique()->implode(', ');
