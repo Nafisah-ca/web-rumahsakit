@@ -17,6 +17,9 @@ use App\Models\Faq;
 use App\Models\Akreditasi;
 use App\Models\WebsiteSetting;
 use App\Models\PageBanner;
+use App\Models\Dokter;
+use App\Models\JadwalDokter;
+use App\Models\Spesialisasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -1192,6 +1195,140 @@ class CmsController extends Controller
         $akreditasi->update(['deleted_by' => Auth::id()]);
         $akreditasi->delete();
         return back()->with('success', 'Akreditasi berhasil dihapus.');
+    }
+
+    // ─────────────────────────── DOKTER ──────────────────────────────
+
+    public function dokter(Request $request)
+    {
+        $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
+        $query = Dokter::with('spesialisasi');
+        if ($request->search) $query->where('nama_dokter', 'like', "%{$request->search}%");
+        if ($request->spesialis_id) $query->where('spesialis_id', $request->spesialis_id);
+        $dokters = $query->orderBy('nama_dokter')->paginate(15)->withQueryString();
+        return view('cms.dokter.index', compact('dokters', 'spesialisasis'));
+    }
+
+    public function createDokter()
+    {
+        $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
+        return view('cms.dokter.create', compact('spesialisasis'));
+    }
+
+    public function storeDokter(Request $request)
+    {
+        $request->validate([
+            'nama_dokter'   => 'required|string|max:150',
+            'spesialis_id'  => 'required|exists:spesialisasi,id',
+            'email'         => 'nullable|email',
+            'no_hp'         => 'nullable|string|max:20',
+            'status'        => 'required|in:aktif,nonaktif',
+            'foto'          => 'nullable|image|max:2048',
+        ]);
+        $data = $request->only(['nama_dokter','spesialis_id','email','no_hp','status','bio','pendidikan','pengalaman']);
+        $data['created_by'] = Auth::id();
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('dokter', 'public');
+        }
+        Dokter::create($data);
+        return redirect()->route('cms.dokter')->with('success', 'Dokter berhasil ditambahkan.');
+    }
+
+    public function editDokter(Dokter $dokter)
+    {
+        $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
+        return view('cms.dokter.edit', compact('dokter', 'spesialisasis'));
+    }
+
+    public function updateDokter(Request $request, Dokter $dokter)
+    {
+        $request->validate([
+            'nama_dokter'  => 'required|string|max:150',
+            'spesialis_id' => 'required|exists:spesialisasi,id',
+            'email'        => 'nullable|email',
+            'no_hp'        => 'nullable|string|max:20',
+            'status'       => 'required|in:aktif,nonaktif',
+            'foto'         => 'nullable|image|max:2048',
+        ]);
+        $data = $request->only(['nama_dokter','spesialis_id','email','no_hp','status','bio','pendidikan','pengalaman']);
+        $data['updated_by'] = Auth::id();
+        if ($request->hasFile('foto')) {
+            if ($dokter->foto) Storage::disk('public')->delete($dokter->foto);
+            $data['foto'] = $request->file('foto')->store('dokter', 'public');
+        }
+        $dokter->update($data);
+        return redirect()->route('cms.dokter')->with('success', 'Dokter berhasil diperbarui.');
+    }
+
+    public function destroyDokter(Dokter $dokter)
+    {
+        if ($dokter->foto) Storage::disk('public')->delete($dokter->foto);
+        $dokter->delete();
+        return back()->with('success', 'Dokter berhasil dihapus.');
+    }
+
+    // ─────────────────────────── JADWAL DOKTER ───────────────────────
+
+    public function jadwalDokter(Request $request)
+    {
+        $dokterList = Dokter::orderBy('nama_dokter')->get();
+        $query = JadwalDokter::with(['dokter', 'spesialisasi']);
+        if ($request->dokter_id) $query->where('dokter_id', $request->dokter_id);
+        if ($request->hari)      $query->where('hari', $request->hari);
+        $jadwals = $query->orderByRaw("FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu')")
+                         ->orderBy('jam_mulai')
+                         ->paginate(20)->withQueryString();
+        return view('cms.jadwal.index', compact('jadwals', 'dokterList'));
+    }
+
+    public function createJadwal()
+    {
+        $dokterList    = Dokter::where('status','aktif')->orderBy('nama_dokter')->get();
+        $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
+        return view('cms.jadwal.create', compact('dokterList', 'spesialisasis'));
+    }
+
+    public function storeJadwal(Request $request)
+    {
+        $request->validate([
+            'dokter_id'      => 'required|exists:dokter,id',
+            'spesialis_id'   => 'required|exists:spesialisasi,id',
+            'hari'           => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
+            'jam_mulai'      => 'required',
+            'jam_selesai'    => 'required|after:jam_mulai',
+            'kuota'          => 'required|integer|min:1|max:200',
+            'status'         => 'required|in:aktif,nonaktif',
+        ]);
+        JadwalDokter::create($request->only(['dokter_id','spesialis_id','hari','jam_mulai','jam_selesai','kuota','status','tanggal_praktek']) + ['created_by' => Auth::id()]);
+        return redirect()->route('cms.jadwal')->with('success', 'Jadwal berhasil ditambahkan.');
+    }
+
+    public function editJadwal(JadwalDokter $jadwalDokter)
+    {
+        $dokterList    = Dokter::where('status','aktif')->orderBy('nama_dokter')->get();
+        $spesialisasis = Spesialisasi::orderBy('nama_spesialis')->get();
+        return view('cms.jadwal.edit', compact('jadwalDokter', 'dokterList', 'spesialisasis'));
+    }
+
+    public function updateJadwal(Request $request, JadwalDokter $jadwalDokter)
+    {
+        $request->validate([
+            'dokter_id'    => 'required|exists:dokter,id',
+            'spesialis_id' => 'required|exists:spesialisasi,id',
+            'hari'         => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
+            'jam_mulai'    => 'required',
+            'jam_selesai'  => 'required|after:jam_mulai',
+            'kuota'        => 'required|integer|min:1|max:200',
+            'status'       => 'required|in:aktif,nonaktif',
+        ]);
+        $jadwalDokter->update($request->only(['dokter_id','spesialis_id','hari','jam_mulai','jam_selesai','kuota','status','tanggal_praktek']) + ['updated_by' => Auth::id()]);
+        return redirect()->route('cms.jadwal')->with('success', 'Jadwal berhasil diperbarui.');
+    }
+
+    public function destroyJadwal(JadwalDokter $jadwalDokter)
+    {
+        $jadwalDokter->delete();
+        return back()->with('success', 'Jadwal berhasil dihapus.');
     }
 
     // ─────────────────────────── PROFILE & PASSWORD ──────────────────

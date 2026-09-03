@@ -500,16 +500,25 @@ nav[role="navigation"] a:hover { background: #f1f5f9; }
 
             <div class="sidebar-group">Master Data</div>
             <a href="{{ route('cms.kategori-layanan') }}" class="sidebar-link {{ request()->routeIs('cms.kategori-layanan*') ? 'active' : '' }}">
-                <i class="fas fa-folder-tree icon"></i> Kategori Layanan
+                <i class="fas fa-folder-tree icon"></i> <span class="link-label">Kategori Layanan</span>
             </a>
             <a href="{{ route('cms.layanan') }}" class="sidebar-link {{ request()->routeIs('cms.layanan*') ? 'active' : '' }}">
-                <i class="fas fa-stethoscope icon"></i> Layanan
+                <i class="fas fa-stethoscope icon"></i> <span class="link-label">Layanan</span>
+            </a>
+            <a href="{{ route('cms.dokter') }}" class="sidebar-link {{ request()->routeIs('cms.dokter*') ? 'active' : '' }}">
+                <i class="fas fa-user-doctor icon"></i> <span class="link-label">Dokter</span>
+            </a>
+            <a href="{{ route('cms.jadwal') }}" class="sidebar-link {{ request()->routeIs('cms.jadwal*') ? 'active' : '' }}">
+                <i class="fas fa-calendar-check icon"></i> <span class="link-label">Jadwal Praktik</span>
+            </a>
+            <a href="{{ route('cms.antrian-poli') }}" class="sidebar-link {{ request()->routeIs('cms.antrian-poli*') ? 'active' : '' }}">
+                <i class="fas fa-list-ol icon"></i> <span class="link-label">Pengaturan Antrian</span>
             </a>
             <a href="{{ route('cms.faq') }}" class="sidebar-link {{ request()->routeIs('cms.faq*') ? 'active' : '' }}">
-                <i class="fas fa-circle-question icon"></i> FAQ
+                <i class="fas fa-circle-question icon"></i> <span class="link-label">FAQ</span>
             </a>
             <a href="{{ route('cms.akreditasi') }}" class="sidebar-link {{ request()->routeIs('cms.akreditasi*') ? 'active' : '' }}">
-                <i class="fas fa-certificate icon"></i> Akreditasi
+                <i class="fas fa-certificate icon"></i> <span class="link-label">Akreditasi</span>
             </a>
 
             <div class="sidebar-group">Interaksi</div>

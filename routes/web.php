@@ -298,6 +298,22 @@ Route::middleware(['auth', 'cms.verified', 'last.activity'])->prefix('cms')->nam
     Route::get('/antrian-poli',  [\App\Http\Controllers\Cms\AntrianPoliController::class, 'index'])->name('antrian-poli');
     Route::put('/antrian-poli',  [\App\Http\Controllers\Cms\AntrianPoliController::class, 'update'])->name('antrian-poli.update');
 
+    // Dokter (CMS)
+    Route::get('/dokter',                  [CmsController::class, 'dokter'])->name('dokter');
+    Route::get('/dokter/create',           [CmsController::class, 'createDokter'])->name('dokter.create');
+    Route::post('/dokter',                 [CmsController::class, 'storeDokter'])->name('dokter.store');
+    Route::get('/dokter/{dokter}/edit',    [CmsController::class, 'editDokter'])->name('dokter.edit');
+    Route::put('/dokter/{dokter}',         [CmsController::class, 'updateDokter'])->name('dokter.update');
+    Route::delete('/dokter/{dokter}',      [CmsController::class, 'destroyDokter'])->name('dokter.destroy');
+
+    // Jadwal Dokter (CMS)
+    Route::get('/jadwal',                        [CmsController::class, 'jadwalDokter'])->name('jadwal');
+    Route::get('/jadwal/create',                 [CmsController::class, 'createJadwal'])->name('jadwal.create');
+    Route::post('/jadwal',                       [CmsController::class, 'storeJadwal'])->name('jadwal.store');
+    Route::get('/jadwal/{jadwalDokter}/edit',    [CmsController::class, 'editJadwal'])->name('jadwal.edit');
+    Route::put('/jadwal/{jadwalDokter}',         [CmsController::class, 'updateJadwal'])->name('jadwal.update');
+    Route::delete('/jadwal/{jadwalDokter}',      [CmsController::class, 'destroyJadwal'])->name('jadwal.destroy');
+
     // Profile & Password
     Route::get('/profile',                  [CmsController::class, 'profile'])->name('profile');
     Route::put('/profile',                  [CmsController::class, 'updateProfile'])->name('profile.update');
