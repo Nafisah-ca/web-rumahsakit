@@ -14,7 +14,7 @@
         <span class="sparkle" style="--size:11px;--dur:2.1s;--delay:1.8s;top:28%;right:16px"></span>
 
         @if($art->gambar)
-            <img src="{{ Storage::url($art->gambar) }}"
+            <img src="{{ asset('storage/' . $art->gambar) }}"
                  alt="{{ $art->judul }}"
                  class="art-img" loading="lazy">
         @else

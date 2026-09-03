@@ -434,7 +434,7 @@
                             <span class="sparkle" style="--size:9px;--dur:2.5s;--delay:.3s;top:45%;left:20px"></span>
                             <span class="sparkle" style="--size:11px;--dur:2.1s;--delay:1.8s;top:28%;right:16px"></span>
                             @if($art->gambar)
-                                <img src="{{ Storage::url($art->gambar) }}" alt="{{ $art->judul }}" class="art-img" loading="lazy">
+                                <img src="{{ asset('storage/' . $art->gambar) }}" alt="{{ $art->judul }}" class="art-img" loading="lazy">
                             @else
                                 <div style="width:100%;height:100%;background:linear-gradient(135deg,#1e40af,#2563eb);display:flex;align-items:center;justify-content:center">
                                     <i class="fas fa-newspaper text-white opacity-30" style="font-size:40px"></i>

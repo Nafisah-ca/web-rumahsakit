@@ -16,7 +16,7 @@
             <div class="lg:col-span-2 space-y-6">
                 @if($event->gambar)
                 <div class="rounded-2xl overflow-hidden shadow-sm">
-                    <img src="{{ Storage::url($event->gambar) }}" alt="{{ $event->judul }}"
+                <img src="{{ asset('storage/' . $event->gambar) }}" alt="{{ $event->judul }}"
                          class="w-full object-cover max-h-80">
                 </div>
                 @else
@@ -35,7 +35,7 @@
 
                 @if($event->thumbnail)
                 <div class="rounded-2xl overflow-hidden shadow-sm">
-                    <img src="{{ Storage::url($event->thumbnail) }}" alt="thumbnail" class="w-full object-cover">
+                    <img src="{{ asset('storage/' . $event->thumbnail) }}" alt="thumbnail" class="w-full object-cover">
                 </div>
                 @endif
             </div>
@@ -149,7 +149,7 @@
                             <div class="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0"
                                  style="background: linear-gradient(135deg, #4c1d95, #7c3aed)">
                                 @if($r->gambar)
-                                <img src="{{ Storage::url($r->gambar) }}" class="w-full h-full object-cover">
+                                <img src="{{ asset('storage/' . $r->gambar) }}" class="w-full h-full object-cover">
                                 @else
                                 <div class="flex items-center justify-center h-full">
                                     <i class="fas fa-calendar-star text-white opacity-50"></i>

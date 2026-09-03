@@ -625,7 +625,7 @@
             <a href="{{ route('event.detail', $ev) }}" class="shine-card tilt-card group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all">
                 <div class="relative flex-shrink-0" style="height:160px; background: linear-gradient(135deg,#4c1d95,#7c3aed)">
                     @if($ev->gambar)
-                    <img src="{{ Storage::url($ev->gambar) }}" alt="{{ $ev->judul }}" class="absolute inset-0 w-full h-full object-cover">
+                    <img src="{{ asset('storage/' . $ev->gambar) }}" alt="{{ $ev->judul }}" class="absolute inset-0 w-full h-full object-cover">
                     @else
                     <div class="absolute inset-0 flex items-center justify-center">
                         <i class="fas fa-calendar-star text-4xl text-white opacity-20"></i>

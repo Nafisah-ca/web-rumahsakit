@@ -342,7 +342,7 @@
                 {{-- Gambar utama --}}
                 @if($artikel->gambar)
                 <div class="art-hero-img shadow-sm">
-                    <img src="{{ Storage::url($artikel->gambar) }}"
+                <img src="{{ asset('storage/' . $artikel->gambar) }}"
                          alt="{{ $artikel->judul }}"
                          class="w-full object-cover max-h-80">
                 </div>

@@ -5,10 +5,10 @@
     {{-- Gambar --}}
     <div class="relative flex-shrink-0 overflow-hidden" style="height:180px; background: linear-gradient(135deg,#4c1d95,#7c3aed)">
         @if($ev->gambar)
-        <img src="{{ Storage::url($ev->gambar) }}" alt="{{ $ev->judul }}"
+        <img src="{{ asset('storage/' . $ev->gambar) }}" alt="{{ $ev->judul }}"
              class="event-img absolute inset-0 w-full h-full object-cover {{ $lewat ? 'grayscale' : '' }}">
         @elseif($ev->thumbnail)
-        <img src="{{ Storage::url($ev->thumbnail) }}" alt="{{ $ev->judul }}"
+        <img src="{{ asset('storage/' . $ev->thumbnail) }}" alt="{{ $ev->judul }}"
              class="event-img absolute inset-0 w-full h-full object-cover {{ $lewat ? 'grayscale' : '' }}">
         @else
         <div class="absolute inset-0 flex items-center justify-center">
