@@ -25,7 +25,7 @@
     @endforeach
 </div>
 
-<div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:24px">
+<div class="dash-main-grid">
     <div class="card card-body">
         <p style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:4px">Booking 7 Hari Terakhir</p>
         <p style="font-size:11px;color:#94a3b8;margin-bottom:16px">{{ now()->subDays(6)->format('d M') }} – {{ now()->format('d M Y') }}</p>
@@ -145,7 +145,7 @@
     </div>
 </div>
 
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+<div class="dash-quick-grid">
     @foreach([
         ['fas fa-calendar-plus','Tambah Jadwal','admin.jadwal.create','#16a34a','#dcfce7'],
         ['fas fa-user-doctor','Tambah Dokter','admin.dokter.create','#2563eb','#dbeafe'],
