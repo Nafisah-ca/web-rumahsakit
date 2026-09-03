@@ -867,10 +867,12 @@
         $bookingsSelesai  = $allBookings->where('status', 'completed');
         $bookingsBatal    = $allBookings->where('status', 'cancelled');
 
-        // Group selesai by spesialisasi
-        $bySpesialis = $bookingsSelesai->groupBy(function($b) {
+        // Group SEMUA booking by spesialisasi (bukan hanya selesai)
+        $bySpesialis = $allBookings->groupBy(function($b) {
             return $b->jadwalDokter?->dokter?->spesialisasi?->nama_spesialis ?? 'Lainnya';
         });
+        // Ambil SEMUA spesialisasi aktif dari database
+        $allSpesialisasi = \App\Models\Spesialisasi::orderBy('nama_spesialis')->get();
         // Icon per spesialis (fallback ke stethoscope)
         $spIcon = function(string $nama): string {
             $map = [
@@ -967,18 +969,22 @@
     @endforeach
     @endif
 
-    {{-- ══ BAGIAN 2: RIWAYAT SELESAI (by spesialis) ══ --}}
-    @if($bookingsSelesai->isNotEmpty())
+    {{-- ══ BAGIAN 2: RIWAYAT KUNJUNGAN (semua spesialis) ══ --}}
+    @if($allBookings->isNotEmpty())
     <div class="rw-section-label fade-section" style="margin-top:24px">
         <i class="fas fa-circle-check" style="color:#166534"></i>
         Riwayat Kunjungan
-        <span class="rw-count-badge" style="background:#f0fdf4;color:#166534">{{ $bookingsSelesai->count() }}</span>
+        <span class="rw-count-badge" style="background:#f0fdf4;color:#166534">{{ $allBookings->count() }}</span>
     </div>
 
-    {{-- Grid icon spesialis --}}
+    {{-- Grid icon spesialis — SEMUA dari database --}}
     <div class="rw-sp-grid fade-section">
-        @foreach($bySpesialis as $spNama => $items)
-        @php $ico = $spIcon($spNama); @endphp
+        @foreach($allSpesialisasi as $sp)
+        @php
+            $spNama = $sp->nama_spesialis;
+            $count  = $bySpesialis->get($spNama)?->count() ?? 0;
+            $ico    = $spIcon($spNama);
+        @endphp
         <button type="button"
                 class="rw-sp-btn"
                 data-sp="{{ Str::slug($spNama) }}"
@@ -988,55 +994,90 @@
                 <i class="fas {{ $ico }}"></i>
             </div>
             <span class="rw-sp-label">{{ $spNama }}</span>
-            <span class="rw-sp-count">{{ $items->count() }}x</span>
+            <span class="rw-sp-count" style="{{ $count === 0 ? 'background:#f1f5f9;color:#9ca3af' : '' }}">
+                {{ $count > 0 ? $count.'x' : '–' }}
+            </span>
         </button>
         @endforeach
     </div>
 
-    {{-- Panel riwayat per spesialis (hidden by default) --}}
-    @foreach($bySpesialis as $spNama => $items)
-    <div class="rw-sp-panel" id="panel-{{ Str::slug($spNama) }}" style="display:none">
+    {{-- Panel per spesialis — semua dari DB, empty state jika belum ada booking --}}
+    @foreach($allSpesialisasi as $sp)
+    @php
+        $spNama = $sp->nama_spesialis;
+        $spSlug = Str::slug($spNama);
+        $items  = $bySpesialis->get($spNama) ?? collect();
+    @endphp
+    <div class="rw-sp-panel" id="panel-{{ $spSlug }}" style="display:none">
         <div class="rw-sp-panel-header">
             <i class="fas {{ $spIcon($spNama) }}" style="color:#00521f"></i>
             <span>{{ $spNama }}</span>
-            <button type="button" onclick="toggleSpesialis('{{ Str::slug($spNama) }}')"
+            <button type="button" onclick="toggleSpesialis('{{ $spSlug }}')"
                     style="margin-left:auto;background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;padding:4px">
                 <i class="fas fa-xmark"></i>
             </button>
         </div>
+        @if($items->isEmpty())
+        <div style="padding:20px;text-align:center">
+            <i class="fas fa-calendar-plus" style="font-size:26px;color:#d1fae5;display:block;margin-bottom:8px"></i>
+            <p style="font-size:13px;color:#9ca3af;margin-bottom:12px">Belum ada kunjungan ke {{ $spNama }}</p>
+            <a href="{{ route('portal.booking.create') }}"
+               style="display:inline-flex;align-items:center;gap:6px;background:#00521f;color:#fff;padding:7px 16px;border-radius:10px;font-size:12px;font-weight:700;text-decoration:none">
+                <i class="fas fa-plus" style="font-size:10px"></i> Buat Janji
+            </a>
+        </div>
+        @else
         <div style="display:flex;flex-direction:column;gap:10px">
             @foreach($items->sortByDesc('tanggal_booking') as $b)
-            <div class="rw-history-item">
-                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-                    <span class="rw-kode">{{ $b->kode_booking }}</span>
-                    <span class="rw-status-badge" style="color:#166534;background:#f0fdf4;border-color:#bbf7d0">
-                        <span class="rw-status-dot" style="background:#22c55e"></span>Selesai
+            @php
+                $cardStyle = match($b->status) {
+                    'completed' => ['#16a34a','#f0fdf4','#bbf7d0','Selesai'],
+                    'approved'  => ['#2563eb','#eff6ff','#bfdbfe','Dikonfirmasi'],
+                    'pending'   => ['#d97706','#fffbeb','#fde68a','Menunggu'],
+                    'cancelled' => ['#dc2626','#fef2f2','#fecaca','Dibatalkan'],
+                    default     => ['#64748b','#f8fafc','#e2e8f0',$b->status],
+                };
+                [$cText,$cBg,$cBorder,$cLabel] = $cardStyle;
+            @endphp
+            <div style="border-radius:14px;overflow:hidden;border:2px solid {{ $cBorder }};box-shadow:0 2px 10px rgba(0,0,0,.06)">
+                {{-- Header berwarna --}}
+                <div style="background:{{ $cText }};padding:10px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <span style="font-family:'Courier New',monospace;font-size:11px;font-weight:800;color:#fff;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:6px">
+                        {{ $b->kode_booking }}
+                    </span>
+                    <span style="font-size:11px;font-weight:800;color:#fff;background:rgba(255,255,255,.2);padding:2px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:4px">
+                        <span style="width:5px;height:5px;background:#fff;border-radius:50%;display:inline-block"></span>
+                        {{ $cLabel }}
                     </span>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                    <div>
-                        <p class="rw-field-label">Dokter</p>
-                        <p class="rw-field-val" style="font-size:13px">{{ $b->jadwalDokter?->dokter?->nama_dokter ?? '-' }}</p>
+                {{-- Body --}}
+                <div style="background:{{ $cBg }};padding:12px 14px">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                        <div>
+                            <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:{{ $cText }};margin-bottom:2px">Dokter</p>
+                            <p style="font-size:13px;font-weight:700;color:#111">{{ $b->jadwalDokter?->dokter?->nama_dokter ?? '-' }}</p>
+                        </div>
+                        <div>
+                            <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:{{ $cText }};margin-bottom:2px">Tanggal</p>
+                            <p style="font-size:13px;font-weight:700;color:#111">{{ $b->tanggal_booking?->format('d M Y') }}</p>
+                            <p style="font-size:11px;color:#9ca3af">{{ $b->jadwalDokter ? substr($b->jadwalDokter->jam_mulai,0,5).' WIB' : '' }}</p>
+                        </div>
+                        <div>
+                            <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:{{ $cText }};margin-bottom:2px">No. Antrian</p>
+                            <p style="font-size:26px;font-weight:900;color:{{ $cText }};line-height:1;font-family:'Lora',serif">{{ $b->nomor_antrian ?? '-' }}</p>
+                        </div>
+                        @if($b->keluhan)
+                        <div>
+                            <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:{{ $cText }};margin-bottom:2px">Keluhan</p>
+                            <p style="font-size:12px;color:#374151">{{ $b->keluhan }}</p>
+                        </div>
+                        @endif
                     </div>
-                    <div>
-                        <p class="rw-field-label">Tanggal Kunjungan</p>
-                        <p class="rw-field-val" style="font-size:13px">{{ $b->tanggal_booking?->format('d M Y') }}</p>
-                        <p class="rw-field-sub">{{ $b->jadwalDokter ? substr($b->jadwalDokter->jam_mulai,0,5).' WIB' : '' }}</p>
-                    </div>
-                    <div>
-                        <p class="rw-field-label">No. Antrian</p>
-                        <p style="font-size:22px;font-weight:900;color:#00521f;line-height:1;font-family:'Lora',serif">{{ $b->nomor_antrian ?? '-' }}</p>
-                    </div>
-                    @if($b->keluhan)
-                    <div>
-                        <p class="rw-field-label">Keluhan</p>
-                        <p style="font-size:12px;color:#374151">{{ $b->keluhan }}</p>
-                    </div>
-                    @endif
                 </div>
             </div>
             @endforeach
         </div>
+        @endif
     </div>
     @endforeach
     @endif
