@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class JanjiTemu extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'janji_temu';
 
     const CREATED_AT = 'created_tm';
@@ -18,6 +21,7 @@ class JanjiTemu extends Model
     protected $fillable = [
         'pasien_id', 'jadwal_dokter_id',
         'tanggal_booking', 'keluhan', 'nomor_antrian', 'status',
+        'kode_booking',
         'alasan_pembatalan', 'tanggal_pembatalan', 'dibatalkan_oleh',
         'created_by', 'updated_by', 'deleted_by',
     ];
@@ -107,9 +111,21 @@ class JanjiTemu extends Model
         return $this->tanggal_booking;
     }
 
-    // Backward compatibility: kode_booking (generate on-the-fly jika diperlukan)
+    // Backward compatibility: kode_booking — pakai nilai DB jika sudah ada, fallback generate dari tanggal + nomor urut hari itu
     public function getKodeBookingAttribute(): string
     {
-        return 'RS-' . $this->tanggal_booking?->format('Ymd') . '-' . str_pad($this->id, 5, '0', STR_PAD_LEFT);
+        // Jika sudah tersimpan di DB, gunakan langsung
+        if (!empty($this->attributes['kode_booking'])) {
+            return $this->attributes['kode_booking'];
+        }
+
+        // Fallback: hitung nomor urut booking di tanggal yang sama
+        $tanggal = $this->tanggal_booking?->format('Ymd') ?? now()->format('Ymd');
+        $urut = static::withTrashed()
+            ->whereDate('tanggal_booking', $this->tanggal_booking ?? now()->toDateString())
+            ->where('id', '<=', $this->id)
+            ->count();
+
+        return 'RS-' . $tanggal . '-' . str_pad($urut, 5, '0', STR_PAD_LEFT);
     }
 }

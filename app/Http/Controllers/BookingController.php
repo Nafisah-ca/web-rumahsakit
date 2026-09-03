@@ -158,6 +158,13 @@ class BookingController extends Controller
 
         $nomor = $maxNomor + 1;
 
+        // Hitung nomor urut booking di tanggal yang sama (semua status termasuk soft-deleted)
+        $urutHariIni = JanjiTemu::withTrashed()
+            ->whereDate('tanggal_booking', $tanggal)
+            ->count() + 1;
+
+        $kodeBooking = 'RS-' . \Carbon\Carbon::parse($tanggal)->format('Ymd') . '-' . str_pad($urutHariIni, 5, '0', STR_PAD_LEFT);
+
         JanjiTemu::create([
             'pasien_id'         => $pasien->id,
             'jadwal_dokter_id'  => $jadwal->id,
@@ -165,6 +172,7 @@ class BookingController extends Controller
             'nomor_antrian'     => $nomor,
             'keluhan'           => $request->keluhan ?? '-',
             'status'            => 'pending',
+            'kode_booking'      => $kodeBooking,
             'created_by'        => Auth::id(),
         ]);
 

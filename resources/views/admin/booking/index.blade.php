@@ -8,7 +8,7 @@
         <form method="GET" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
             <div style="flex:1;min-width:160px">
                 <label class="form-label" style="margin-bottom:4px">Nama Pasien</label>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama pasien..." class="form-input">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama pasien / kode booking..." class="form-input">
             </div>
             <div style="flex:1;min-width:140px">
                 <label class="form-label" style="margin-bottom:4px">Status</label>

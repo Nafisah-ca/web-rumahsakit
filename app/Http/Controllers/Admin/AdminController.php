@@ -367,6 +367,7 @@ class AdminController extends Controller
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->whereHas('pasien.user', fn($u) => $u->where('nama', 'like', "%{$request->search}%"))
+                  ->orWhere('kode_booking', 'like', "%{$request->search}%")
                   ->orWhere('id', 'like', "%{$request->search}%");
             });
         }
@@ -413,7 +414,8 @@ class AdminController extends Controller
 
     public function destroyBooking(JanjiTemu $janjiTemu)
     {
-        $janjiTemu->update(['deleted_by' => Auth::id()]);
+        $janjiTemu->deleted_by = Auth::id();
+        $janjiTemu->save();
         $janjiTemu->delete();
         return back()->with('success', 'Data booking berhasil dihapus.');
     }
