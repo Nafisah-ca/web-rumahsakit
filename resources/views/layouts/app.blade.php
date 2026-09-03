@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="description" content="{{ $metaDesc ?? ($setting_global->motto ?? 'RS Sari Sehat - Melayani dengan Kasih Sayang') }}">
 <title>{{ $title ?? $setting_global->nama_rumahsakit ?? 'RS Sari Sehat' }} | {{ $setting_global->motto ?? 'Melayani dengan Kasih Sayang' }}</title>
 @if($setting_global->favicon ?? null)
@@ -1039,5 +1040,81 @@ function toggleMobileAcc(id) {
 }
 </script>
 @stack('scripts')
+
+{{-- ===== GEOLOCATION TRACKER ===== --}}
+{{-- Minta izin lokasi browser, kirim ke /track-location untuk disimpan di page_visits --}}
+<script>
+(function () {
+    // Hanya jalan di halaman publik (bukan admin/cms/portal)
+    var path = window.location.pathname;
+    if (/^\/(admin|cms|portal|sign-in|daftar)/.test(path)) return;
+
+    // Kunci per user_id (atau 'guest') agar beda akun dari browser yang sama tetap bisa request
+    var userId = '{{ auth()->id() ?? "guest" }}';
+    var storageKey = '_geo_sent_' + userId;
+
+    // Jangan minta ulang dalam sesi browser yang sama untuk akun/user yang sama
+    if (sessionStorage.getItem(storageKey)) return;
+
+    if (!navigator.geolocation) return;
+
+    // Tunggu sampai halaman selesai load agar tidak ganggu performa
+    window.addEventListener('load', function () {
+        // Tunda 2 detik agar tidak muncul bersamaan dengan hal lain
+        setTimeout(function () {
+            navigator.geolocation.getCurrentPosition(
+                function (pos) {
+                    var lat = pos.coords.latitude;
+                    var lng = pos.coords.longitude;
+
+                    // Reverse-geocode pakai Nominatim (gratis, tanpa API key)
+                    fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng, {
+                        headers: { 'Accept-Language': 'id' }
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (geo) {
+                        var addr    = geo.address || {};
+                        var city    = addr.city || addr.town || addr.village || addr.county || null;
+                        var region  = addr.state || null;
+                        var country = addr.country || null;
+                        sendLocation(lat, lng, city, region, country);
+                    })
+                    .catch(function () {
+                        // Nominatim gagal — kirim koordinat saja tanpa nama kota
+                        sendLocation(lat, lng, null, null, null);
+                    });
+                },
+                function () { /* user tolak izin — tidak apa-apa */ },
+                { timeout: 8000, maximumAge: 300000 }
+            );
+        }, 2000);
+    });
+
+    function sendLocation(lat, lng, city, region, country) {
+        var token = document.querySelector('meta[name="csrf-token"]');
+        if (!token) return;
+
+        fetch('/track-location', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token.getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                latitude:  lat,
+                longitude: lng,
+                city:      city,
+                region:    region,
+                country:   country
+            })
+        })
+        .then(function (r) {
+            if (r.ok) sessionStorage.setItem(storageKey, '1');
+        })
+        .catch(function () { /* silent fail */ });
+    }
+})();
+</script>
 </body>
 </html>
