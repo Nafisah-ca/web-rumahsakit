@@ -67,9 +67,9 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('nav_kategori_layanan', $nav_kategori_layanan);
 
-            // Jadwal Sholat (API / Database fallback)
+            // Jadwal Sholat (Otomatis mendeteksi lokasi user/login/IP/browser)
             try {
-                $jadwalSholat = \App\Services\JadwalSholatService::getJadwal();
+                $jadwalSholat = \App\Services\JadwalSholatService::getJadwalForCurrentRequest(request());
             } catch (\Throwable $e) {
                 $jadwalSholat = [
                     'status' => false,

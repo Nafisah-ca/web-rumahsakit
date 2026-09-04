@@ -926,21 +926,38 @@
 
     @foreach($bookingsAktif as $bi => $b)
     @php [$sl,$sc,$sbg,$sbd] = $sMap[$b->status] ?? [$b->status,'#4b5563','#f9fafb','#e5e7eb']; @endphp
-    <div class="rw-card rw-card-aktif fade-section" style="transition-delay:{{ $bi * 60 }}ms">
-        <div class="rw-card-header">
-            <span class="rw-kode">{{ $b->kode_booking }}</span>
-            <span class="rw-status-badge" style="color:{{ $sc }};background:{{ $sbg }};border-color:{{ $sbd }}">
-                <span class="rw-status-dot" style="background:{{ $sc }}"></span>{{ $sl }}
+
+    @php
+        // Warna header card solid per status
+        $headerBg = match($b->status) {
+            'pending'   => '#f59e0b',
+            'approved'  => '#3b82f6',
+            'completed' => '#16a34a',
+            'cancelled' => '#dc2626',
+            default     => '#6b7280',
+        };
+        $cardBorder = match($b->status) {
+            'pending'   => '2.5px solid #f59e0b',
+            'approved'  => '2.5px solid #3b82f6',
+            'completed' => '2.5px solid #16a34a',
+            'cancelled' => '2.5px solid #dc2626',
+            default     => '1px solid #e8ede9',
+        };
+    @endphp
+
+    <div class="rw-card fade-section" style="transition-delay:{{ $bi * 60 }}ms;border:{{ $cardBorder }};box-shadow:0 2px 16px rgba(0,0,0,.07)">
+        {{-- Header berwarna solid --}}
+        <div class="rw-card-header" style="background:{{ $headerBg }};border-bottom:none">
+            <span class="rw-kode" style="background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.35);font-weight:800">{{ $b->kode_booking }}</span>
+            <span class="rw-status-badge" style="color:#fff;background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.35)">
+                <span class="rw-status-dot" style="background:#fff"></span>{{ $sl }}
             </span>
             @if(in_array($b->status, ['pending','approved']))
-            <form method="POST" action="{{ route('portal.booking.cancel', $b) }}"
-                  style="margin-left:auto"
-                  onsubmit="return confirm('Batalkan janji temu ini?')">
-                @csrf
-                <button type="submit" class="rw-btn-batal">
-                    <i class="fas fa-xmark" style="font-size:9px"></i> Batalkan
-                </button>
-            </form>
+            <button type="button" class="rw-btn-batal"
+                    style="margin-left:auto;background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff"
+                    onclick="openBatalModal({{ $b->id }}, '{{ addslashes($b->kode_booking) }}')">
+                <i class="fas fa-xmark" style="font-size:9px"></i> Batalkan
+            </button>
             @endif
         </div>
         <div class="rw-card-body">
@@ -956,13 +973,27 @@
             </div>
             <div class="rw-field" style="text-align:center">
                 <p class="rw-field-label">Antrian</p>
-                <p class="rw-antrian">{{ $b->nomor_antrian ?? '-' }}</p>
+                <p class="rw-antrian" style="color:{{ $headerBg }}">{{ $b->nomor_antrian ?? '-' }}</p>
             </div>
         </div>
         @if($b->keluhan)
         <div class="rw-keluhan">
             <span class="rw-field-label">Keluhan</span>
             {{ $b->keluhan }}
+        </div>
+        @endif
+
+        {{-- Notifikasi pembatalan admin --}}
+        @if($b->status === 'cancelled' && $b->dibatalkan_oleh === 'admin' && $b->alasan_pembatalan)
+        <div style="margin:0 14px 12px;padding:10px 14px;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px">
+            <p style="font-size:10px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px"><i class="fas fa-circle-xmark" style="margin-right:3px"></i>Dibatalkan oleh Admin</p>
+            <p style="font-size:12px;color:#7f1d1d;line-height:1.5">{{ $b->alasan_pembatalan }}</p>
+            @if($b->tanggal_pembatalan)<p style="font-size:10px;color:#ef4444;margin-top:3px"><i class="fas fa-clock" style="margin-right:2px"></i>{{ $b->tanggal_pembatalan->format('d M Y, H:i') }} WIB</p>@endif
+        </div>
+        @elseif($b->status === 'cancelled' && $b->dibatalkan_oleh === 'pasien' && $b->alasan_pembatalan)
+        <div style="margin:0 14px 12px;padding:9px 12px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 8px 8px 0">
+            <p style="font-size:10px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Alasan Pembatalan</p>
+            <p style="font-size:12px;color:#78350f;line-height:1.5">{{ $b->alasan_pembatalan }}</p>
         </div>
         @endif
     </div>
@@ -1194,6 +1225,75 @@
     <div class="t-icon"><i class="fas fa-check"></i></div>
     <span id="profil-toast-msg"></span>
 </div>
+
+{{-- ═══ MODAL POPUP BATALKAN BOOKING ═══ --}}
+<div id="modal-batal-overlay"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9990;backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:16px">
+    <div id="modal-batal-box"
+         style="background:#fff;border-radius:24px;max-width:460px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.2);overflow:hidden;transform:scale(.95) translateY(16px);transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .2s ease;opacity:0">
+        <div style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:20px 24px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center">
+                    <i class="fas fa-calendar-xmark" style="color:#fff;font-size:18px"></i>
+                </div>
+                <div>
+                    <p style="color:#fff;font-weight:800;font-size:15px;line-height:1">Batalkan Janji Temu</p>
+                    <p id="modal-batal-kode" style="color:rgba(255,255,255,.7);font-size:11px;margin-top:2px;font-family:monospace"></p>
+                </div>
+            </div>
+            <button onclick="closeBatalModal()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">×</button>
+        </div>
+        <div style="padding:24px">
+            <p style="font-size:13px;color:#374151;line-height:1.6;margin-bottom:18px">Pilih atau tulis alasan pembatalan. Informasi ini membantu kami meningkatkan pelayanan.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px" id="alasan-chips">
+                @foreach(['Jadwal berubah','Kondisi sudah membaik','Ingin ganti dokter','Ada keperluan mendadak','Salah pilih jadwal','Lainnya'] as $chip)
+                <button type="button" onclick="selectAlasan('{{ $chip }}')" class="alasan-chip"
+                        style="padding:7px 14px;border-radius:99px;border:1.5px solid #e5e7eb;background:#f9fafb;font-size:12px;font-weight:600;color:#374151;cursor:pointer;transition:all .15s;font-family:inherit">
+                    {{ $chip }}
+                </button>
+                @endforeach
+            </div>
+            <div style="margin-bottom:20px">
+                <label style="display:block;font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">
+                    Alasan Pembatalan <span style="color:#dc2626">*</span>
+                </label>
+                <textarea id="modal-alasan-text" rows="3" maxlength="500"
+                          placeholder="Tulis alasan pembatalan di sini..."
+                          style="width:100%;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:14px;font-size:13px;font-family:inherit;color:#111827;resize:none;outline:none;box-sizing:border-box"
+                          oninput="document.getElementById('char-count').textContent=this.value.length+' / 500'"
+                          onfocus="this.style.borderColor='#dc2626';this.style.boxShadow='0 0 0 3px rgba(220,38,38,.1)'"
+                          onblur="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'"></textarea>
+                <div style="display:flex;justify-content:space-between;margin-top:4px">
+                    <p id="alasan-error" style="font-size:11px;color:#dc2626;display:none"><i class="fas fa-circle-exclamation" style="margin-right:3px"></i>Alasan wajib diisi minimal 3 karakter.</p>
+                    <p id="char-count" style="font-size:11px;color:#9ca3af;margin-left:auto">0 / 500</p>
+                </div>
+            </div>
+            <div style="display:flex;gap:10px">
+                <button onclick="closeBatalModal()"
+                        style="flex:1;padding:12px;border-radius:14px;border:1.5px solid #e5e7eb;background:#f9fafb;font-size:13px;font-weight:700;color:#374151;cursor:pointer;font-family:inherit">
+                    Kembali
+                </button>
+                <button onclick="submitBatal()"
+                        style="flex:1;padding:12px;border-radius:14px;border:none;background:#dc2626;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px">
+                    <i class="fas fa-xmark"></i> Ya, Batalkan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Hidden forms per booking --}}
+@php
+    $allBookingsModal = \App\Models\JanjiTemu::where('pasien_id', $pasien?->id ?? 0)
+        ->whereIn('status',['pending','approved'])->get();
+@endphp
+@foreach($allBookingsModal as $bm)
+<form id="form-batal-{{ $bm->id }}" method="POST" action="{{ route('portal.booking.cancel', $bm) }}" style="display:none">
+    @csrf
+    <input type="hidden" name="alasan_pembatalan" id="alasan-input-{{ $bm->id }}">
+</form>
+@endforeach
+
 @endsection
 
 @push('scripts')
@@ -1210,6 +1310,55 @@ function showToast(msg, dur = 3500) {
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), dur);
 }
+
+// ── MODAL BATALKAN BOOKING ────────────────────────────────
+let _batalId = null;
+function openBatalModal(id, kode) {
+    _batalId = id;
+    document.getElementById('modal-batal-kode').textContent = kode;
+    document.getElementById('modal-alasan-text').value = '';
+    document.getElementById('char-count').textContent = '0 / 500';
+    document.getElementById('alasan-error').style.display = 'none';
+    document.querySelectorAll('.alasan-chip').forEach(c => {
+        c.style.background = '#f9fafb'; c.style.borderColor = '#e5e7eb'; c.style.color = '#374151';
+    });
+    const overlay = document.getElementById('modal-batal-overlay');
+    const box     = document.getElementById('modal-batal-box');
+    overlay.style.display = 'flex';
+    requestAnimationFrame(() => { box.style.transform = 'scale(1) translateY(0)'; box.style.opacity = '1'; });
+    setTimeout(() => document.getElementById('modal-alasan-text').focus(), 250);
+}
+function closeBatalModal() {
+    const box = document.getElementById('modal-batal-box');
+    box.style.transform = 'scale(.95) translateY(16px)'; box.style.opacity = '0';
+    setTimeout(() => { document.getElementById('modal-batal-overlay').style.display = 'none'; _batalId = null; }, 220);
+}
+function selectAlasan(text) {
+    document.getElementById('modal-alasan-text').value = text;
+    document.getElementById('char-count').textContent = text.length + ' / 500';
+    document.querySelectorAll('.alasan-chip').forEach(c => {
+        const a = c.textContent.trim() === text;
+        c.style.background = a ? '#fef2f2' : '#f9fafb';
+        c.style.borderColor = a ? '#dc2626' : '#e5e7eb';
+        c.style.color = a ? '#dc2626' : '#374151';
+    });
+    document.getElementById('alasan-error').style.display = 'none';
+}
+function submitBatal() {
+    const ta = document.getElementById('modal-alasan-text');
+    const alasan = ta.value.trim();
+    if (alasan.length < 3) {
+        document.getElementById('alasan-error').style.display = '';
+        ta.style.borderColor = '#dc2626'; ta.style.boxShadow = '0 0 0 3px rgba(220,38,38,.15)';
+        ta.focus(); return;
+    }
+    document.getElementById('alasan-input-' + _batalId).value = alasan;
+    document.getElementById('form-batal-' + _batalId).submit();
+}
+document.getElementById('modal-batal-overlay')?.addEventListener('click', function(e) {
+    if (e.target === this) closeBatalModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBatalModal(); });
 
 /**
  * ── 2. SECTION ENTRANCE ANIMATION ────────────────────────

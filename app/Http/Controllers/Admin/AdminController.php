@@ -48,6 +48,12 @@ class AdminController extends Controller
             ->limit(10)
             ->get();
 
+        // Booking hari ini
+        $bookingHariIni = JanjiTemu::with(['pasien.user', 'jadwalDokter.dokter'])
+            ->whereDate('tanggal_booking', today())
+            ->orderByDesc('created_tm')
+            ->get();
+
         // Dokter aktif
         $doktersAktif = Dokter::with('spesialisasi')
             ->where('status', 'aktif')
@@ -62,7 +68,7 @@ class AdminController extends Controller
             ->toArray();
 
         return view('admin.dashboard', compact(
-            'stats', 'chartData', 'chartLabels', 'recentBookings', 'statusCounts', 'doktersAktif'
+            'stats', 'chartData', 'chartLabels', 'recentBookings', 'bookingHariIni', 'statusCounts', 'doktersAktif'
         ));
     }
 
@@ -699,7 +705,8 @@ class AdminController extends Controller
 
     // ─────────────────────────── PENGUNJUNG ──────────────────────────
 
-    public function pengunjung(Request $request)    {
+    public function pengunjung(Request $request)
+    {
         $query = \App\Models\PageVisit::query();
 
         if ($request->tanggal) {
@@ -708,15 +715,19 @@ class AdminController extends Controller
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('ip_address', 'like', "%{$request->search}%")
-                  ->orWhere('page_url', 'like', "%{$request->search}%");
+                  ->orWhere('page_url', 'like', "%{$request->search}%")
+                  ->orWhere('city', 'like', "%{$request->search}%");
             });
         }
 
-        $visits     = $query->orderByDesc('visited_at')->paginate(30)->withQueryString();
-        $totalToday = \App\Models\PageVisit::whereDate('visited_at', today())->count();
-        $totalAll   = \App\Models\PageVisit::count();
+        $visits      = $query->orderByDesc('visited_at')->paginate(30)->withQueryString();
+        $totalToday  = \App\Models\PageVisit::whereDate('visited_at', today())->count();
+        $totalAll    = \App\Models\PageVisit::count();
         $uniqueToday = \App\Models\PageVisit::whereDate('visited_at', today())
                             ->distinct('ip_address')->count('ip_address');
+
+        // Jumlah kunjungan yang sudah terdeteksi lokasinya
+        $totalWithLocation = \App\Models\PageVisit::whereNotNull('latitude')->count();
 
         // Top 10 halaman terbanyak dikunjungi (30 hari terakhir)
         $topPages = \App\Models\PageVisit::selectRaw('page_url, count(*) as total')
@@ -726,18 +737,36 @@ class AdminController extends Controller
             ->limit(10)
             ->get();
 
+        // Top kota pengunjung (30 hari terakhir)
+        $topCities = \App\Models\PageVisit::selectRaw('city, count(*) as total')
+            ->whereNotNull('city')
+            ->where('visited_at', '>=', now()->subDays(30))
+            ->groupBy('city')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        // Kunjungan dengan lokasi untuk peta (maks 200 titik terbaru)
+        $locationPoints = \App\Models\PageVisit::select('latitude', 'longitude', 'city', 'page_url', 'visited_at')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->orderByDesc('visited_at')
+            ->limit(200)
+            ->get();
+
         // Grafik kunjungan 14 hari terakhir
         $chartLabels = [];
         $chartData   = [];
         for ($i = 13; $i >= 0; $i--) {
-            $day = now()->subDays($i);
+            $day           = now()->subDays($i);
             $chartLabels[] = $day->format('d/m');
             $chartData[]   = \App\Models\PageVisit::whereDate('visited_at', $day)->count();
         }
 
         return view('admin.pengunjung', compact(
-            'visits', 'totalToday', 'totalAll', 'uniqueToday',
-            'topPages', 'chartLabels', 'chartData'
+            'visits', 'totalToday', 'totalAll', 'uniqueToday', 'totalWithLocation',
+            'topPages', 'topCities', 'locationPoints',
+            'chartLabels', 'chartData'
         ));
     }
 }

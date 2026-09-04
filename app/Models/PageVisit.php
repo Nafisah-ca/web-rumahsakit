@@ -17,10 +17,17 @@ class PageVisit extends Model
         'referer',
         'user_id',
         'visited_at',
+        'latitude',
+        'longitude',
+        'city',
+        'region',
+        'country',
     ];
 
     protected $casts = [
         'visited_at' => 'datetime',
+        'latitude'   => 'float',
+        'longitude'  => 'float',
     ];
 
     public function user(): BelongsTo

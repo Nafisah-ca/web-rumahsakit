@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HospitalController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\McuController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Cms\CmsController;
@@ -39,7 +40,15 @@ Route::post('/medical-checkup/daftar',[McuController::class, 'store'])->name('mc
 Route::get('/medical-checkup/sukses', [McuController::class, 'sukses'])->name('mcu.sukses');
 Route::get('/live-antrian',    [HospitalController::class, 'liveAntrian'])->name('live.antrian');
 Route::get('/api/live-antrian',[HospitalController::class, 'liveAntrianJson'])->name('live.antrian.json');
-Route::get('/api/jadwal-sholat', fn() => response()->json(\App\Services\JadwalSholatService::getJadwal()))->name('jadwal-sholat.json');
+Route::get('/api/jadwal-sholat', function (\Illuminate\Http\Request $request) {
+    $city   = $request->query('city') ?? $request->query('kota');
+    $kotaId = $request->query('kota_id');
+    $date   = $request->query('date');
+    return response()->json(\App\Services\JadwalSholatService::getJadwalByLocation($city, $kotaId, $date));
+})->name('jadwal-sholat.json');
+
+// ─── Tracking lokasi pengunjung (dipanggil JS browser geolocation) ───────────
+Route::post('/track-location', [LocationController::class, 'store'])->name('track.location');
 
 // Halaman Legal
 Route::get('/kebijakan-privasi', [HospitalController::class, 'kebijakanPrivasi'])->name('kebijakan-privasi');
