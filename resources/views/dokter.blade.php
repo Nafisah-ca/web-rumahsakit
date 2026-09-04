@@ -282,7 +282,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 @foreach($spesialisList as $d)
                 @php $cardIndex++ @endphp
-                <div class="dokter-card-wrap" data-spesialis="{{ $d->spesialis_id }}" data-index="{{ $cardIndex }}">
+                <div id="dokter-{{ $d->id }}" class="dokter-card-wrap" data-spesialis="{{ $d->spesialis_id }}" data-index="{{ $cardIndex }}">
                     @include('_partials.dokter-card', ['d' => $d])
                 </div>
                 @endforeach
@@ -307,7 +307,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 @foreach($umumList as $d)
                 @php $cardIndex++ @endphp
-                <div class="dokter-card-wrap" data-spesialis="{{ $d->spesialis_id }}" data-index="{{ $cardIndex }}">
+                <div id="dokter-{{ $d->id }}" class="dokter-card-wrap" data-spesialis="{{ $d->spesialis_id }}" data-index="{{ $cardIndex }}">
                     @include('_partials.dokter-card', ['d' => $d])
                 </div>
                 @endforeach

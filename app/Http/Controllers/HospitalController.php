@@ -51,31 +51,57 @@ class HospitalController extends Controller
 
     public function layanan()
     {
-        $kategoriList = \App\Models\KategoriLayanan::with(['layanansAktif'])
-            ->aktif()->get()
-            ->filter(fn($k) => $k->layanansAktif->isNotEmpty());
-        $layananTanpaKategori = Layanan::aktif()->whereNull('kategori_layanan_id')->get();
-        $totalLayanan = Layanan::aktif()->count();
+        $kategoriList = KategoriLayanan::with(['layanansAktif.dokter'])
+            ->aktif()->get();
         $banner = \App\Models\PageBanner::getForPage('pelayanan');
 
-        // Dokter spesialis untuk panel "50+ Dokter Spesialis"
-        $dokterSpesialis = Dokter::with(['spesialisasi', 'jadwalAktif'])
-            ->where('status', 'aktif')
-            ->where('tipe_dokter', 'spesialis')
-            ->orderBy('nama_dokter')
-            ->get();
-
-        return view('layanan', compact('kategoriList', 'layananTanpaKategori', 'totalLayanan', 'banner', 'dokterSpesialis'));
+        return view('layanan', compact('kategoriList', 'banner') + [
+            'aktifKategori' => null,
+            'layanans'      => collect(),
+            'aktifLayanan'  => null,
+            'dokterTerkait' => null,
+        ]);
     }
 
     public function layananByKategori(int $id)
     {
-        $kategoriList  = KategoriLayanan::aktif()->get();
-        $aktifKategori = KategoriLayanan::findOrFail($id);
+        $kategoriList  = KategoriLayanan::with(['layanansAktif.dokter'])->aktif()->get();
+        $aktifKategori = KategoriLayanan::with(['layanansAktif.dokter'])->findOrFail($id);
         abort_if($aktifKategori->status !== 'aktif', 404);
-        $layanans = Layanan::aktif()->where('kategori_layanan_id', $id)->get();
-        $banner   = \App\Models\PageBanner::getForPage('layanan-kategori');
-        return view('layanan-kategori', compact('kategoriList', 'aktifKategori', 'layanans', 'banner'));
+
+        $layanans      = $aktifKategori->layanansAktif;
+        $aktifLayanan  = $layanans->first();
+        $dokterTerkait = $aktifLayanan?->resolveDokter();
+        // Banner spesifik per kategori, fallback ke banner 'pelayanan'
+        $banner = \App\Models\PageBanner::where('page_key', 'layanan-' . $id)
+            ->where('status', 'aktif')->first()
+            ?? \App\Models\PageBanner::getForPage('pelayanan');
+
+        return view('layanan-kategori', compact(
+            'kategoriList', 'aktifKategori', 'layanans', 'aktifLayanan', 'dokterTerkait', 'banner'
+        ));
+    }
+
+    public function layananDetail(int $id, int $layanan)
+    {
+        $kategoriList  = KategoriLayanan::with(['layanansAktif.dokter'])->aktif()->get();
+        $aktifKategori = KategoriLayanan::with(['layanansAktif.dokter'])->findOrFail($id);
+        abort_if($aktifKategori->status !== 'aktif', 404);
+
+        $layanans     = $aktifKategori->layanansAktif;
+        $aktifLayanan = Layanan::aktif()
+            ->where('kategori_layanan_id', $id)
+            ->with('dokter')
+            ->findOrFail($layanan);
+        $dokterTerkait = $aktifLayanan->resolveDokter();
+        // Banner spesifik per kategori, fallback ke banner 'pelayanan'
+        $banner = \App\Models\PageBanner::where('page_key', 'layanan-' . $id)
+            ->where('status', 'aktif')->first()
+            ?? \App\Models\PageBanner::getForPage('pelayanan');
+
+        return view('layanan-kategori', compact(
+            'kategoriList', 'aktifKategori', 'layanans', 'aktifLayanan', 'dokterTerkait', 'banner'
+        ));
     }
 
     public function dokter()

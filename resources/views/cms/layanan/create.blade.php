@@ -15,16 +15,27 @@
                 </div>
 
                 <div class="form-group" style="grid-column:1/-1">
-                    <label class="form-label">Kategori Layanan</label>
-                    <select name="kategori_layanan_id" class="form-input">
-                        <option value="">— Tanpa Kategori —</option>
+                    <label class="form-label">Kategori Layanan <span style="color:#ef4444">*</span></label>
+                    <select name="kategori_layanan_id" class="form-input" required>
+                        <option value="">— Pilih Kategori (wajib agar muncul di website) —</option>
                         @foreach($kategoris as $k)
                         <option value="{{ $k->id }}" {{ old('kategori_layanan_id')==$k->id?'selected':'' }}>
                             {{ $k->nama_kategori }}
                         </option>
                         @endforeach
                     </select>
-                    <p class="form-hint">Kelompokkan layanan agar lebih mudah ditemukan pengunjung. <a href="{{ route('cms.kategori-layanan') }}" target="_blank" style="color:#2563eb">Kelola kategori →</a></p>
+                    <p class="form-hint" style="color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:6px 10px;border-radius:6px;"><i class="fas fa-exclamation-triangle mr-1"></i> <strong>Wajib dipilih.</strong> Layanan tanpa kategori tidak akan muncul di website. <a href="{{ route('cms.kategori-layanan') }}" target="_blank" style="color:#2563eb">Tambah kategori baru →</a></p>
+                </div>
+
+                <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Dokter terkait <span style="font-size:11px;color:#94a3b8">(opsional)</span></label>
+                    <select name="dokter_id" class="form-input">
+                        <option value="">— Tidak ada —</option>
+                        @foreach($dokters ?? [] as $d)
+                        <option value="{{ $d->id }}" {{ old('dokter_id')==$d->id?'selected':'' }}>{{ $d->nama_dokter }}</option>
+                        @endforeach
+                    </select>
+                    <p class="form-hint">Jika diisi, halaman pelayanan menampilkan tautan: “Jika mengalami gejala tersebut, klik dokter …”.</p>
                 </div>
 
                 <div class="form-group">
@@ -47,7 +58,7 @@
 
                 <div class="form-group" style="grid-column:1/-1">
                     <label class="form-label">Deskripsi</label>
-                    <textarea name="deskripsi" rows="4" class="form-input" placeholder="Penjelasan singkat layanan ini...">{{ old('deskripsi') }}</textarea>
+                    <textarea name="deskripsi" rows="8" class="form-input" placeholder="Penjelasan lengkap layanan ini...">{{ old('deskripsi') }}</textarea>
                 </div>
 
                 <div class="form-group">

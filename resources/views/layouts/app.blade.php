@@ -104,6 +104,160 @@ body {
 /* Sub-dropdown dokter */
 .nav-dropdown-sub { position: relative; }
 
+/* ══════════════════════════════════════════════════════════
+   MEGA MENU PELAYANAN — Pure CSS hover, fixed position
+══════════════════════════════════════════════════════════ */
+.nav-dropdown-mega { position: static; }
+.navbar-main { overflow: visible; }
+
+/* Override: untuk mega menu, gunakan rule khusus */
+.nav-dropdown-mega:hover > .nav-dropdown-menu {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+}
+
+/* Base: tersembunyi */
+.nav-mega-menu {
+    position: fixed !important;
+    top: 104px;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    min-width: unset !important;
+    z-index: 9999 !important;
+    border-radius: 0 0 20px 20px !important;
+    overflow: hidden !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,.22) !important;
+    background: #fff !important;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity .2s ease, visibility .2s ease, transform .2s ease;
+}
+
+/* Header hijau */
+.nav-mega-header {
+    background: linear-gradient(135deg,#166534 0%,#00b04f 60%,#22c55e 100%);
+    padding: 16px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.nav-mega-header-title { display: flex; align-items: center; gap: 10px; }
+.nav-mega-header-title i { font-size: 20px; color: rgba(255,255,255,.85); }
+.nav-mega-header-title span { font-size: 16px; font-weight: 800; color: #fff; }
+.nav-mega-header-sub { font-size: 12px; color: rgba(255,255,255,.7); font-weight: 500; }
+
+/* Grid kartu */
+.nav-mega-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 12px;
+    padding: 20px 24px 18px;
+    background: #fff;
+    max-width: 1280px; margin: 0 auto;
+}
+
+/* Kartu per kategori */
+.nav-mega-col {
+    border: 1.5px solid #e2f0e8;
+    border-radius: 14px;
+    padding: 16px;
+    background: #fff;
+    transition: all .2s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+.nav-mega-col::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg,#00b04f,#22c55e);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .2s ease;
+}
+.nav-mega-col:hover { border-color: #86efac; box-shadow: 0 6px 20px rgba(0,176,79,.15); transform: translateY(-3px); background: #f9fffe; }
+.nav-mega-col:hover::after { transform: scaleX(1); }
+
+/* Icon */
+.nav-mega-cat-icon {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg,#dcfce7,#bbf7d0);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+    font-size: 18px; color: #16a34a;
+    transition: all .2s;
+}
+.nav-mega-col:hover .nav-mega-cat-icon {
+    background: linear-gradient(135deg,#00b04f,#22c55e);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,176,79,.4);
+}
+
+/* Judul kategori */
+.nav-mega-heading {
+    display: block;
+    font-size: 13.5px; font-weight: 800; color: #111827;
+    margin-bottom: 8px; line-height: 1.3;
+    transition: color .15s;
+}
+.nav-mega-col:hover .nav-mega-heading { color: #00b04f; }
+
+/* Divider */
+.nav-mega-divider { height: 1px; background: #f0f0f0; margin-bottom: 8px; }
+
+/* Link layanan */
+.nav-mega-link {
+    display: block;
+    font-size: 12px; color: #6b7280; font-weight: 500;
+    padding: 3px 0; line-height: 1.5;
+    transition: color .15s, padding-left .15s;
+}
+.nav-mega-link:hover { color: #00b04f; padding-left: 6px; }
+
+.nav-mega-more {
+    display: inline-block; margin-top: 6px;
+    font-size: 11px; font-weight: 700; color: #00b04f;
+    border-bottom: 1px dashed #86efac;
+}
+.nav-mega-more:hover { color: #166534; }
+.nav-mega-empty { padding: 24px 32px; }
+
+/* Footer bar mega menu */
+.nav-mega-foot {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 24px;
+    background: linear-gradient(135deg,#f0fdf4,#ecfdf5);
+    border-top: 1px solid #d1fae5;
+    flex-wrap: wrap;
+}
+.nav-mega-foot-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 20px;
+    background: #fff;
+    border: 1.5px solid #d1fae5;
+    border-radius: 50px;
+    font-size: 13px; font-weight: 700; color: #166534;
+    transition: all .2s ease;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0,176,79,.06);
+}
+.nav-mega-foot-link i {
+    width: 22px; height: 22px;
+    background: linear-gradient(135deg,#dcfce7,#bbf7d0);
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #16a34a; flex-shrink: 0;
+    transition: all .2s;
+}
+.nav-mega-foot-link:hover {
+    background: linear-gradient(135deg,#00b04f,#22c55e);
+    border-color: #00b04f; color: #fff;
+    box-shadow: 0 6px 18px rgba(0,176,79,.35);
+    transform: translateY(-2px);
+}
+.nav-mega-foot-link:hover i { background: rgba(255,255,255,.25); color: #fff; }
+
 /* ===== GLOBAL MOBILE RESPONSIVE FIXES ===== */
 
 /* Prevent any horizontal overflow globally */
@@ -394,53 +548,72 @@ body { max-width: 100%; }
             <div class="hidden lg:flex items-center gap-1">
                 <a href="{{ route('home') }}" class="nav-item {{ request()->routeIs('home') ? 'active' : '' }}">Beranda</a>
 
-                <div class="nav-dropdown">
-                    <button class="nav-item flex items-center gap-1 {{ request()->routeIs('layanan') || request()->routeIs('igd') ? 'active' : '' }}">
-                        Pelayanan <i class="fas fa-chevron-down text-[10px] opacity-80"></i>
+                <div class="nav-dropdown nav-dropdown-mega">
+                    <button class="nav-item flex items-center gap-1 {{ request()->routeIs('layanan*') ? 'active' : '' }}">
+                        Pelayanan <i class="fas fa-chevron-down text-[10px] opacity-80 transition-transform duration-200" id="mega-chevron"></i>
                     </button>
-                    <div class="nav-dropdown-menu" style="min-width:220px">
+                    <div class="nav-dropdown-menu nav-mega-menu">
 
-                        {{-- Daftar Pelayanan — dengan sub-menu kategori di kanan (mirip Daftar Poliklinik) --}}
-                        <div class="nav-dropdown-sub" style="position:relative"
-                             onmouseenter="showNavSub('sub-pelayanan-menu')"
-                             onmouseleave="hideNavSub('sub-pelayanan-menu')">
-                            <a href="{{ route('layanan') }}"
-                               class="nav-dropdown-item flex items-center justify-between">
-                                <span><i class="fas fa-stethoscope text-green-500 w-4 text-center"></i> Daftar Pelayanan</span>
-                                @if(isset($nav_kategori_layanan) && $nav_kategori_layanan->isNotEmpty())
-                                <i class="fas fa-chevron-right text-[9px] text-gray-400 ml-2"></i>
-                                @endif
-                            </a>
-                            {{-- Sub-menu kanan: daftar kategori layanan --}}
-                            @if(isset($nav_kategori_layanan) && $nav_kategori_layanan->isNotEmpty())
-                            <div id="sub-pelayanan-menu"
-                                 style="display:none;position:absolute;left:100%;top:0;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.12);border:1px solid #e5e7eb;min-width:200px;z-index:9999;padding:6px 0"
-                                 onmouseenter="showNavSub('sub-pelayanan-menu')"
-                                 onmouseleave="hideNavSub('sub-pelayanan-menu')">
-                                @foreach($nav_kategori_layanan as $navKat)
-                                <a href="{{ route('layanan.by-kategori', $navKat->id) }}"
-                                   class="nav-dropdown-item">
-                                    <i class="fas {{ $navKat->icon ?? 'fa-hospital' }} text-green-500 w-4 text-center"></i>
-                                    {{ $navKat->nama_kategori }}
-                                </a>
-                                @endforeach
-                                <div style="border-top:1px solid #f1f5f9;margin:4px 0"></div>
-                                <a href="{{ route('layanan') }}" class="nav-dropdown-item">
-                                    <i class="fas fa-list text-green-500 w-4 text-center"></i> Semua Pelayanan
-                                </a>
+                        {{-- Header strip --}}
+                        <div class="nav-mega-header">
+                            <div class="nav-mega-header-title">
+                                <i class="fas fa-hospital-alt"></i>
+                                <span>Pelayanan Kami</span>
                             </div>
-                            @endif
+                            <span class="nav-mega-header-sub">Pilih layanan yang Anda butuhkan</span>
                         </div>
 
-                        {{-- Profil Pelayanan --}}
-                        <a href="{{ route('layanan') }}" class="nav-dropdown-item">
-                            <i class="fas fa-hospital text-green-500 w-4 text-center"></i> Profil Pelayanan
-                        </a>
+                        @if(isset($nav_kategori_layanan) && $nav_kategori_layanan->isNotEmpty())
+                        <div class="nav-mega-grid">
+                            {{-- Card: Semua Pelayanan --}}
+                            <div class="nav-mega-col nav-mega-col-special">
+                                <div class="nav-mega-cat-icon">
+                                    <i class="fas fa-th-large"></i>
+                                </div>
+                                <a href="{{ route('layanan') }}" class="nav-mega-heading">Semua Pelayanan</a>
+                                <div class="nav-mega-divider"></div>
+                                <span class="nav-mega-link" style="color:#9ca3af;font-style:italic;">Lihat semua kategori layanan kami</span>
+                            </div>
+                            {{-- Kartu tiap kategori --}}
+                            @foreach($nav_kategori_layanan as $navKat)
+                            @php $katIcon = $navKat->icon ?? 'fa-clinic-medical'; @endphp
+                            <div class="nav-mega-col">
+                                <div class="nav-mega-cat-icon">
+                                    <i class="fas {{ $katIcon }}"></i>
+                                </div>
+                                <a href="{{ route('layanan.by-kategori', $navKat->id) }}" class="nav-mega-heading">
+                                    {{ $navKat->nama_kategori }}
+                                </a>
+                                <div class="nav-mega-divider"></div>
+                                @foreach($navKat->layanansAktif->take(4) as $navLay)
+                                <a href="{{ route('layanan.detail', [$navKat->id, $navLay->id]) }}" class="nav-mega-link">
+                                    {{ $navLay->nama_layanan }}
+                                </a>
+                                @endforeach
+                                @if($navKat->layanansAktif->count() > 4)
+                                <a href="{{ route('layanan.by-kategori', $navKat->id) }}" class="nav-mega-more">
+                                    +{{ $navKat->layanansAktif->count() - 4 }} layanan lainnya →
+                                </a>
+                                @endif
+                            </div>
+                            @endforeach
+                            {{-- Card: Medical Check-Up --}}
+                            <div class="nav-mega-col nav-mega-col-special">
+                                <div class="nav-mega-cat-icon">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </div>
+                                <a href="{{ route('mcu') }}" class="nav-mega-heading">Medical Check-Up</a>
+                                <div class="nav-mega-divider"></div>
+                                <span class="nav-mega-link" style="color:#9ca3af;font-style:italic;">Deteksi dini untuk hidup lebih sehat</span>
+                            </div>
+                        </div>
+                        @else
+                        <div class="nav-mega-empty">
+                            <a href="{{ route('layanan') }}" class="nav-mega-link">Lihat Semua Pelayanan</a>
+                        </div>
+                        @endif
 
-                        {{-- Medical Check-Up --}}
-                        <a href="{{ route('mcu') }}" class="nav-dropdown-item">
-                            <i class="fas fa-clipboard-check text-green-500 w-4 text-center"></i> Medical Check-Up
-                        </a>
+                        {{-- Footer dihapus: Semua Pelayanan & MCU sudah masuk grid --}}
 
                     </div>
                 </div>
@@ -564,7 +737,7 @@ body { max-width: 100%; }
                 </button>
                 <div id="acc-pelayanan" style="display:none" class="pl-4 space-y-0.5 mt-1">
                     <a href="{{ route('layanan') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-green-50 hover:text-green-700 font-bold transition-colors text-sm">
-                        <i class="fas fa-hospital text-green-500 w-4 text-center text-xs"></i> Profil Pelayanan
+                        <i class="fas fa-hospital text-green-500 w-4 text-center text-xs"></i> Semua Pelayanan
                     </a>
                     @if(isset($nav_kategori_layanan) && $nav_kategori_layanan->isNotEmpty())
                         @foreach($nav_kategori_layanan as $mKat)
@@ -1038,6 +1211,26 @@ function toggleMobileAcc(id) {
     el.style.display   = open ? 'none' : 'block';
     if (icon) icon.style.transform = open ? '' : 'rotate(180deg)';
 }
+
+// ── Mega Menu: update top position saja (CSS hover yang handle show/hide) ──
+(function() {
+    var megaMenu = document.querySelector('.nav-mega-menu');
+    var chevron  = document.getElementById('mega-chevron');
+    var megaWrap = document.querySelector('.nav-dropdown-mega');
+    if (!megaMenu) return;
+
+    function updateTop() {
+        var navbar = document.querySelector('.navbar-main');
+        if (navbar) megaMenu.style.top = navbar.getBoundingClientRect().bottom + 'px';
+    }
+    updateTop();
+    window.addEventListener('scroll', updateTop, { passive: true });
+
+    if (megaWrap && chevron) {
+        megaWrap.addEventListener('mouseenter', function() { chevron.style.transform = 'rotate(180deg)'; });
+        megaWrap.addEventListener('mouseleave', function() { chevron.style.transform = ''; });
+    }
+})();
 </script>
 @stack('scripts')
 

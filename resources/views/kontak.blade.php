@@ -22,6 +22,45 @@
     transform: translateY(-4px);
     box-shadow: 0 12px 28px rgba(0,0,0,.09);
 }
+
+/* ── Pembatas antar section ───────────────────────── */
+.ks-divider {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 0 0;
+    background: #fff;
+}
+.ks-divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to var(--dir, right), transparent, #e5e7eb 30%, #e5e7eb 70%, transparent);
+}
+.ks-divider-line:first-child { --dir: right; }
+.ks-divider-line:last-child  { --dir: left; }
+.ks-divider-dot {
+    width: 32px;
+    height: 4px;
+    background: linear-gradient(90deg, #166534, #00b04f);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin: 0 16px;
+}
+/* Band hijau di bawah divider */
+.ks-divider + section {
+    border-top: 4px solid transparent;
+    background-clip: padding-box;
+    position: relative;
+}
+.ks-divider + section::before {
+    content: '';
+    display: block;
+    height: 4px;
+    background: linear-gradient(90deg, #166534 0%, #00b04f 50%, #22c55e 100%);
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    border-radius: 0;
+}
 </style>
 @endpush
 
@@ -226,8 +265,12 @@
     </div>
 </section>
 
-{{-- ===== FORM ULASAN ===== --}}
-<div class="section-divider"></div>
+{{-- ===== PEMBATAS ===== --}}
+<div class="ks-divider">
+    <div class="ks-divider-line"></div>
+    <div class="ks-divider-dot"></div>
+    <div class="ks-divider-line"></div>
+</div>
 <section id="ulasan-form" class="py-14 bg-white">
     <div class="max-w-screen-xl mx-auto px-4">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">

@@ -14,10 +14,84 @@ use App\Http\Controllers\EventBookingController;
 
 // ─────────────────────────── PUBLIC PORTAL ───────────────────────────────────
 
+// ── TEMP: Seed deskripsi layanan (hapus setelah dijalankan sekali) ──
+Route::get('/run-layanan-seeder-x9k2', function () {
+    try {
+        (new \Database\Seeders\LayananDeskripsiSeeder())->run();
+
+        // Seed banner per kategori
+        $kategoris = \Illuminate\Support\Facades\DB::table('kategori_layanan')
+            ->whereNull('deleted_tm')->where('status','aktif')->get();
+        $created = 0;
+        foreach ($kategoris as $kat) {
+            $pageKey = 'layanan-' . $kat->id;
+            if (!\App\Models\PageBanner::where('page_key', $pageKey)->exists()) {
+                \App\Models\PageBanner::create([
+                    'page_key'    => $pageKey,
+                    'nama_halaman'=> 'Pelayanan: ' . $kat->nama_kategori,
+                    'label_atas'  => 'Layanan Medis',
+                    'judul'       => $kat->nama_kategori,
+                    'subjudul'    => $kat->deskripsi
+                        ? \Illuminate\Support\Str::limit($kat->deskripsi, 120)
+                        : 'Layanan ' . $kat->nama_kategori . ' berkualitas tinggi.',
+                    'warna_awal'  => '#00521f',
+                    'warna_akhir' => '#00b04f',
+                    'status'      => 'aktif',
+                ]);
+                $created++;
+            }
+        }
+
+        return response()->json([
+            'status'          => 'ok',
+            'message'         => 'Selesai!',
+            'deskripsi'       => 'Deskripsi layanan diisi',
+            'banner_dibuat'   => $created . ' banner kategori baru dibuat',
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+    }
+});
+
+// ── TEMP: Debug data kategori layanan di DB ──
+Route::get('/debug-kategori-x9k2', function () {
+    $kategori = \Illuminate\Support\Facades\DB::table('kategori_layanan')
+        ->select('id','nama_kategori','status','deleted_tm','urutan')
+        ->get();
+    $layanan = \Illuminate\Support\Facades\DB::table('layanan')
+        ->select('id','nama_layanan','kategori_layanan_id','status','deleted_tm')
+        ->get();
+
+    // Simulasikan persis query AppServiceProvider
+    $navKategori = \App\Models\KategoriLayanan::with('layanansAktif')
+        ->where('status', 'aktif')
+        ->orderBy('nama_kategori')
+        ->get()
+        ->map(fn($k) => [
+            'id'            => $k->id,
+            'nama_kategori' => $k->nama_kategori,
+            'status'        => $k->status,
+            'deleted_tm'    => $k->deleted_tm,
+            'layanans_aktif'=> $k->layanansAktif->pluck('nama_layanan','id'),
+        ]);
+
+    return response()->json([
+        'semua_kategori_di_db'   => $kategori,
+        'semua_layanan_di_db'    => $layanan,
+        'nav_kategori_layanan'   => $navKategori,
+        'layanan_tanpa_kategori' => $layanan->whereNull('kategori_layanan_id')->values(),
+        'layanan_nonaktif'       => $layanan->where('status','nonaktif')->values(),
+        'kategori_nonaktif'      => $kategori->where('status','nonaktif')->values(),
+        'kategori_softdeleted'   => $kategori->whereNotNull('deleted_tm')->values(),
+    ], 200, [], JSON_PRETTY_PRINT);
+});
+// ────────────────────────────────────────────────────────────────────
+
 Route::get('/',                [HospitalController::class, 'home'])->name('home');
 Route::get('/tentang-kami',    [HospitalController::class, 'tentang'])->name('tentang');
-Route::get('/pelayanan',          [HospitalController::class, 'layanan'])->name('layanan');
-Route::get('/pelayanan/{id}',     [HospitalController::class, 'layananByKategori'])->name('layanan.by-kategori');
+Route::get('/pelayanan',                    [HospitalController::class, 'layanan'])->name('layanan');
+Route::get('/pelayanan/{id}/{layanan}',     [HospitalController::class, 'layananDetail'])->whereNumber(['id', 'layanan'])->name('layanan.detail');
+Route::get('/pelayanan/{id}',               [HospitalController::class, 'layananByKategori'])->whereNumber('id')->name('layanan.by-kategori');
 Route::get('/dokter',          [HospitalController::class, 'dokter'])->name('dokter');
 Route::get('/dokter/online',   [HospitalController::class, 'dokterOnline'])->name('dokter.online');
 Route::get('/dokter/{spSlug}', [HospitalController::class, 'dokterBySpesialis'])->name('dokter.by-spesialis');

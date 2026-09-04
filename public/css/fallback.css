@@ -11,9 +11,11 @@ img { max-width: 100%; display: block; }
 /* Navbar */
 .navbar-main {
     background: #00b04f;
-    position: relative;
+    position: sticky;
+        top: 0;
     z-index: 100;
     transition: box-shadow .3s;
+    overflow: visible;
 }
 .navbar-main.scrolled { box-shadow: 0 4px 20px rgba(0,176,79,.3); }
 .nav-item { color: #fff; font-weight: 600; font-size: .875rem; padding: .5rem .875rem; border-radius: .5rem; transition: background .2s; }
@@ -21,6 +23,7 @@ img { max-width: 100%; display: block; }
 .nav-dropdown { position: relative; }
 .nav-dropdown-menu { position: absolute; top: calc(100% + 8px); left: 0; min-width: 220px; background: #fff; border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.15); opacity: 0; visibility: hidden; transform: translateY(-8px); transition: all .2s; z-index: 200; }
 .nav-dropdown:hover .nav-dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+/* Mega menu styles sudah dipindah ke inline <style> di app.blade.php */
 .nav-dropdown-item { display: flex; align-items: center; gap: .75rem; padding: .7rem 1.25rem; color: #374151; font-size: .85rem; font-weight: 500; transition: background .15s; }
 .nav-dropdown-item:hover { background: #e8f7ef; color: #00b04f; }
 

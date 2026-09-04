@@ -410,20 +410,27 @@ class CmsController extends Controller
     public function createLayanan()
     {
         $kategoris = \App\Models\KategoriLayanan::aktif()->get();
-        return view('cms.layanan.create', compact('kategoris'));
+        $dokters   = Dokter::aktif()->orderBy('nama_dokter')->get();
+        return view('cms.layanan.create', compact('kategoris', 'dokters'));
     }
 
     public function storeLayanan(Request $request)
     {
         $request->validate([
             'nama_layanan'        => 'required|string|max:255',
-            'kategori_layanan_id' => 'nullable|exists:kategori_layanan,id',
+            'kategori_layanan_id' => 'required|exists:kategori_layanan,id',
+            'dokter_id'           => 'nullable|exists:dokter,id',
             'deskripsi'           => 'nullable|string',
             'status'              => 'nullable|in:aktif,nonaktif',
             'gambar'              => 'nullable|image|max:2048',
         ]);
 
         $data = $request->except(['_token', 'gambar']);
+        if (\Illuminate\Support\Facades\Schema::hasColumn('layanan', 'dokter_id')) {
+            $data['dokter_id'] = $request->dokter_id ?: null;
+        } else {
+            unset($data['dokter_id']);
+        }
         $data['status']     = $request->status ?? 'aktif';
         $data['created_by'] = Auth::id();
 
@@ -438,20 +445,27 @@ class CmsController extends Controller
     public function editLayanan(Layanan $layanan)
     {
         $kategoris = \App\Models\KategoriLayanan::aktif()->get();
-        return view('cms.layanan.edit', compact('layanan', 'kategoris'));
+        $dokters   = Dokter::aktif()->orderBy('nama_dokter')->get();
+        return view('cms.layanan.edit', compact('layanan', 'kategoris', 'dokters'));
     }
 
     public function updateLayanan(Request $request, Layanan $layanan)
     {
         $request->validate([
             'nama_layanan'        => 'required|string|max:255',
-            'kategori_layanan_id' => 'nullable|exists:kategori_layanan,id',
+            'kategori_layanan_id' => 'required|exists:kategori_layanan,id',
+            'dokter_id'           => 'nullable|exists:dokter,id',
             'deskripsi'           => 'nullable|string',
             'status'              => 'nullable|in:aktif,nonaktif',
             'gambar'              => 'nullable|image|max:2048',
         ]);
 
         $data = $request->except(['_token', '_method', 'gambar']);
+        if (\Illuminate\Support\Facades\Schema::hasColumn('layanan', 'dokter_id')) {
+            $data['dokter_id']  = $request->dokter_id ?: null;
+        } else {
+            unset($data['dokter_id']);
+        }
         $data['updated_by'] = Auth::id();
 
         if ($request->hasFile('gambar')) {
@@ -527,6 +541,28 @@ class CmsController extends Controller
         }
 
         \App\Models\KategoriLayanan::create($data);
+
+        // Auto-buat entri page_banner untuk kategori baru
+        $newKat = \App\Models\KategoriLayanan::where('nama_kategori', $request->nama_kategori)
+            ->whereNull('deleted_tm')->latest('id')->first();
+        if ($newKat) {
+            $pageKey = 'layanan-' . $newKat->id;
+            if (!\App\Models\PageBanner::where('page_key', $pageKey)->exists()) {
+                \App\Models\PageBanner::create([
+                    'page_key'    => $pageKey,
+                    'nama_halaman'=> 'Pelayanan: ' . $newKat->nama_kategori,
+                    'label_atas'  => 'Layanan Medis',
+                    'judul'       => $newKat->nama_kategori,
+                    'subjudul'    => $newKat->deskripsi
+                        ? \Illuminate\Support\Str::limit($newKat->deskripsi, 120)
+                        : 'Layanan ' . $newKat->nama_kategori . ' berkualitas tinggi.',
+                    'warna_awal'  => '#00521f',
+                    'warna_akhir' => '#00b04f',
+                    'status'      => 'aktif',
+                ]);
+            }
+        }
+
         return back()->with('success', 'Kategori layanan berhasil disimpan.');
     }
 
