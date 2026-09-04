@@ -185,7 +185,11 @@ class BookingController extends Controller
         $pasien = Auth::user()->pasien;
         if (!$pasien) return redirect()->route('portal.profil');
         
-        $bookings = JanjiTemu::with(['jadwalDokter.dokter.spesialisasi'])
+        $bookings = JanjiTemu::with([
+                'jadwalDokter' => fn($q) => $q->withTrashed(),
+                'jadwalDokter.dokter',
+                'jadwalDokter.dokter.spesialisasi',
+            ])
             ->where('pasien_id', $pasien->id)
             ->orderByDesc('tanggal_booking')
             ->paginate(10);

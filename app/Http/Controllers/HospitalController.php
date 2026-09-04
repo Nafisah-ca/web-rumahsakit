@@ -410,6 +410,60 @@ class HospitalController extends Controller
         ));
     }
 
+    /** JSON endpoint untuk auto-refresh live antrian */
+    public function liveAntrianJson(Request $request)
+    {
+        $tanggalInput = $request->get('tanggal');
+        try {
+            $tanggal = $tanggalInput
+                ? \Carbon\Carbon::parse($tanggalInput)->startOfDay()
+                : now()->startOfDay();
+        } catch (\Throwable) {
+            $tanggal = now()->startOfDay();
+        }
+        $tanggalStr = $tanggal->toDateString();
+        $hariMap    = [1=>'Senin',2=>'Selasa',3=>'Rabu',4=>'Kamis',5=>'Jumat',6=>'Sabtu',7=>'Minggu'];
+        $namaHari   = $hariMap[$tanggal->dayOfWeekIso] ?? 'Senin';
+
+        $jadwals = \App\Models\JadwalDokter::with([
+            'dokter.spesialisasi',
+            'spesialisasi',
+            'janjiTemus' => fn($q) => $q
+                ->whereDate('tanggal_booking', $tanggalStr)
+                ->whereIn('status', ['pending', 'approved', 'completed'])
+                ->orderBy('nomor_antrian'),
+        ])
+        ->where('status', 'aktif')
+        ->where('hari', $namaHari)
+        ->get();
+
+        $dokterData = $jadwals->groupBy(fn($j) => $j->dokter_id . '-' . $j->spesialis_id)
+            ->map(function ($kelompok) {
+                $jadwal  = $kelompok->first();
+                $dokter  = $jadwal->dokter;
+                $sp      = $jadwal->spesialisasi;
+                $antrians = $kelompok->flatMap(fn($j) => $j->janjiTemus);
+
+                return [
+                    'dokter_id'       => $dokter?->id,
+                    'nama_dokter'     => $dokter?->nama_dokter ?? '-',
+                    'spesialis'       => $sp?->nama_spesialis ?? '-',
+                    'jam_range'       => $kelompok->map(fn($j) => substr($j->jam_mulai,0,5).'–'.substr($j->jam_selesai,0,5))->unique()->join(', '),
+                    'total_antrian'   => $antrians->whereIn('status', ['pending', 'approved'])->count(),
+                    'nomor_dipanggil' => $antrians->where('status', 'completed')->max('nomor_antrian') ?? 0,
+                ];
+            })
+            ->values()
+            ->sortBy('nama_dokter')
+            ->values();
+
+        return response()->json([
+            'tanggal'    => $tanggalStr,
+            'updated_at' => now()->format('H:i:s'),
+            'data'       => $dokterData,
+        ]);
+    }
+
     public function kebijakanPrivasi()
     {
         $setting = \App\Models\WebsiteSetting::getSetting();

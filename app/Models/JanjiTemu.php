@@ -62,12 +62,11 @@ class JanjiTemu extends Model
         return $this->belongsTo(JadwalDokter::class);
     }
 
-    // Backward compatibility: akses dokter langsung
+    // Backward compatibility: akses dokter langsung via jadwalDokter
     public function dokter(): BelongsTo
     {
-        return $this->belongsTo(Dokter::class, 'jadwal_dokter_id')
-                    ->join('jadwal_dokter', 'dokter.id', '=', 'jadwal_dokter.dokter_id')
-                    ->select('dokter.*');
+        return $this->belongsTo(JadwalDokter::class, 'jadwal_dokter_id')
+                    ->withTrashed();
     }
 
     public function transaksi(): BelongsTo

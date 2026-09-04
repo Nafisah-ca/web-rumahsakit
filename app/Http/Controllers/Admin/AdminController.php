@@ -517,24 +517,20 @@ class AdminController extends Controller
 
     public function jadwalDokter(Request $request)
     {
-        $query = JadwalDokter::with(['dokter.spesialisasi', 'spesialisasi']);
+        // Hanya jadwal mingguan (tanggal_praktek NULL), tidak include soft-deleted
+        $query = JadwalDokter::with(['dokter.spesialisasi', 'spesialisasi'])
+            ->whereNull('tanggal_praktek'); // hanya mingguan
 
         if ($request->dokter_id) {
             $query->where('dokter_id', $request->dokter_id);
         }
 
-        // Tampilkan: jadwal recurring (tanggal_praktek NULL) + jadwal mendatang
-        $query->where(function ($q) {
-            $q->whereNull('tanggal_praktek')
-              ->orWhereDate('tanggal_praktek', '>=', today());
-        });
-
         $query->orderByRaw("FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu')")
               ->orderBy('jam_mulai');
 
-        $totalMendatang = JadwalDokter::whereNull('tanggal_praktek')->orWhereDate('tanggal_praktek','>=',today())->count();
-        $totalRiwayat   = JadwalDokter::whereDate('tanggal_praktek','<',today())->count();
-        $totalSemua     = JadwalDokter::count();
+        $totalMendatang = JadwalDokter::whereNull('tanggal_praktek')->count();
+        $totalRiwayat   = 0;
+        $totalSemua     = JadwalDokter::whereNull('tanggal_praktek')->count();
 
         $jadwals = $query->paginate(50)->withQueryString();
         $dokters = Dokter::where('status', 'aktif')->orderBy('nama_dokter')->get();
@@ -555,26 +551,39 @@ class AdminController extends Controller
     public function storeJadwal(Request $request)
     {
         $request->validate([
-            'dokter_id'       => 'required|exists:dokter,id',
-            'spesialis_id'    => 'required|exists:spesialis,id',
-            'tanggal_praktek' => 'nullable|date',   // nullable — recurring tidak butuh tanggal
-            'hari'            => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
-            'jam_mulai'       => 'required',
-            'jam_selesai'     => 'required|after:jam_mulai',
-            'kuota'           => 'required|integer|min:1|max:200',
-            'status'          => 'nullable|in:aktif,nonaktif',
+            'dokter_id'    => 'required|exists:dokter,id',
+            'spesialis_id' => 'required|exists:spesialis,id',
+            'hari'         => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
+            'jam_mulai'    => 'required',
+            'jam_selesai'  => 'required|after:jam_mulai',
+            'kuota'        => 'required|integer|min:1|max:200',
+            'status'       => 'nullable|in:aktif,nonaktif',
         ]);
 
-        JadwalDokter::create(array_merge(
-            $request->except('_token'),
-            [
-                'tanggal_praktek' => $request->tanggal_praktek ?: null,
-                'status'          => $request->status ?? 'aktif',
-                'created_by'      => Auth::id(),
-            ]
-        ));
+        // Cegah duplikat: dokter + hari yang sama sudah ada
+        $sudahAda = JadwalDokter::whereNull('tanggal_praktek')
+            ->where('dokter_id', $request->dokter_id)
+            ->where('hari', $request->hari)
+            ->exists();
 
-        return redirect()->route('admin.jadwal')->with('success', 'Jadwal berhasil ditambahkan.');
+        if ($sudahAda) {
+            return back()->withInput()
+                ->withErrors(['hari' => 'Dokter ini sudah memiliki jadwal mingguan untuk hari ' . $request->hari . '.']);
+        }
+
+        JadwalDokter::create([
+            'dokter_id'       => $request->dokter_id,
+            'spesialis_id'    => $request->spesialis_id,
+            'tanggal_praktek' => null, // selalu mingguan
+            'hari'            => $request->hari,
+            'jam_mulai'       => $request->jam_mulai,
+            'jam_selesai'     => $request->jam_selesai,
+            'kuota'           => $request->kuota,
+            'status'          => $request->status ?? 'aktif',
+            'created_by'      => Auth::id(),
+        ]);
+
+        return redirect()->route('admin.jadwal')->with('success', 'Jadwal mingguan berhasil ditambahkan.');
     }
 
     public function editJadwal(JadwalDokter $jadwalDokter)

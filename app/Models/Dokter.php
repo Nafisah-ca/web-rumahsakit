@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Dokter extends Model
 {
+    use SoftDeletes;
     protected $table = 'dokter';
 
     const CREATED_AT = 'created_tm';
@@ -58,9 +60,9 @@ class Dokter extends Model
 
     public function janjiTemus(): HasMany
     {
-        return $this->hasMany(JanjiTemu::class, 'jadwal_dokter_id')
-                    ->join('jadwal_dokter', 'janji_temu.jadwal_dokter_id', '=', 'jadwal_dokter.id')
-                    ->where('jadwal_dokter.dokter_id', $this->id);
+        return $this->hasMany(JadwalDokter::class)
+                    ->join('janji_temu', 'janji_temu.jadwal_dokter_id', '=', 'jadwal_dokter.id')
+                    ->select('janji_temu.*');
     }
 
     // ─── Scopes ───────────────────────────────────────

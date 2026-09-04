@@ -246,5 +246,8 @@ class DatabaseSeeder extends Seeder
 
         // ULASAN (8 ulasan asli)
         $this->call(UlasanSeeder::class);
+
+        // JADWAL DOKTER (38 jadwal mingguan aktual)
+        $this->call(JadwalDokterSeeder::class);
     }
 }

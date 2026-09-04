@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TipePenjamin extends Model
 {
+    use SoftDeletes;
     protected $table = 'tipe_penjamin';
 
     const CREATED_AT = 'created_tm';
