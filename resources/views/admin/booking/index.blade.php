@@ -101,7 +101,16 @@
                         <br><span style="color:#94a3b8">{{ $b->jadwalDokter?->jam_mulai ? substr($b->jadwalDokter->jam_mulai,0,5).' WIB' : '' }}</span>
                     </td>
                     <td style="font-weight:800;text-align:center;font-size:18px;{{ $antrianSt }}">{{ $b->nomor_antrian ?? '-' }}</td>
-                    <td><span class="badge {{ $bc }}">{{ $bl }}</span></td>
+                    <td>
+                        <span class="badge {{ $bc }}">{{ $bl }}</span>
+                        @if($b->status === 'cancelled' && $b->alasan_pembatalan)
+                        <div style="margin-top:4px;font-size:11px;color:#991b1b;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;padding:4px 8px;line-height:1.4;max-width:200px">
+                            <i class="fas fa-circle-xmark" style="margin-right:3px"></i>
+                            <span style="font-weight:600">{{ $b->dibatalkan_oleh === 'admin' ? 'Admin' : 'Pasien' }}:</span>
+                            {{ Str::limit($b->alasan_pembatalan, 60) }}
+                        </div>
+                        @endif
+                    </td>
                     <td>
                         <div style="display:flex;gap:6px">
                             <a href="{{ route('admin.booking.show',$b) }}" class="btn btn-sm btn-secondary"><i class="fas fa-eye"></i> Detail</a>

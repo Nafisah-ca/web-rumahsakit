@@ -479,14 +479,82 @@ nav[role="navigation"] a:hover { background: #f1f5f9; border-color: #cbd5e1; }
             </div>
             <div class="topbar-right">
                 @php
-                    $notifCount = \App\Models\JanjiTemu::where('status', 'pending')
+                    $notifCount   = \App\Models\JanjiTemu::where('status', 'pending')
                         ->whereDate('tanggal_booking', today())
                         ->count();
+                    $notifBookings = \App\Models\JanjiTemu::with(['pasien.user','jadwalDokter.dokter'])
+                        ->where('status', 'pending')
+                        ->whereDate('tanggal_booking', today())
+                        ->orderByDesc('created_tm')
+                        ->limit(5)
+                        ->get();
                 @endphp
-                <button class="topbar-notif">
-                    <i class="fas fa-bell"></i>
-                    @if($notifCount > 0)<span class="notif-dot">{{ $notifCount }}</span>@endif
-                </button>
+
+                {{-- Notifikasi Lonceng --}}
+                <div style="position:relative" x-data="{ open: false }" @click.outside="open = false">
+                    <button class="topbar-notif" @click="open = !open">
+                        <i class="fas fa-bell"></i>
+                        @if($notifCount > 0)<span class="notif-dot">{{ $notifCount > 9 ? '9+' : $notifCount }}</span>@endif
+                    </button>
+
+                    {{-- Dropdown --}}
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:300px;background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.12);border:1px solid #f1f5f9;z-index:999">
+
+                        {{-- Header --}}
+                        <div style="padding:14px 16px 10px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between">
+                            <p style="font-size:13px;font-weight:700;color:#0f172a">Booking Pending Hari Ini</p>
+                            @if($notifCount > 0)
+                            <span style="background:#fef3c7;color:#92400e;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px">{{ $notifCount }} menunggu</span>
+                            @endif
+                        </div>
+
+                        {{-- List --}}
+                        <div style="max-height:280px;overflow-y:auto">
+                            @forelse($notifBookings as $nb)
+                            <a href="{{ route('admin.booking.show', $nb) }}"
+                               style="display:flex;align-items:center;gap:10px;padding:10px 16px;text-decoration:none;border-bottom:1px solid #f8fafc;transition:background .1s"
+                               onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                                <div style="width:36px;height:36px;background:#fef3c7;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                                    <i class="fas fa-clock" style="color:#d97706;font-size:13px"></i>
+                                </div>
+                                <div style="min-width:0">
+                                    <p style="font-size:12px;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                                        {{ $nb->pasien?->user?->nama ?? '-' }}
+                                    </p>
+                                    <p style="font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                                        {{ $nb->jadwalDokter?->dokter?->nama_dokter ?? '-' }}
+                                        @if($nb->jadwalDokter?->jam_mulai)
+                                        · {{ substr($nb->jadwalDokter->jam_mulai, 0, 5) }} WIB
+                                        @endif
+                                    </p>
+                                </div>
+                                <span style="font-size:10px;font-weight:700;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:6px;flex-shrink:0">Pending</span>
+                            </a>
+                            @empty
+                            <div style="padding:24px 16px;text-align:center">
+                                <i class="fas fa-check-circle" style="color:#16a34a;font-size:24px;margin-bottom:8px;display:block"></i>
+                                <p style="font-size:12px;color:#64748b">Tidak ada booking pending hari ini</p>
+                            </div>
+                            @endforelse
+                        </div>
+
+                        {{-- Footer --}}
+                        <div style="padding:10px 16px;border-top:1px solid #f1f5f9">
+                            <a href="{{ route('admin.booking', ['status'=>'pending']) }}"
+                               style="display:block;text-align:center;font-size:12px;font-weight:600;color:#16a34a;text-decoration:none;padding:6px;border-radius:8px;transition:background .1s"
+                               onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='transparent'">
+                                Lihat Semua Booking Pending <i class="fas fa-arrow-right" style="font-size:11px"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
                 {{-- Profile Dropdown --}}
                 <div class="profile-dropdown" x-data="{ open: false }" @click.outside="open = false">

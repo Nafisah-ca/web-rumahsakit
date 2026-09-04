@@ -136,7 +136,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('portal.booking.riwayat')
+        return redirect()->route('portal.profil')
             ->with('success', 'Registrasi berhasil! Selamat datang, ' . $user->nama);
     }
 
@@ -225,7 +225,7 @@ class AuthController extends Controller
         return match ($user->role) {
             'admin' => redirect()->route('admin.dashboard'),
             'cms'   => redirect()->route('cms.dashboard'),
-            default => redirect()->route('portal.booking.riwayat'),
+            default => redirect()->route('portal.profil'),
         };
     }
 }

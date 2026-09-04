@@ -60,9 +60,59 @@
 <div class="card" style="margin-bottom:24px">
     <div class="card-header">
         <h3>Booking Terbaru</h3>
-        <a href="{{ route('admin.booking') }}" class="btn btn-sm btn-secondary">Lihat Semua</a>
+        <div style="display:flex;align-items:center;gap:8px">
+            {{-- Tab --}}
+            <div style="display:flex;background:#f1f5f9;border-radius:8px;padding:3px;gap:2px">
+                <button onclick="switchTab('hari-ini')" id="tab-hari-ini"
+                    style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;background:#16a34a;color:#fff">
+                    Hari Ini
+                    <span style="background:rgba(255,255,255,.25);border-radius:99px;padding:1px 6px;font-size:11px;margin-left:4px">{{ $bookingHariIni->count() }}</span>
+                </button>
+                <button onclick="switchTab('terbaru')" id="tab-terbaru"
+                    style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;background:transparent;color:#64748b">
+                    Semua Terbaru
+                </button>
+            </div>
+            <a href="{{ route('admin.booking') }}" class="btn btn-sm btn-secondary">Lihat Semua</a>
+        </div>
     </div>
-    <div class="table-wrap">
+
+    {{-- Tabel Hari Ini --}}
+    <div id="panel-hari-ini" class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Kode</th><th>Pasien</th><th>Dokter</th><th>Jam</th><th>Status</th><th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($bookingHariIni as $b)
+                @php
+                $bconf=['pending'=>['Menunggu','badge-amber'],'approved'=>['Dikonfirmasi','badge-blue'],'completed'=>['Selesai','badge-green'],'cancelled'=>['Dibatalkan','badge-red']];
+                [$blbl,$bcls]=($bconf[$b->status]??['–','badge-slate']);
+                @endphp
+                <tr>
+                    <td><span class="code-tag">{{ $b->kode_booking }}</span></td>
+                    <td style="font-weight:600">{{ $b->pasien?->user?->nama ?? $b->pasien?->nama_lengkap ?? '-' }}</td>
+                    <td style="color:#64748b">{{ $b->jadwalDokter?->dokter?->nama_dokter ?? '-' }}</td>
+                    <td style="color:#64748b;font-size:12px">{{ $b->jadwalDokter?->jam_mulai ? substr($b->jadwalDokter->jam_mulai,0,5).' WIB' : '-' }}</td>
+                    <td><span class="badge {{ $bcls }}">{{ $blbl }}</span></td>
+                    <td><a href="{{ route('admin.booking.show',$b) }}" style="color:#16a34a;font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px"><i class="fas fa-eye"></i> Detail</a></td>
+                </tr>
+                @empty
+                <tr><td colspan="6">
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-day"></i>
+                        <p>Tidak ada booking hari ini</p>
+                    </div>
+                </td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Tabel Semua Terbaru --}}
+    <div id="panel-terbaru" class="table-wrap" style="display:none">
         <table>
             <thead>
                 <tr>
@@ -72,21 +122,16 @@
             <tbody>
                 @forelse($recentBookings as $b)
                 @php
-                $bconf=[
-                    'pending'   =>['Menunggu','badge-amber'],
-                    'approved'  =>['Dikonfirmasi','badge-blue'],
-                    'completed' =>['Selesai','badge-green'],
-                    'cancelled' =>['Dibatalkan','badge-red'],
-                ];
+                $bconf=['pending'=>['Menunggu','badge-amber'],'approved'=>['Dikonfirmasi','badge-blue'],'completed'=>['Selesai','badge-green'],'cancelled'=>['Dibatalkan','badge-red']];
                 [$blbl,$bcls]=($bconf[$b->status]??['–','badge-slate']);
                 @endphp
                 <tr>
                     <td><span class="code-tag">{{ $b->kode_booking }}</span></td>
-                    <td style="font-weight:600">{{ $b->pasien?->nama_lengkap??'-' }}</td>
-                    <td style="color:#64748b">{{ $b->jadwalDokter?->dokter?->nama_dokter??'-' }}</td>
+                    <td style="font-weight:600">{{ $b->pasien?->user?->nama ?? $b->pasien?->nama_lengkap ?? '-' }}</td>
+                    <td style="color:#64748b">{{ $b->jadwalDokter?->dokter?->nama_dokter ?? '-' }}</td>
                     <td style="color:#64748b">{{ $b->tanggal_booking?->format('d M Y') }}</td>
                     <td><span class="badge {{ $bcls }}">{{ $blbl }}</span></td>
-                        <td><a href="{{ route('admin.booking.show',$b) }}" style="color:#16a34a;font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px"><i class="fas fa-eye"></i> Detail</a></td>
+                    <td><a href="{{ route('admin.booking.show',$b) }}" style="color:#16a34a;font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px"><i class="fas fa-eye"></i> Detail</a></td>
                 </tr>
                 @empty
                 <tr><td colspan="6"><div class="empty-state"><i class="fas fa-calendar-xmark"></i><p>Belum ada booking</p></div></td></tr>
@@ -166,6 +211,19 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+function switchTab(tab) {
+    const panels = { 'hari-ini': 'panel-hari-ini', 'terbaru': 'panel-terbaru' };
+    const tabs   = { 'hari-ini': 'tab-hari-ini',   'terbaru': 'tab-terbaru'   };
+
+    Object.keys(panels).forEach(key => {
+        const isActive = key === tab;
+        document.getElementById(panels[key]).style.display = isActive ? '' : 'none';
+        const btn = document.getElementById(tabs[key]);
+        btn.style.background = isActive ? '#16a34a' : 'transparent';
+        btn.style.color      = isActive ? '#fff'    : '#64748b';
+    });
+}
+
 new Chart(document.getElementById('bookingChart'), {
     type: 'bar',
     data: {

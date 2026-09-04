@@ -48,6 +48,12 @@ class AdminController extends Controller
             ->limit(10)
             ->get();
 
+        // Booking hari ini
+        $bookingHariIni = JanjiTemu::with(['pasien.user', 'jadwalDokter.dokter'])
+            ->whereDate('tanggal_booking', today())
+            ->orderByDesc('created_tm')
+            ->get();
+
         // Dokter aktif
         $doktersAktif = Dokter::with('spesialisasi')
             ->where('status', 'aktif')
@@ -62,7 +68,7 @@ class AdminController extends Controller
             ->toArray();
 
         return view('admin.dashboard', compact(
-            'stats', 'chartData', 'chartLabels', 'recentBookings', 'statusCounts', 'doktersAktif'
+            'stats', 'chartData', 'chartLabels', 'recentBookings', 'bookingHariIni', 'statusCounts', 'doktersAktif'
         ));
     }
 
