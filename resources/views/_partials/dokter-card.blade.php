@@ -261,27 +261,15 @@
             </div>
         </div>
 
-        {{-- Tombol Buat Janji — selalu aktif --}}
-        @if($statusCard === 'hari_ini_buka')
+        {{-- Tombol Buat Janji — selalu aktif, selalu berwarna --}}
         <a href="{{ route('portal.booking.create', ['dokter_id' => $d->id]) }}"
            style="display:block;width:100%;text-align:center;padding:10px 0;
                   border-radius:12px;font-size:12px;font-weight:700;color:white;
                   text-decoration:none;background:{{ $btnColor }};
-                  box-shadow:0 2px 10px rgba(22,163,74,0.25);transition:opacity .15s"
+                  box-shadow:0 2px 10px rgba(22,163,74,0.20);transition:opacity .15s"
            onmouseover="this.style.opacity='0.85'"
            onmouseout="this.style.opacity='1'">
             <i class="fas fa-calendar-check" style="margin-right:5px"></i>Buat Janji
         </a>
-        @else
-        <a href="{{ route('portal.booking.create', ['dokter_id' => $d->id]) }}"
-           style="display:block;width:100%;text-align:center;padding:10px 0;
-                  border-radius:12px;font-size:12px;font-weight:700;
-                  color:#64748b;text-decoration:none;
-                  background:#f1f5f9;border:1px solid #e2e8f0;transition:all .15s"
-           onmouseover="this.style.background='#e2e8f0';this.style.color='#334155'"
-           onmouseout="this.style.background='#f1f5f9';this.style.color='#64748b'">
-            <i class="fas fa-calendar" style="margin-right:5px"></i>Buat Janji
-        </a>
-        @endif
     </div>
 </div>
